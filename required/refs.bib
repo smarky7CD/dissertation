@@ -1,0 +1,386 @@
+%% PDS Structures
+
+@article{bloom1970space,
+  title={Space/time trade-offs in hash coding with allowable errors},
+  author={Bloom, Burton H.},
+  journal={Communications of the ACM},
+  volume={13},
+  number={7},
+  pages={422--426},
+  year={1970},
+  publisher={ACM New York, NY, USA}
+}
+
+@inproceedings{flajolet2007hyperloglog,
+  title={Hyperloglog: the analysis of a near-optimal cardinality estimation algorithm},
+  author={Flajolet, Philippe and Fusy, {\'E}ric and Gandouet, Olivier and Meunier, Fr{\'e}d{\'e}ric},
+  booktitle={DMTCS Conference on Analysis of Algorithms},
+  year={2007}
+}
+
+@article{cormode2005improved,
+  title={An improved data stream summary: the count-min sketch and its applications},
+  author={Cormode, Graham and Muthukrishnan, Shan},
+  journal={Journal of Algorithms},
+  volume={55},
+  number={1},
+  pages={58--75},
+  year={2005},
+  publisher={Elsevier}
+}
+
+@article{yang2019heavykeeper,
+  title={HeavyKeeper: An Accurate Algorithm for Finding Top-$ k $ Elephant Flows},
+  author={Yang, Tong and Zhang, Haowei and Li, Jinyang and Gong, Junzhi and Uhlig, Steve and Chen, Shigang and Li, Xiaoming},
+  journal={IEEE/ACM Transactions on Networking},
+  volume={27},
+  number={5},
+  pages={1845--1858},
+  year={2019}
+}
+
+@inproceedings{charikar2002finding,
+  title={Finding frequent items in data streams},
+  author={Charikar, Moses and Chen, Kevin and Farach-Colton, Martin},
+  booktitle={International Colloquium on Automata, Languages, and Programming},
+  pages={693--703},
+  year={2002}
+}
+
+%% top-K
+
+% heap
+@article{mandal2018topkapi,
+  title={Topkapi: parallel and fast sketches for finding top-k frequent elements},
+  author={Mandal, Ankush and Jiang, He and Shrivastava, Anshumali and Sarkar, Vivek},
+  journal={NeurIPS},
+  year={2018}
+}
+
+% zipfian
+@article{radu2010,
+author = {Berinde, Radu and Indyk, Piotr and Cormode, Graham and Strauss, Martin J.},
+title = {Space-Optimal Heavy Hitters with Strong Error Bounds},
+year = {2010},
+volume = {35},
+number = {4},
+issn = {0362-5915},
+url = {https://doi.org/10.1145/1862919.1862923},
+doi = {10.1145/1862919.1862923},
+journal = {ACM Transactions on Database Systems},
+articleno = {26},
+numpages = {28},
+keywords = {streaming algorithms, Frequency estimation, heavy hitters}
+}
+
+% heap and zipfian 
+@article{metwally2006,
+author = {Metwally, Ahmed and Agrawal, Divyakant and Abbadi, Amr El},
+title = {An Integrated Efficient Solution for Computing Frequent and Top-k Elements in Data Streams},
+year = {2006},
+volume = {31},
+number = {3},
+issn = {0362-5915},
+url = {https://doi.org/10.1145/1166074.1166084},
+doi = {10.1145/1166074.1166084},
+journal = {ACM Transactions on Database Systems},
+month = {sep},
+pages = {1095–1133},
+numpages = {39},
+keywords = {frequent elements, approximate queries, Zipfian data, top-k elements, continuous queries, exact queries, Data streams, advertising networks}
+}
+
+%zipfian
+@inproceedings{manku2002approximate,
+  title={Approximate frequency counts over data streams},
+  author={Manku, Gurmeet Singh and Motwani, Rajeev},
+  booktitle={International Conference on Very Large Databases},
+  year={2002}
+}
+
+% telecommunications 
+@article{homen2010,
+title = {Finding top-k elements in data streams},
+journal = {Information Sciences},
+volume = {180},
+number = {24},
+pages = {4958-4974},
+year = {2010},
+issn = {0020-0255},
+doi = {https://doi.org/10.1016/j.ins.2010.08.024},
+url = {https://www.sciencedirect.com/science/article/pii/S002002551000397X},
+author = {Nuno Homem and Joao Paulo Carvalho},
+keywords = {Approximate algorithms, Top- algorithms, Most frequent, Estimation, Data stream frequencies},
+abstract = {Identifying the most frequent elements in a data stream is a well known and difficult problem. Identifying the most frequent elements for each individual, especially in very large populations, is even harder. The use of fast and small memory footprint algorithms is paramount when the number of individuals is very large. In many situations such analysis needs to be performed and kept up to date in near real time. Fortunately, approximate answers are usually adequate when dealing with this problem. This paper presents a new and innovative algorithm that addresses this problem by merging the commonly used counter-based and sketch-based techniques for top-k identification. The algorithm provides the top-k list of elements, their frequency and an error estimate for each frequency value. It also provides strong guarantees on the error estimate, order of elements and inclusion of elements in the list depending on their real frequency. Additionally the algorithm provides stochastic bounds on the error and expected error estimates. Telecommunications customer’s behavior and voice call data is used to present concrete results obtained with this algorithm and to illustrate improvements over previously existing algorithms.}
+}
+
+%jaccard index
+@article{real1996probabilistic,
+  title={The probabilistic basis of Jaccard's index of similarity},
+  author={Real, Raimundo and Vargas, Juan M},
+  journal={Systematic biology},
+  volume={45},
+  number={3},
+  pages={380--385},
+  year={1996},
+  publisher={JSTOR}
+}
+
+
+%% PDS Theory
+
+@article{alon1999space,
+  title={The space complexity of approximating the frequency moments},
+  author={Alon, Noga and Matias, Yossi and Szegedy, Mario},
+  journal={Journal of Computer and system sciences},
+  volume={58},
+  number={1},
+  pages={137--147},
+  year={1999}
+}
+
+@article{cormode2005s,
+  title={What's hot and what's not: tracking most frequent items dynamically},
+  author={Cormode, Graham and Muthukrishnan, Shan},
+  journal={ACM Transactions on Database Systems},
+  volume={30},
+  number={1},
+  pages={249--278},
+  year={2005},
+  publisher={ACM New York, NY, USA}
+}
+
+ @article{Roughgarden_Valiant, 
+  title={CS168: The Modern Algorithmic Toolbox Lecture {\#}2: Approximate Heavy Hitters and the Count-Min Sketch}, author={Roughgarden, Tim and Valiant, Gregory}, 
+  pages={15}, 
+  language={en}
+}
+
+%% PDS security
+
+@inproceedings{naor2015bloom,
+  title={Bloom filters in adversarial environments},
+  author={Naor, Moni and Yogev, Eylon},
+  booktitle={Annual Cryptology Conference},
+  year={2015}
+}
+
+@inproceedings{paterson2021,
+  author={Paterson, Kenneth G. and Raynal, Mathilde},
+  booktitle={EuroS\&P}, 
+  title={HyperLogLog: Exponentially Bad in Adversarial Settings}, 
+  year={2022},
+  doi={10.1109/EuroSP53844.2022.00018}
+}
+
+
+@inproceedings{clayton2019,
+    author = {Clayton, David and Patton, Christopher and Shrimpton, Thomas},
+    title = {Probabilistic Data Structures in Adversarial Environments},
+    year = {2019},
+    isbn = {9781450367479},
+    booktitle = {ACM SIGSAC CCS}
+}
+
+%% PDS applicaitons
+
+@article{woodruff2014sketching,
+  title={Sketching as a tool for numerical linear algebra},
+  author={Woodruff, David P},
+  journal={arXiv preprint arXiv:1411.4357},
+  year={2014}
+}
+
+@inproceedings{hardt2013,
+author = {Hardt, Moritz and Woodruff, David P.},
+title = {How Robust Are Linear Sketches to Adaptive Inputs?},
+year = {2013},
+isbn = {9781450320290},
+doi = {10.1145/2488608.2488624},
+booktitle = {ACM STOC},
+keywords = {robustness, sketches, compressed sensing}
+}
+
+
+@inproceedings{pham2013fast,
+  title={Fast and scalable polynomial kernels via explicit feature maps},
+  author={Pham, Ninh and Pagh, Rasmus},
+  booktitle={ACM SIGKDD KDD},
+  year={2013}
+}
+
+@inproceedings{metwally2005efficient,
+  title={Efficient computation of frequent and top-k elements in data streams},
+  author={Metwally, Ahmed and Agrawal, Divyakant and El Abbadi, Amr},
+  booktitle={International conference on database theory},
+  year={2005}
+}
+
+@article{maggs2015,
+    author = {Maggs, Bruce M. and Sitaraman, Ramesh K.},
+    title = {Algorithmic Nuggets in Content Delivery},
+    year = {2015},
+    issue_date = {2015},
+    volume = {45},
+    number = {3},
+    issn = {0146-4833},
+    doi = {10.1145/2805789.2805800},
+    journal = {ACM SIGCOMM CCR},
+    month = jul,
+    pages = {52–66},
+    numpages = {15},
+    keywords = {stable marriage, algorithms, leader election, internet services, content delivery network, overlay routing, akamai, bloom filter, load balancing}
+}
+@inproceedings{dean2006,
+    title	= {Bigtable: A Distributed Storage System for Structured Data},
+    author	= {Fay Chang and Jeffrey Dean and Sanjay Ghemawat and Wilson C. Hsieh and Deborah A. Wallach and Mike Burrows and Tushar Chandra and Andrew Fikes and Robert E. Gruber},
+    year	= {2006},
+    booktitle	= {{USENIX} Symposium on Operating Systems Design and Implementation (OSDI)}
+}
+
+@inproceedings{goodwin2017bitfunnel,
+  title={Bitfunnel: Revisiting signatures for search},
+  author={Goodwin, Bob and Hopcroft, Michael and Luu, Dan and Clemmer, Alex and Curmei, Mihaela and Elnikety, Sameh and He, Yuxiong},
+  booktitle={ACM SIGIR Conference on Research and Development in Information Retrieval},
+  year={2017}
+}
+
+@misc{bip-0037,
+    title = {BIP 37},
+    howpublished = {\url{https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki}} 
+}
+
+@inproceedings{feldman00,
+	author = {Feldmann, Anja and Greenberg, Albert and Lund, Carsten and Reingold, Nick and Rexford, Jennifer and True, Fred},
+	year={2000},
+	doi = {10.1145/347059.347554},
+	booktitle = {AMC SIGCOMM}
+}
+
+@inproceedings{lakhina04,
+    author = {Lakhina, Anukool and Crovella, Mark and Diot, Christiphe},
+    title = {Characterization of Network-Wide Anomalies in Traffic Flows},
+    year = {2004},
+    isbn = {1581138210},
+    url = {https://doi.org/10.1145/1028788.1028813},
+    doi = {10.1145/1028788.1028813},
+    booktitle = {ACM SIGCOMM Conference on Internet Measurement}
+}
+
+@article{melis2015efficient,
+  title={Efficient private statistics with succinct sketches},
+  author={Melis, Luca and Danezis, George and De Cristofaro, Emiliano},
+  journal={arXiv preprint arXiv:1508.06110},
+  year={2015}
+}
+
+
+@misc{sigurleifsson2019overview,
+  title={An Overview of Count-Min Sketch and its Applications},
+  author={Sigurleifsson, Benedikt and Anbarasu, Aravindan and Kangur, Karl},
+  year={2019},
+  publisher={EasyChair},
+  howpublished = {\url{https://easychair.org/publications/preprint/gNlw}}
+}
+
+
+%% Experiments
+
+@book{melville1851,
+  title     = "Moby Dick; Or, The Whale",
+  author    = "Melville, Herman",
+  year      = 1851,
+  publisher = "Project Gutenberg",
+  howpublished       = {\url{https://www.gutenberg.org/files/2701/2701-0.txt}}
+}
+
+@misc{redis,
+    title = {Redis is an open source ({BSD} licensed), in-memory data structure store, used as a database, cache, and message broker.},
+    howpublished = {\url{https://redis.io/}} 
+}
+
+@misc{redisbloom,
+  title = {RedisBloom: Probabilistic Data Structures for Redis},
+  howpublished = {\url{https://oss.redis.com/redisbloom/}}
+}
+
+@misc{shutl_2019, title={Meet Top-K: an Awesome Probabilistic Addition to RedisBloom}, url={https://redis.com/blog/meet-top-k-awesome-probabilistic-addition-redisbloom/}, journal={redis blog}, publisher={redis}, author={Shutl, Ariel}, year={2019}, month={Jul}} 
+
+@misc{smhasher,
+  title = {SMHasher},
+  howpublished = {\url{https://github.com/aappleby/smhasher}}
+}
+
+@misc{redispy,
+  title = {The Python interface to the Redis key-value store.},
+  howpublished = {\url{https://pypi.org/project/redis/}}
+}
+
+ @inproceedings{Liu_Sun_Kim_2011, 
+ 	title={Fine-Grained DDoS Detection Scheme Based on Bidirectional Count Sketch}, ISSN={1095-2055}, 
+ 	DOI={10.1109/ICCCN.2011.6006023}, 
+ 	abstractNote={Over the past decade, various intrusion detection and prevention systems have been proposed to detect DDoS attacks and mitigate the caused damage. However, many existing IDS systems still keep per-flow state to detect anomaly, and thus do not scale with link speeds in multi-gigabit networks. In this paper, we present a two-level approach for scalable and accurate DDoS attack detection by exploiting the asymmetry in the attack traffic. In the coarse level, we use a modified count-min sketch (MCS) for fast detection, and in the fine level, we propose a bidirectional count sketch (BCS) to achieve better accuracy. At both detection levels, sketch structures are utilized to ensure the scalability of our scheme. The main advantage of our approach is that it can track the victims of attacks without recording every IPaddress found in the traffic. Our scheme can save over 90\% key storage. Such feature is significant for the detection in the highspeed environment. Experimental results using the real Internet traffic show that our approach is able to quickly detect anomaly events and track those victims with a high level of accuracy.}, 
+ 	booktitle={International Conference on Computer Communications and Networks},
+ 	 author={Liu, Haiqin and Sun, Yan and Kim, Min Sik}, 
+ 	 year={2011}
+  }
+
+
+@article{adamic2002zipf,
+  title={Zipf's law and the Internet.},
+  author={Adamic, Lada A. and Huberman, Bernardo A.},
+  journal={Glottometrics},
+  volume={3},
+  number={1},
+  pages={143--150},
+  year={2002}
+}
+
+@misc{cohen2022robust,
+  title = {On the Robustness of CountSketch to Adaptive Inputs},
+ howpublished = {\url{https://arxiv.org/abs/2202.13736}},
+  author = {Cohen, Edith and Lyu, Xin and Nelson, Jelani and Sarlós, Tamás and Shechner, Moshe and Stemmer, Uri},
+  publisher = {arXiv},
+  year = {2022},
+ 
+}
+
+@article{BenEliezer2022,
+author = {Ben-Eliezer, Omri and Jayaram, Rajesh and Woodruff, David P. and Yogev, Eylon},
+title = {A Framework for Adversarially Robust Streaming Algorithms},
+year = {2022},
+volume = {69},
+number = {2},
+issn = {0004-5411},
+url = {https://doi.org/10.1145/3498334},
+doi = {10.1145/3498334},
+journal = {Journal of the ACM},
+articleno = {17},
+numpages = {33},
+keywords = {adversarial model, robust streaming, distinct elements, adaptive inputs, Streaming algorithms}
+}
+
+@article{grabner_prodinger_1997, 
+	title={Maximum Statistics of N Random Variables Distributed by the Negative Binomial Distribution}, 
+	volume={6}, DOI={10.1017/S0963548397002939}, 
+	number={2}, 
+	journal={Combinatorics, Probability and Computing}, publisher={Cambridge University Press}, 
+	author={GRABNER, PETER J. and PRODINGER, HELMUT}, year={1997}, 
+	pages={179–183}}
+
+@inproceedings{_CCS:FPUV22,
+	author = {Filić, Mia and Paterson, Kenny and Unnikrishnan, Anupama and Virdia, Fernando},
+	booktitle = {ACM SIGSAC CCS},
+	title = {Adversarial Correctness and Privacy for Probabilistic data structures},
+	year = {2022}}
+
+
+@inproceedings{HassidimKMMS20,
+	author = {Avinatan Hassidim and Haim Kaplan and Yishay Mansour and Yossi Matias and Uri Stemmer},
+	bibsource = {dblp computer science bibliography, https://dblp.org},
+	biburl = {https://dblp.org/rec/conf/nips/HassidimKMMS20.bib},
+	booktitle = {NeurIPS},
+	title = {Adversarially Robust Streaming Algorithms via Differential Privacy},
+	url = {https://proceedings.neurips.cc/paper/2020/hash/0172d289da48c48de8c5ebf3de9f7ee1-Abstract.html},
+	year = {2020},
+	Bdsk-Url-1 = {https://proceedings.neurips.cc/paper/2020/hash/0172d289da48c48de8c5ebf3de9f7ee1-Abstract.html}}

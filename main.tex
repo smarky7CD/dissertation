@@ -6,14 +6,19 @@
 
 %\usepackage{CustomMacros}%  This is a user macro/style file.
 
-\usepackage{tikz}%       tikz is used by almost everyone, but certainly by me for this.
-\usepackage{pgfplots}%   pgfplots is tikz but better.
+%\usepackage{tikz}%       tikz is used by almost everyone, but certainly by me for this.
+%\usepackage{pgfplots}%   pgfplots is tikz but better.
 %\usepackage{amsrefs}%   amsrefs contains the .bibtex style content for mathematician papers.
-\usepackage{algpseudocode}
+%\usepackage{algpseudocode}
+
 
 \usepackage{scrextend}
 \deffootnote{1.5em}{0em}{\thefootnotemark\quad}
 \usepackage[all]{nowidow} %avoids single lines of text at the top or bottom of page.  If any of your packages cause this package not to work, you will have to manually remove any orphans/widows or add a line penalty
+
+% Sam's custom commands
+\input{config/commands.tex}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%                     User Configuration commands
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -21,7 +26,7 @@
 %% Uncomment the relevant line below if you have tables or figures.
 \haveTablestrue%        Uncomment this if you have tables in your thesis.
 \haveFigurestrue%       Uncomment this if you have figures in your thesis.
-\haveObjectstrue%       Uncomment this if you have Objects in your thesis. This is almost certainly not the case however.
+%\haveObjectstrue%       Uncomment this if you have Objects in your thesis. This is almost certainly not the case however.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Below are the commands to set the degree type, department, graduation time, and chair. 
@@ -55,19 +60,19 @@
 
 %%% These are REQUIRED sections; easiest to do via these commands.
 
-\setDedicationFile{dedicationFile}%                 Dedication Page
-\setAcknowledgementsFile{acknowledgementsFile}%     Acknowledgements Page
-\setAbstractFile{abstractFile}%                     Abstract Page (This should only include the abstract itself)
-\setReferenceFile{referenceFile}{amsplain}%         References. First argument is your bibtex source file
+\setDedicationFile{required/dedicationFile}%                 Dedication Page
+\setAcknowledgementsFile{required/acknowledgementsFile}%     Acknowledgements Page
+\setAbstractFile{required/abstractFile}%                     Abstract Page (This should only include the abstract itself)
+\setReferenceFile{required/referenceFile}{ACM-Reference-Format}%         References. First argument is your bibtex source file
 %                                                       the second argument is your bibtex style file.
 
-\setBiographicalFile{biographyFile}%                Biography file of the Author (you).
+\setBiographicalFile{required/biographyFile}%                Biography file of the Author (you).
 
 %%% These are NOT required, so only use them if you actually need/have them.
 
-\setAbbreviationsFile{abbreviations}%           Abbreviations Page
-\setAppendixFile{appendix}%                     Appendix Content; hyperlinking might be weird.
-\multipleAppendixtrue%                          Uncomment this if you have more than one appendix, 
+%\setAbbreviationsFile{abbreviations}%           Abbreviations Page
+%\setAppendixFile{appendix}%                     Appendix Content; hyperlinking might be weird.
+%\multipleAppendixtrue%                          Uncomment this if you have more than one appendix, 
 %                                                   comment it if you have only one appendix.
 
 
@@ -83,16 +88,13 @@
 %       and use \input or \include here. Generally you want to use \include to get your pagebreak.
 %       NOTE: If you input manually you will have to do some/all the formatting manually.
 
-\include{chapter1}% Modified from old template.
-\include{chapter2}% Modified from old template.
-\include{chapter3}% Modified from old template.
-
-\chapter{EXAMPLES OF EDITOR/Author TOOLS}% Notice that we can use chapter/section etc breaks in the master file if we want, and then use \input instead of \include to avoid unneccessary page breaks.
-\input{editorAndAuthorRemarks}%     Stuff about using editorRemark and authorRemark commands
-
-\include{chapter5}% Modified from old template.
-
-
+\input{chapters/ch1_introduction/ch1.tex}
+\input{chapters/ch2_background/ch2.tex}
+\input{chapters/ch3_cfe/ch3.tex}
+\input{chapters/ch4_redis/ch4.tex}
+\input{chapters/ch5_skipping/ch5.tex}
+\input{chapters/ch6_verifiable/ch6.tex}
+\input{chapters/ch7_conclusion/ch7.tex}
 
 \end{document}
 
