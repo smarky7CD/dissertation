@@ -1,0 +1,25 @@
+In the following discussion of attacks against CMS and HK in our formal model, we will implement the mappings $R:\set{U}\,{\to}\, [m]^k$ and $T: \keys\by\bits^*\,{\to}\,\bits^n$ via calls to the $\HASHO$-oracle.  
+In detail, given some unambiguous encoding function $\encode{\cdot,\cdot,\cdot}$, for CMS we set $R(K,x)\,{=}\,(\HASHO(\encode{1,K,x}),\HASHO(\encode{2,K,x},{\ldots},\allowbreak \HASHO(\encode{k,K,x}))) \allowbreak$ , and for HK, we set
+
+$R(K,x)[i]\,{=}\,\HASHO(\encode{``\mathrm{cnt}",i,K,x})$
+and $T(K,x) \allowbreak\,{=}\,\HASHO(\encode{\mathrm{``fp"}, \allowbreak k+1,K,x})$.
+Note that the traditional analysis of CMS correctness assumes that the row-wise hash functions are sampled (uniformly) from a pairwise-independent family of functions, whereas 
+our modeling treats the row-wise hash functions as~$k$ independent random functions from $\set{U}\,{\to}\, [m]$.  This makes the adversary's
+task more difficult, as our attacks cannot leverage adaptivity to exploit structural characteristics of the hash functions.  
+For the HK, the strings ``cnt'' and ``fp'' provide domain separation,
+and we implicitly assume that the outputs of calls to the $\HASHO$-oracle can be interpreted as random elements of $[m]^k$ when called with ``cnt'', and as
+random elements of the appropriate fingerprint-space,e.g., $\bits^n$ for some constant~$n\,{\geq}\, 0$, when called with ``fp''.\footnote{This separation could be more directly handled by augmenting the attack model with an additional hashing oracle, but for simplicity and ease of reading, we chose not to do so.} 
+
+%-----------------------------------------------------%
+\subsection{Cover Sets}\label{sec:cov-set}
+\input{chapters/ch3_cfe/ch3_sections/attacks/cover-sets.tex}
+
+%-----------------------------------------------------%
+\subsection{Cover-Set Attacks on CMS}\label{sec:cms-attacks}
+\input{chapters/ch3_cfe/ch3_sections/attacks/cms/cover-set-attacks.tex}
+%-----------------------------------------------------%
+
+%-----------------------------------------------------%
+\subsection{Cover-Set Attacks on HK}\label{sec:hk-attacks}
+\input{chapters/ch3_cfe/ch3_sections/attacks/hk/cover-set-attacks.tex}
+%-----------------------------------------------------%

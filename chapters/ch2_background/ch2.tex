@@ -1,3 +1,79 @@
 \chapter{Background}
 
-TODO! 
+\authorRemark{The following needs to be re-organized and re-written.}
+
+\section{Notation}
+
+\paragraph{Bitstring and Set Operations}
+
+Let $\bits^*$ denote the set of bitstrings and let~$\emptystr$ denote the empty
+string. Let $X \cat Y$ denote the concatenation of bitstrings~$X$ and~$Y$.  When~$\col$ is an abstract data-object (e.g., a (multi)set, a list) and~$e$ is an object that can be appended (in some understood fashion) to~$\col$, we overload the $\cat$ operator and write $\col \cat e$.
+
+Let $x \getsr \setX$ denote sampling~$x$ from a set~$\setX$ according to the distribution associated with~$\setX$; if~$\setX$ is finite and the distribution is unspecified, then it is uniform. Let $[i..j]$ denote the set of integers $\{i, \ldots, j\}$; if $i > j$, then define $[i..j] = \emptyset$. For all $m \geq 2$, let $[m] = \{1,2,\ldots,m\}$.
+
+Let $\mathcal{A}$ and $\mathcal{B}$ be sets. We take $\mathcal{A} \cup \mathcal{B}$ to be the union of the sets, $\mathcal{A} \cap \mathcal{B}$ to be the intersection of the sets, and $\mathcal{A} \setminus \mathcal{B}$ to be set-theoretic difference of $\mathcal{A}$ and $\mathcal{B}$.
+
+\paragraph{Functions}
+
+Let $\Func(\setX,\setY)$ denote the set of functions $f:\setX\to\setY$. For every function~$f: \setX \to \setY$, define $\id^f: \{\emptystr\} \times \setX \to \setY$ so that $\id^f(\emptystr, x) = f(x)$ for all $x$ in the domain of~$f$. This allows us to use unkeyed hash functions $H$ in situations where, syntactically, a function is required to take a key along with its input. 
+
+\paragraph{Arrays and Tuples}
+
+We use the distinguished symbol~$\star$ to mean that a variable is uninitialized. By $[\text{item}] \times \ell$ for~$\ell \,{\in}\, N$ we mean a vector of $\ell$ replicas of $\text{item}$. We use $\zeros(m)$ denote a function that returns an $m$-length array of 0s and, likewise, $\zeros(k,m)$ to denote a function that returns an $k \times m$ array of 0s.  We index into arrays (and tuples) using $[\cdot]$ notation; in particular, if $R$ is a function returning a $k$-tuple, we write $R(x)[i]$ to mean the $i$-th element/coordinate of $R(x)$.  If~$X{=}\,(x_1,x_2,\ldots,x_t)$ is a tuple and $\set{S}$ is a set, we overload standard set operators (e.g., $X \,{\subseteq}\, \set{S}$) treating the tuple as a set; if we write $X \setminus \set{S}$, we mean to remove all instances of the elements of~$\set{S}$ from the tuple~$X$, returning a tuple~$X'$ that is ``collapsed'' by removing any now-empty positions.
+
+\section{A Syntax for Data Structures}\label{subsec:syntax}
+
+We present (a slightly modified) syntax for data structures first provided by~\cite{clayton2019probabilistic}. While originally used to describe a variety of probabilistic data structures, the syntax is appropriately general. A syntactic formalization of data structures in this way not only allows us to elegantly describe numerous data structures, but also craft security definitions that are directly related to the operations the data structure allows. We will do exactly this in our case studies throughout the rest of this work.
+
+We start by fixing three non-empty sets~$\set{D},\set{R},\set{K}$ of \emph{data objects}, \emph{responses} and \emph{keys}, respectively.  Let $\mathcal{Q}\subseteq \Func(\mathcal{D},\mathcal{R})$ be a set of allowed \emph{queries}, and let $\mathcal{U} \subseteq \Func(\mathcal{D},\mathcal{D})$ be a set of allowed data-object \emph{updates}.  A {\em data structure} is a tuple $\Pi =
+(\Rep,\Qry,\Up)$, where:
+
+\begin{itemize}[leftmargin=.2in]
+  \item $\Rep\colon \keys \times \mathcal{D} \to \{0,1\}^* \cup \{\bot\}$ is a
+  (possibly) randomized {\em representation algorithm}, taking as input a key $\key \in
+  \keys$ and data object $\col \in \mathcal{D}$, and outputting the
+  representation $\pub \in \{0,1\}^*$ of $D$, or $\bot$ in the case of a
+  failure. We write this as $\pub \gets \Rep_\key(\col)$.
+%
+  \item $\Qry\colon \keys \times \{0,1\}^* \times \mathcal{Q} \to \mathcal{R} \cup \{\bot\}$
+  is a deterministic {\em query-evaluation algorithm}, taking as input $\key \in
+  \keys$, $\pub \in \{0,1\}^*$, and $\qry \in \mathcal{Q}$, and outputting an
+  answer $a \in \mathcal{R}$, or $\bot$ in the case of a failure. We write this as $a \gets \Qry_\key(\pub,\qry)$.
+%
+  \item $\Up\colon \keys \times \{0,1\}^* \times \mathcal{U} \to \{0,1\}^* \cup
+  \{\bot\}$ is a (possibly) randomized {\em update algorithm}, taking as input $\key \in
+  \keys$, $\pub \in \{0,1\}^*$, and $\up \in \mathcal{U}$, and outputting an
+  updated representation $\pub'$, or $\bot$ in the case of a failure. We write
+  this as $\pub' \gets \Up_\key(\pub,\up)$.
+\end{itemize}
+
+Allowing each of the algorithms to take a key~$K$ permits one to separate (for some
+security notion) any secret randomness used across data structure operations,
+from per-operation randomness (e.g., generation of a salt). Note that this syntax admits the
+common case of \emph{unkeyed} data structures, by setting
+$\keys=\{\emptystring\}$. Moreover, we can set $\keys=\mathsf{priv}$ to be a private key and allow the corresponding public key $\mathsf{pub}$ to be a public parameter in the case the data structure relies on asymmetric cryptographic primitives.  
+
+Both~$\Rep$ and the~$\Up$ algorithm can be viewed (informally) as mapping data
+objects to representations ---~explicitly so in the case of~$\Rep$, and
+implicitly in the case of~$\Up$~--- so we allow~$\Up$ to make per-call random
+choices, too. 
+
+Note that $\Up$ takes a function operating on data objects as an argument, even
+though $\Up$ itself operates on \emph{representations} of data objects. This is
+intentional, to match the way these data structures generally operate.
+In a data structure representing a set or multiset, we often think of performing
+operations such as `insert $x$' or `delete $y$'. When the set or multiset is not
+being stored, but instead modeled via a representation, the representation must
+transform these operations into operations on the actual data structure it is
+using for storage. This is common for operation on probabilistic data structures. 
+
+We also note that the query algorithm $\Qry$ is deterministic, which reflects the overwhelming majority of data structures in practice. Allowing~$\Qry$ to be randomized would allow for a greater degree of syntactic expressiveness, particularly for some data structures that provide privacy guarantees. However, it can make it more difficult to craft correctness properties in that it may be difficult to discern the errors caused by an adaptive adversary versus ``intended'' error arising from the randomized query algorithm. Care must be taken when both designing structures and defining security properties to ensure issues do not arise from this.  
+
+%Further, while the syntax from~\cite{clayton2019probabilistic} that we present above is highly expressive, it may not capture all data structures one may want to examine. For instance, an \emph{authenticated data structure}~\cite{tamassia2003authenticated} may require some changed to the functional definitions, as well as the addition of a \emph{verification function}~$\schemefont{VFY}$ that would act to verify proofs to query responses. Lastly, we note that the syntax does not support describing (nor is it clear how to easily modify the syntax to be able to support) what could be viewed as distributed data structures, such as blockchains and distributed hash tables. This is not the focus of this work, and we point to the reader~\cite{zhang2019security} and~\cite{needels2009secure}, respectively, if interested in such areas.
+
+\section{Streaming Data}
+
+A \emph{stream} data-object~$\streamvar{S} = e_1,e_2,\ldots$ is a finite sequence of elements $e_i \in \set{U}$ for some universe~$\set{U}$.  
+The elements of a stream are not necessarily distinct, and the (stream) frequency of some $x \in \set{U}$ is $|\{i: e_i=x \}|$.  
+From the perspective of the PDS, the stream is presented one element at a time, with no buffering or ``look ahead".  
+That is, processing of a stream is performed in order, and the processing of $e_i$ is completed before the processing of $e_{i+1}$ may begin; once~$e_i$ has been processed, it cannot be revisited.

@@ -1,0 +1,307 @@
+
+By examining the HK pseudocode, it is not hard to see that when a stream~$\streamvar{S}$ satisfying the NFC condition is inserted in the HK structure, over-estimations are not possible; any error in frequency estimates is due to underestimation. 
+%
+We also note that if $\streamvar{S}$ satisfies the NFC condition, then any cover that it contains for $x \in \set{U}$ must be a $(\set{FP}_x,x,r)$-cover. In attacking HK, we will build $(\set{FP}_x,x,1)$-covers; as such, in this section we will often just say ``cover'' as shorthand.  
+
+The intuition for our HK-attacks is, loosely, as follows.  If one repeatedly inserts a cover for~$x$, \emph{before~$x$ is inserted}, then the counters associated to~$x$ will be owned by members of the cover, and the counter values can be made large enough to prevent any subsequent appearances of~$x$ from decrementing these counters with overwhelming probability.  We will sometimes say that such hard-to-decrement counters are ``locked-down''. As such, the HK estimate~$\hat{n}_x$ will be zero, even if $n_x \gg 0$. 
+
+We note that attacks of this nature would be particularly damaging in instances where the underlying application uses HK to identify the most frequent elements in a stream~$\streamvar{S}$. With relatively few insertions of the cover set, one would be able to hide many occurrences of~$x$.  DDoS detection systems, for example, rely on compact frequency estimators to identify communication end-points that are subject to an abnormally large number of incoming connections~\cite{Liu_Sun_Kim_2011}. In this case, the target~$x$ is an end-point identifier (e.g., an IP address and/or TCP port). Being able to hide the fact that the end-point~$x$ is a ``heavy hitter'' in the stream of incoming flow destinations could result in~$x$ being DDoSed. 
+
+Interestingly, while a cover is necessary to cause a frequency estimation error for~$x$, it is \emph{not} sufficient.  Unlike the CMS, whose counters are agnostic of the order of elements in the stream, the HK counters have a strong dependence on order.  Thus, if~$x$ is a frequent element and many of its appearances are at the beginning of the stream, then \emph{it} can lock-down its counters; a cover set attack is still possible, but now the number of times the cover must be inserted may be much larger than the frequency (so far) of~$x$.  
+
+\paragraph{Setting the attack parameter~$\mathbf{t}$} Say our attack's resource budget is $(q_H,q_U,q_Q)$. The HK attacks find a cover $\set{C} = \{z_1, z_2\dots\}$ and then inserts it $t$~times. We set the value~$t$ such the probability~$p$ of decrementing the any of the target's counters with subsequent insertions of~$x$ is sufficiently small. For our experiments we set~$p = 2^{-128}$.
+ 
+Let $D_i^t$ be the event that at the end of the attack $A[i][p_i].\fp = \fp_x$ given that at some point during the attack we had $A[i][p_i].\cnt = t$ with $A[i][p_i].\fp = \fp_{z_i}, z_i \neq x$. Let $\left(D^t\right)= \bigor_{i=1} D^t_i$. Then,\\ 
+$
+	\Pr[D_i^t] {\leq}\, {q_U \choose t}  \prod_{j=1}^{t} d^{j} 
+	\leq \left(q_U\right)^t  d^{\frac{t(t+1)}{2}}.
+$
+
+Say $f(t) = k  \left(q_U\right)^t  d^{\frac{t(t+1)}{2}}$.
+If the attack set $A[i][p_i].\cnt = t$ with $A[i][p_i].\fp = \fp_{z_i}, z_i \neq x$ for each $i$, then the probability of~$x$ overtaking any of its counters by the end of the attack is bounded by 
+$\Pr[\bigor_{i=1}^k D_i^t] \leq f(t)$.
+
+\paragraph{Public hash and public representation setting}
+This attack (Figure~\ref{fig:attack-hk-hfis}) is similar to the CMS attack for the public hash setting, but with a few tweaks. The cover is inserted only $t$ times and then the $\UPO$ budget is exhausted by inserting  target~$x$ (at least $(q_U - t k)$ times) to accumulate error. If $\lnot D^t$ then this process introduces the error of at least $(q_U - t k)$.  
+Thus, as the cover finding step uses $\HASHO$ only and induces no error,
+\begin{align*}
+	\mathbb{E}&\left[\rverr\right]\geq (q_U - t k)  (1-p)  \Pr\left[\rvcoverx{1}{x} \given Q = 0\right].
+\end{align*}
+For the term $\Pr\left[\rvcoverx{1}{x} \given Q = 0\right]$ we can simply apply the same bound as for the CMS attack (Equation \eqref{eqn:pub-pub-pr-cover-qH}) obtaining
+\begin{align*}
+	\mathbb{E}&\left[\rverr\right]\geq (q_U - t k)  (1-p)  \left(1 - \left(1 - 1/m\right)^{\frac{q_H}{k}-1}\right)^{k}.
+\end{align*}
+
+\begin{figure*}[ht!]
+	\centering
+	\begin{pchstack}[boxed,center,space=0.5em]
+		\begin{pcvstack}[space=0.45em]
+			\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{CoverAttack}^{\HASHO,\UPO,\QRYO}(x, K, \repr)$}{%
+				\textrm{cover} \gets \textrm{FindCover}^{\HASHO}(x,K)\\
+				t \gets \text{Get-t}(|\text{cover}|)\\
+				\pcfor e \in \textrm{cover}\\
+				\t \pcfor i \in [t]{:} \ \UPO(e)\\
+				\pcuntil q_U \ \UPO \text{-queries made:}\\
+				\t \UPO(x)\\
+				\pcreturn \textrm{done}
+			}
+			\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.5em}}]{$\text{Get-t}()$}{%
+			%\pcgraycomment{note $g$ is negative quadratic as $log_2(d) < 0$.}
+			g(t) \gets \log_2(k \cdot \left(q_U\right)^t d^{t(t+1)/2} ) - \log_2(p)\\
+			\pcgraycomment{find the roots of the negative quadratic polynomial g}\\
+			t_1,t_2 \gets \text{FindRootsOf}(g) \, \, \pcgraycomment{$t_1 \leq t_2$}\\
+			% \pcgraycomment{set $t \geq 1$ so $k \cdot \left(q_U\right)^t d^{t(t+1)/2} \le p$}\\
+			\pcgraycomment{set $t$ so $t \geq 1$ and $g(t) < 0$}\\
+			\pcif t_1 > 1 \textbf{ or } t_2 < 1: t \gets 1\\
+			\pcif t_2 > 1: t \gets \left\lceil t_2 \right\rceil\\
+			\pcif t_2 = 1: t \gets 2\\
+			\pcreturn t
+		}
+		\end{pcvstack}
+		\begin{pcvstack}[space=0.45em]
+		\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{FindCover}^{\HASHO}(x, K)$}{%
+			\textrm{cover} \gets \{\}; \,
+			\textrm{found} \gets \mathsf{False}\\
+			\set{I} \gets \emptyset; \,\textrm{tracker} \gets \zeros(k)\\
+			\pcgraycomment{$R(K,x)[i]$}\\
+			\pcgraycomment{$=\HASHO(\encode{``ct",i,K,x})$}\\
+			(p_1,p_2,\ldots,p_k) \gets R(K,x)\\
+			\pcwhile \textrm{not found}\\
+			\t \pcif q_H \ \HASHO\text{-queries made}\\
+			\t \t \pcreturn \emptyset\\
+			\t y \getsr \set{U}\setminus (\set{I} \cup \{x\})\\
+			\t \set{I} \gets \set{I} \cup \{y\}\\
+			\t (q_1,q_2,\ldots,q_k) \gets R(K,y)\\
+			\t \pcfor i \in [k]\\
+			\t \t \pcif p_i = q_i\\
+			\t \t \t \pcgraycomment{remove duplicates}\\
+			\t \t \t \textrm{cover}[i] \gets y\\
+			\t \t \t \pcif \textrm{tracker}[i] < 1\\
+			\t \t \t \t  \textrm{tracker}[i] \gets 1\\
+			\t \pcif \mathsf{sum}(\textrm{tracker}) = k\\
+			\t \t \textrm{found} \gets \mathsf{True}\\
+			\pcgraycomment{return the cover}\\
+			\pcreturn \textrm{cover.values()}
+		}
+	\end{pcvstack}
+	\end{pchstack}
+	\caption{Cover Set Attack for the HK in public
+		hash function setting. 
+		We use $R(K,x)$ to mean $(\HASHO(\encode{``ct", 1,K,x}),\HASHO(\encode{``ct", 2,K,x},\ldots,\HASHO(\encode{``ct", k,K,x})))$.
+		The attack is parametrized with the update and $\HASHO$ query budget $q_U$ and $q_H$.
+	}
+	\label{fig:attack-hk-hfis}
+\end{figure*}
+
+\paragraph{Private hash and private representation setting}
+We present the attack for this setting in Figure~\ref{fig:attack-hk-aa}.
+The attack starts by inserting $x$ once. Starting with an empty HK implies that then $x$ owns all of its buckets, i.e., $A[i][p_i].\fp = \fp_x$ for all rows $i$, with their associated counters $c_1, \dots, c_k$ set to one, setting $x$'s current frequency estimate 
+%\max_{\underset{A[i][p_i].\fp = \fp_x}{i \in [k]}} \left\{c_i\right\} = 1
+$a = \max_{{i \in [k]}} \left\{c_i\right\} = 1$. The attack then keeps inserting \textit{distinct} elements until the frequency estimate for $x$ drops to $0$, i.e, $A[i][p_i].\fp \not= \fp_x$ for all rows $i$.
+
+Let $\set{I}_1$ be the set of inserted elements $\not= x$ at the moment that this happens, and the last inserted element was $z_1$. Then, $z_1$ must share at least one counter with $x$ (the one that changed $A[i][p_i].\fp$ from $\fp_x$ most recently). So, we set our round-one candidate cover set $\set{C}_1\gets \{z_1\}$ and insert $t$ times to the HK. Now we are at the point when all $c_1, \dots, c_k$ are owned by elements $\neq x$, and, under the NFC condition, all but one are of value one. Note that inserting $\set{I}_1$ increased the estimate error by one.
+\begin{figure*}[ht!]
+	\centering
+	\begin{pchstack}[boxed,center,space=0.5em]
+		\begin{pcvstack}
+			\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{CoverAttack}^{\UPO,\QRYO}(x, \bot, \bot)$}{%
+				\textrm{FindInsertCover}^{\UPO,\QRYO}(x)\\
+				\pcuntil q_U \ \UPO \text{-queries made:}\\
+				\t \UPO(x)\\
+				\pcreturn \textrm{done}
+			}
+			\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{Reintro}^{\UPO,\QRYO}(x)$}{%
+				\pcgraycomment{reintroduce target $x$}\\
+%				\mia{\text{Each up(x) increases error by 1.}}\\
+				\pcwhile \mathsf{True}\\
+				\t \pcif q_U \ \UPO\text{-}\text{ or } q_Q \ \QRYO\text{-queries made:}\\
+				\t \t \t \pcreturn\\
+				\t \UPO(x); a \gets \QRYO(x)\\
+				\t \pcif a > 0: \pcreturn\\
+				\pcendwhile\\
+			}
+%			\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.5em}}]{$\text{Get-t}()$}{%
+%				t \gets \mathbf{argmin}_{t \geq 1} \left\{k \cdot \left(q_U\right)^t  \cdot d^{\frac{t(t+1)}{2}} \leq p\right\}\\
+%				\pcreturn t
+%			}
+		\end{pcvstack}
+		\begin{pcvstack}[space=0.45em]
+		\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{FindInsertCover}^{\UPO,\QRYO}( x)$}{%
+			\pcgraycomment{insert $\leq k$ elements $t$ times in a row}\\
+			\textrm{cover} \gets \emptyset\\
+%			\textrm{found} \gets \mathsf{False}\\
+			t \gets \text{Get-t}()\\
+			\set{I} \gets \emptyset \\
+%			\UPO(x) \\
+%			\hspace{-.5em}
+%			\pcwhile \textrm{not found} \label{hk-priv-priv-a-y1}\\
+%			\t \pcif q_U \ \UPO \text{- or } q_Q \ \QRYO\text{-queries made}\\
+%			\t \t \pcreturn\\
+%			\t y \getsr \univ \setminus (\set{I} \cup \{x\})\\
+%			\t \set{I} \gets \set{I} \cup \{y\}\\
+%			\t \UPO(y); \ a \gets \QRYO(x)\\
+%			\t \pcif a = 0: \\
+%			\t \t \textrm{cover} \gets \{y\}\\
+%			\t \t \textrm{found} \gets \mathsf{True}\\
+%			\t \t \pcfor j \in [t]: \UPO(y) \label{hk-priv-priv-a-y1-endsearch}\\
+			\pcfor i \in [1, 2, \dots, k] \label{hk-priv-priv-a-yi}\\
+			\t \text{Reintro}^{\UPO,\QRYO}(x) \\
+			\t \pcwhile   \mathsf{True} \\
+			\t \t \pcif q_U \ \UPO \text{- or } q_Q \ \QRYO\text{-queries made}\\
+			\t \t \t \pcreturn\\
+			\t \t y \getsr \univ \setminus (\set{I} \cup \{x\})\\ 
+			\t \t \set{I}\gets \set{I} \cup \{ y \} \\
+			%			\t \pcfor y \in \set{I} \ \pcgraycomment{circle in order of insertion to $\set{I}$}\\
+			\t \t \UPO(y); a \gets \QRYO(x) \\
+			\t \t \pcif a = 0: \\
+			\t \t \t \textrm{cover} \gets \textrm{cover} \cup \{y\}\\
+			\t \t \t \pcfor j \in [t]: \UPO(y) \\
+			\t \t \t \textbf{break} \\
+			\pcreturn
+		}
+	\end{pcvstack}
+	\end{pchstack}
+	\caption{Cover Set Attack for the HK in private
+		hash function and representation setting. 
+		The attack is parametrised with  the update and query query budget $q_U$ and $q_Q$. The attack uses the function Get-t$(.)$ from Figure \ref{fig:attack-hk-hfis}.
+	}
+%\mia{and $p$ - the probability of $x$ later on owning one of its counters. Think if worth mentioning.}
+	\label{fig:attack-hk-aa}
+\end{figure*}
+
+The adaptive portion of our attack proceeds as follows. In each round $i = 2, \dots$ we
+first keep reinserting $x$ until $\HK(x)$ reaches $1$. 
+Let $d_i$ be the number of these reinsertions.  Hence, these reinsertions increased the estimate error by $d_i - 1$. At this point, at least one counter $c_1, \dots, c_k$ is owned by $x$ and all counters owned by $x$ are  set to $1$. Then, 
+we search for a new element to create our round-$i$ cover set candidate $\set{C}_i$, by inserting \textit{new distinct} elements, until we find a $z_i$ that drops $\HK(x)$ to $0$.
+We set $\set{C}_i \gets \set{C}_{i-1} \cup \{z_i\}$ and insert $z_i$ $t$ times. At this point, all counters $c_1, \dots, c_k$ are owned by elements $\neq x$ again, and all are of value one, but the ones covered by $\set{C}_i$ which (very 
+likely)  hold a value strictly greater than $1$ and (very) close to $t$. 
+
+The procedure ensures that after some $\ell \leq k$ rounds we have found a complete $1$-cover with (very) high probability.
+Each round $i$ adds maximally one new element to the incomplete cover $\set{C}_{i-1}$. The added element covers whatever $x$ is owning at the beginning of the round. Thus, with (very) high probability, counters owned by $x$ in the round are not covered by $\set{C}_{i-1}$. This is because all the counters covered by $\set{C}_{i-1}$ were set to value $t$ (or a value close to $t$ with very high probability\footnote{We could have $z_i$ simultaneously covering more not yet covered counters. Then, adding $z_i$ $t$ times fixes one counter to $t$, and the others to $t$ with the probability~$ \geq 0.9$ -- the other counters might have been owned by some others elements but are definitely of value one, so each of them gets ``taken'' by $z_i$ in the first insertion with probability $0.9$.}) at some point, and the selection of $t$ makes the probability of later overtaking one such counter (very) small. There are only $k$ counters to cover and so with (very high) probability having only $k$ rounds suffices to find a cover.
+
+Let $\set{I}_i$ be the set of inserted elements $\not= x$ in each round.
+We get the number of $\UPO$-queries required to complete $k$ rounds is
+\begin{align}
+	q_U' \leq \sum_{i = 1}^{k} (d_i + |\set{I}_i| + t) = \sum_{i = 1}^{k} (d_i + |\set{I}_i|) + tk.
+\end{align}
+So, $x$ can be potentially inserted $q_U-q_U'$ times, accumulating some additional error\footnote{We say potentially as the $\QRYO$-query budget might be a limiting factor.}.
+Let us assume that $q_Q$ is not the limiting resource in the attack. Say $\set{C}$ is the attack's maximal round candidate cover. 
+Whenever $\lnot \left(D^t\right)$, 
+adding $z_i$ $t$ times to the HK incremented one of the $x$'s counters, not yet set to value $t$ by elements in $\set{C}_{i-1}$.
+If, in addition, we have $|\set{C}| = k$, $k$ different elements set $k$ different counters of $x$ (i.e. all of  $x$'s counters) to $t$ making them impossible to decrement later. 
+%Moreover, $\set{C}=\set{C}_k$ a full 1-cover.
+%\todo{any}{Explain why this might not always be true.}
+Therefore, after the rounds to reach $\set{C}$ are completed every further insertion of $x$ ($q_U-q_U'$ of them) increased the error by 1.
+Note that $|\set{C}| = k$ implies the attack completed exactly $k$ rounds and 
+\begin{align*}
+	&\left[\rverr \given \lnot \left(D^t\right), |\set{C}| = k \right] \\
+%	&\geq \sum_{i = 1}^k (d_i- 1 + 1) + q_U -  q_U'\\
+	&\geq \sum_{i = 1}^k (d_i) + q_U -  \sum_{i = 1}^{k} \left(d_i + \left[|\set{I}_i|\given \lnot \left(D^t\right), |\set{C}| = k \right] \right) - tk\\
+	&\geq  q_U -  \sum_{i = 1}^{k} \left[|\set{I}_i|\given \lnot \left(D^t\right), |\set{C}| = k \right] - tk.\\
+\end{align*}
+
+Let $D_i$ be the set of rows $j$ with $A[j][p_j].\fp = \fp_x$ (i.e. $x$ owning the counter), and let $c_{i,j}$ be the values of $A[j][p_j].\cnt$ after the $i$-th round reinsertion step.
+Say $Y_{i,j}$ counts the minimal number of distinct element insertions to ``overtake'' the counter from $x$ in row $j \in  D_i$ after the $i$-th round reinsertion step, i.e., the minimal number of distinct evaluations of $R(K. \cdot)$ to set $A[j][p_j].\fp \neq \fp_x$. 
+Then, $Y_{i,j}$ is a geometric random variable with $p = \frac{d^{c_{i,j}}}{m}$, $d^{c_{i,j}}$ coming from the probabilistic decay mechanism.
+%  and $|\set{I}_i|  = \max_{j \in D_i} \left\{ Y_{i,j}\right\}$. 
+Moreover, $c_{i,j}=1$ for all $j \in D_i$ -- that is counters owned by $x$ equal 1 after every reinsertion step.
+As $|D_1| = k$ we have that $|\set{I}_1|  =\max_{j \in D_1} \left\{ Y_{1,j}\right\}$ is essentially $L^1$ with $p = \frac{d}{m}$.
+Since $|D_i| \leq k$ and all $Y_{i,j}$ are positive and i.i.d.
+geometric variables with $p = \frac{d}{m}$, we have that $\mathbb{E}\left[|\set{I}_i|\right] \leq \mathbb{E}\left[|\set{I}_1|\right] $. So, $\mathbb{E}\left[|\set{I}_i| \right]\leq \frac{m}{d}H_{k}$.
+This implies that
+\begin{align*}
+	&\mathbb{E}\left[\rverr\right] 
+	= \sum_{s = 0}^{k} \mathbb{E}\left[ \rverr \given \left(D^t\right), |\set{C}| = s \right] \Pr\left[\left(D^t\right) \land |\set{C}| = s \right] \\
+	&\ \ \ \ \ \ \ \ \ \ \ + \sum_{s = 0}^{k} \mathbb{E}\left[ \rverr \given \lnot \left(D^t\right), |\set{C}| = s \right] \Pr\left[\lnot \left(D^t\right)  \land |\set{C}| = s \right] \\
+	&\geq \ \mathbb{E}\left[ \rverr \given \lnot \left(D^t\right), |\set{C}| = k\right] \Pr\left[\lnot \left(D^t\right) \land |\set{C}| = k\right]\\
+%	&\geq  \left(q_U{-}tk\right)\Pr\left[\lnot \left(D^t\right) \land |\set{C}| = k\right] \\
+%	& \ - \sum_{i = 1}^{k} \mathbb{E}\left[|\set{I}_i|\given \lnot \left(D^t\right), |\set{C}| = k \right]\Pr\left[\lnot \left(D^t\right) \land |\set{C}| = k\right] \\
+	&\geq  \left(q_U{-}tk\right)\Pr\left[\lnot \left(D^t\right) \land |\set{C}| = k\right] - \sum_{i = 1}^{k} \mathbb{E}\left[|\set{I}_i|\right] \\
+	&\geq  \left(q_U{-}tk\right)\Pr\left[\lnot \left(D^t\right) \land |\set{C}| = k\right] - \frac{km}{d}H_k.
+\end{align*}
+We expect $\Pr\left[\lnot \left(D^t\right) \land |\set{C}| = k\right] \approx 1$ and
+$\mathbb{E}\left[\rverr\right] \allowbreak \approx q_U{-}tk{-}\frac{km}{d}H_k$. We confirmed this experimentally as seen in Table~\ref{tab:attack-comp}.
+% [...] \todo{any}{point to the figure if appropriate.} 
+
+\paragraph{Public hash and private representation setting}
+As with the CMS, the same attack and analysis applies from the public hash and public representation setting.
+
+\paragraph{Private hash and public representation setting}
+\begin{figure*}[ht!]
+	\centering
+	\begin{pchstack}[boxed,center,space=0.5em]
+	\begin{pcvstack}[space=0.45em]
+		\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{CoverAttack}^{\UPO,\QRYO}(x, \bot, \repr)$}{%
+			\textrm{cover} \gets \textrm{FindCover}^{\UPO}(x, \repr)\\
+				t \gets \text{Get-t}()\\
+				\pcfor e \in \textrm{cover}\\
+				\t \pcfor i \in [t]{:} \ \UPO(e)\\
+				\pcuntil q_U \ \UPO \text{-queries made:}\\
+				\t \UPO(x)\\
+				\pcreturn \textrm{done}
+			}
+%			\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.5em}}]{$\text{Get-t}()$}{%
+%			t \gets \mathbf{argmin}_{t \geq 1} \left\{k \cdot \left(q_U\right)^t  \cdot d^{\frac{t(t+1)}{2}} \leq p\right\}\\
+%			\pcreturn t
+%		}
+		\end{pcvstack}
+		\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{FindCover}^{\UPO}(x, \repr)$}{%
+			\textrm{cover} \gets \{\}; \,
+			\textrm{found} \gets \mathsf{False}\\
+			\set{I} \gets \emptyset; \,\textrm{tracker} \gets \zeros(k)\\
+			\repr' \gets \UPO(x)\\
+			\pcgraycomment{compute $x$'s indices}\\
+%			\mia{\text{All counters are always 0 or 1 - empty filter rn .}}\\
+%			\mia{\text{So, we can compare fps to find indices.}}\\
+			\pcfor i \in [k] \\
+			\t \pcfor  j \in [m]\\
+			\t \t \pcif \repr'[i][j].\fp \not= \repr[i][j].\fp\\
+			\t \t \t  p_i \gets j; \textbf{break};\\
+			\hspace{-.5em}
+			\pcwhile \textrm{not found}\\
+			\t \pcif q_U \ \UPO\text{-queries made}:\pcreturn \emptyset\\
+			\t y \getsr \set{U}\setminus (\set{I} \cup \{x\})\\
+			\t \set{I} \gets \set{I} \cup \{y\}\\
+			\t  \repr \gets \repr'\\
+			\t \repr' \gets \UPO(y) \\
+			\t \pcgraycomment{compute $y$'s indices}\\
+%			\t \pcfor i \in [k]: q_i \gets \mathbf{False}\\
+			\t \pcfor i \in [k] \\
+			\t \t q_i \gets \mathbf{False}\\
+			\t \t \pcfor  j \in [m]\\
+			\t \t \t \pcif \repr'[i][j].\fp \not= \repr[i][j].\fp\\
+			\t \t \t  \t q_i \gets j; \textbf{break};\\
+			\t \pcfor i \in [k]\\
+			\t \t \pcgraycomment{compare $x$'s and $y$'s indices row by row}\\
+			\t \t \pcif q_i \not= \mathbf{False} \ \textbf{ and } \ p_i = q_i\\
+			\t \t \t \pcgraycomment{remove duplicates}\\
+			\t \t \t \textrm{cover}[i] \gets y\\
+			\t \t \t \pcif \textrm{tracker}[i] < 1\\
+			\t \t \t \t  \textrm{tracker}[i] \gets 1\\
+			\t \pcif \mathsf{sum}(\textrm{tracker}) = k\\
+			\t \t \textrm{found} \gets \mathsf{True}\\
+			\pcgraycomment{cover elements own the target's counters}\\
+			\pcreturn \textrm{cover.values()} \ \pcgraycomment{all counters set to $1$} 
+%			\mia{Recheck. \text{Important?}}\\
+		}
+	\end{pchstack}
+	\caption{Cover Set Attack for the HK in private
+		hash function and public representation setting. 
+		The attack is parametrized with  the update query budget $q_U$. The attack uses the function Get-t$(.)$ from Figure \ref{fig:attack-hk-hfis}.
+	}
+%\mia{If the initial filter is not empty we can do: 1) reintro the target - let $CNT$ be the counters owned by the target, 2) find cover for $CNT$, 3) insert the cover $t$ times - block $CNT$ counters ($t$ is much greater than the current max counter), go to 1) or stop if union of all $CNT$s cover all the target's counters. If completely successful ($\rvcoverx{1}{x}$) - every insertion of x at reintro step increased the error by 1.}
+	\label{fig:attack-hk-privH-pubR}
+\end{figure*}
+The public representation allows us to design an attack similar to the attack for the public hash settings, but, as with the CMS attack in the setting, we need to find the cover using the $\UPO$ oracle.
+Starting with an empty filter, the attack first inserts~$x$, such that~$x$ is guaranteed to own all of its counters. Then, we keep adding \textit{distinct} elements, until all the $A[i][p_i].\fp$  that once belonged to~$x$ has changed, in turn signaling the cover for~$x$ has been found. We give a pseudocode description of this attack in Figure~\ref{fig:attack-hk-privH-pubR}.
+
+Adding any $y \neq x$ has $\frac{d}{m}$ probability to change $A[i][p_i].\fp$ after the single initial insertion of~$x$. Let~$Y_i$ be the minimal number of distinct element $\neq x$ insertions before $A[i][p_i].\fp$ changes from $\fp_x$. We observe that $Y_i$ is a geometric random variable with success probability $p=\frac{d}{m}$. Set $Y=\max_{i \in [k]}\{Y_i\}$. So, our cover-finding step requires
+$(q'_U  = 1+Y)$ $\UPO$-queries to complete - $1$ query to insert $x$, and then $Y$ to find a cover.
+Say~$q_U$ is the total $\UPO$-query budget. After the cover finding step, we insert cover ~$\set{C}$ $t$ times, to lock-down the counters followed by~$q_U - q_U' - t|\set{C}|$ insertions of $x$. Each $x$-insertion added one to the error if $\lnot \left(D^t\right)$ and
+\begin{align*}
+	\mathbb{E}[\rverr] &\geq \mathbb{E}\left[\rverr  \given \lnot \left(D^t\right)\right] \Pr\left[\lnot \left(D^t\right)\right] \\
+	&\geq \left(q_U- 1- \mathbb{E}\left[Y \right] - tk\right)\Pr\left[\lnot \left(D^t\right)\right] \\
+	&\approx q_U - \frac{m}{d} H_k-tk. 
+\end{align*}
+The last approximation comes from assuming $t$ is set such that $\Pr\left[\lnot \left(D^t\right)\right]\allowbreak \approx 1$, and observing that $Y$ is essentially $L^1$ with $p = \frac{d}{m}$ (i.e. $m$ replaced with $\frac{m}{d}$). 
+

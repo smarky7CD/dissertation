@@ -1,0 +1,33 @@
+\begin{figure}[thp]
+    %	\Wider[4em]{
+            \centering
+            \begin{pchstack}[boxed,center,space=0.5em]
+                \begin{pcvstack}[space=0.45em]
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\Rep_{K}(\setS)$}{%
+                            M \gets \zeros(k,m)\\
+                            \pcfor x \in \setS \\
+                            \t M \gets \Up_{K}(M,\up_{x})\\
+                            \pcreturn M
+                        }
+                \end{pcvstack}	
+                \begin{pcvstack}[space=0.45em]
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\Up_{K}(M,\up_x)$}{%
+                            (p_1,\ldots,p_k) \gets R(K,x)\\
+                            \pcfor i \in [k]\\
+                            \t M[i][p_i] \,{+}{=}\,1\\
+                            \pcreturn M 
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\Qry_{K}(M,\qry_x)$}{%
+                            (p_1,\ldots,p_k) \gets R(K,x)\\
+                            \pcreturn  \min_{i \in [k]}\{M[i][p_i]\}
+                        }
+                \end{pcvstack}	
+            \end{pchstack}
+    %	}
+      \caption{Keyed count-min sketch structure $\mathrm{CMS}[R,m,k]$ admitting point queries for any~$x \in \univ$. The parameters are integers $m,k \geq 0$, and a keyed function $R: \keys\by\univ \to [m]^k$ that maps data-object elements (encoded as strings) to a vector of positions in the array~$\v.M$. A concrete scheme is given by a particular choice of
+      parameters.
+      } 
+      \label{fig:cms}
+    \end{figure}
+    
+    

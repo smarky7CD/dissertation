@@ -1,0 +1,215 @@
+Our attacks against CK are almost one-to-one with those we present against the CMS with one major difference. Recall from Corollary~\ref{cor:fx:MA:Theta13:nx} that if at least one counter in some row~$i$ of the element~$x$ we are querying on maps to has~$|V^i_x| \leq 1$ then CK returns estimate~$\hat{n}_x$ such that~$\hat{n}_x = n_x$, i.e. $\CK(x)$ is a perfect estimate of~$x$. This implies that for an error to exist in a frequency estimation of~$x$ it must be that~$\forall i \in [k]$ it is necessary that~$|V^i_x| \geq 2$. In the attack setting this means we need to find a $2$-cover (specifically a~$(\set{FP}_{x},x,2)$-cover) on~$x$ to create error.
+
+A 2-cover~$\set{C}$ for~$x$ contains elements~$\{y_1,y_2,\ldots,y_t\}$ such that for every counter $x$ maps to in positions~$(p_1,p_2,\ldots,p_k) \gets R(K,x)$ it is such that at least two distinct elements in~$\set{C}$ cover each counter. In our attack model we assume an initially empty representation and we never insert~$x$ in any of our attacks (except for once to discover its counter positions in the public representation, private hash setting). 
+
+We attack CK in a two-step process, as with CMS and HK. We first find a 2-cover for our target element~$x$ and then repeatedly insert the 2-cover to create error. Under the assumption that~$x$ does not own any of its counters in the~$A$ substructure of the CK (which is guaranteed in our attack model\footnote{Save for the trivial case in the public representation, private hash setting when no cover is able to be found.}), then the~$\Theta_1$ sub-estimator will be used to make the final error evaluation~$\QRYO$ query on~$x$. Say that after some process of finding a 2-cover for~$x$ (which will be of size~$\leq 2k$ -- for this discussion we will assume the size of the 2-cover is exactly~$2k$) we have~$\omega$ insertions to repeatedly insert the elements in the cover. Repeated and equal insertions of each of the elements in the 2-cover for~$x$ will cause the values in all of $x$'s counters in the~$M$ substructure of the CK to be of value~$\frac{\omega}{k}$. In the~$A$ substructure the value in the counters that~$x$ maps to will have value~$1$ and be owned by some element in the 2-cover. This is because (under the no-fingerprint collision assumption) in the initially empty structure, ownership of said counters will flip-flop on each iteration of the insertions of the 2-cover between the two distinct elements that map to these counters in accordance with the~$\Up$ algorithm of the HK with~$d=1$. 
+
+Then applying the estimation from~$\Theta_1$ we see that we will generate error on~$x$ equal to~$\frac{\omega}{2k}$. If we hold~$k$ constant and assume that we are attacking a CMS under the same conditions (we have found a 1-cover for a target~$x$ through some process and have~$\omega$ insertions to accrue error) we will have an error of~$\frac{\omega}{k}$, which is twice that of the CK under the same conditions. Under the same assumptions for HK, in addition to the assumption that we have already locked-down the counters of the target with initial insertions of the cover in the structure, we will achieve an error on the target of~$\omega$ -- which is~$\omega - \frac{\omega}{2k}$ greater than that of the CK. We will see this pattern holds when giving concrete experimental attack error results at the conclusion of this section.
+
+\paragraph{Public hash and representation setting}
+\begin{figure*}[ht!]
+	\Wider[2em]{
+		\centering
+		\begin{pchstack}[boxed,center,space=0.4em]
+			\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{CoverAttack}^{\HASHO,\UPO,\QRYO}(x, K, {\repr})$}{%
+				\textrm{cover} \, {\gets} \textrm{FindCover}^{\HASHO}(2,x,K)\\
+				\pcuntil q_U \ \UPO \text{-queries made:}\\
+				\t \pcfor e \in \textrm{cover}{:} \ \UPO(e)\\
+				\pcreturn \textrm{done}
+			}
+			\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{FindCover}^{\HASHO}(r, x, K)$}{%
+				\textrm{cover} \gets \emptyset; \,
+				\textrm{found} \gets \mathsf{False}\\
+				\set{I} \gets \emptyset; \,\textrm{tracker} \gets \zeros(k)\\
+				\hspace{-.5em}
+				\pcgraycomment{$R(K,x)[i]=\HASHO(\encode{i,K,x})$}\\
+				(p_1,p_2,\ldots,p_k) \gets R(K,x)\\
+				\pcwhile \textrm{not found}\\
+				\t \pcif q_H \ \HASHO\text{-queries made}\\
+				\t \t \pcreturn \emptyset\\
+				\t y \getsr \set{U}\setminus (\set{I} \cup \{x\})\\
+				\t \set{I} \gets \set{I} \cup \{y\}\\
+				\t (q_1,q_2,\ldots,q_k) \gets R(K,y)\\
+				\t \pcfor i \in [k]\\
+				\t \t \pcif p_i = q_i~\textbf{and}~\textrm{tracker}[i] < r\\
+				\t \t \t \textrm{cover} \gets \textrm{cover} \cup \{y\}\\
+				\t \t \t \textrm{tracker}[i]~+= 1\\
+				\t \pcif \mathsf{sum}(\textrm{tracker}) = rk\\
+				\t \t \textrm{found} \gets \mathsf{True}\\
+				\pcreturn \textrm{cover}
+			}
+		\end{pchstack}
+	}
+	\caption{Cover Set Attack for the CK in public
+		hash function setting. 
+%		We use $R(K,x)$ to mean $(\HASHO(\encode{1,K,x}),\HASHO(\encode{2,K,x},\ldots,\HASHO(\encode{k,K,x})))$.
+		The attack is parametrized with  the update and $\HASHO$ query budget $q_U$ and $q_H$.
+	}
+%\mia{The attck is 1-1 with CMS attack (Figure \ref{fig:attack-cms-hfcs}) with $\textrm{FindCover}^{\HASHO}(1,x,K)$ changing to $\textrm{FindCover}^{\HASHO}(2,x,K)$ (first line of the code)! So, I think that we do NOT need this code in the paper.}
+	\label{fig:attack-ck-hf2cs}
+\end{figure*}
+As our other attacks (for CMS and HK) in this setting, the CK attack (Figure~\ref{fig:attack-ck-hf2cs}) can be viewed as a two-step process.  In this setting, we find a 2-cover for target~$x$ using the $\HASHO$ oracle only, and then accumulate error for the target by repeatedly inserting the 2-cover. Each insertion of the 2-cover increases the error by one. The two cover can be inserted at least $\frac{q_U}{2k}$ as the size of the cover is~$\leq 2k$.
+We apply the same analysis used for the CMS attack, but replace $k(1 + L^1)$ with $k(1 + L^2)$ as the number of $\HASHO$-queries to complete the cover-finding step, as again, we now find a 2-cover. Assuming $q_U > 2k$ (so that any found $\set{C}$ can be inserted at least once)
+we arrive at
+%\begin{align}\label{eqn:pub-pub-pr-cover-qH-CK}
+$\mathbb{E}[\rverr] \geq \left\lfloor\frac{q_U}{2k}\right\rfloor \Pr\left[L^2 \leq \frac{q_H-k}{k}\right]$
+%\end{align}
+Using results from Section \ref{sec:cov-set} we can further obtain a concrete expression for $\Pr\left[L^2 \leq \frac{q_H-k}{k}\right]$. 
+
+\paragraph{Private hash and representation setting}
+\begin{figure*}[ht!]
+	%\Wider[2em]{
+		\centering
+		\begin{pchstack}[boxed,center,space=0.5em]
+		\begin{pcvstack}[space = 0.45em]
+	\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{CoverAttack}^{\UPO,\QRYO}(x, \bot, \bot)$}{%
+		\textrm{cover} \gets \textrm{FindCover}^{\UPO,\QRYO}( x)\\
+		\pcuntil q_U \ \UPO \text{-queries made:}\\
+		\t \pcfor e \in \textrm{cover}{:} \ \UPO(e)\\
+		\pcreturn \textrm{done}
+	}
+	\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{MinUncover}^{\UPO,\QRYO}(x, a', \text{cover})$}{%
+		b' \gets a' - 1\\
+		\pcwhile a' \not= b'\\
+		\t \pcif (q_U-|\textrm{cover}| + 1)\UPO\text{-} \\
+		\t \t \text{ or } q_Q \ \QRYO\text{-queries made:}\\
+		\t \t \t \pcreturn \textrm{cover}\\
+		\t b' \gets a'\\
+		\t \pcfor y \in \text{cover}: \UPO(y)\\
+		\t a' \gets \QRYO(x)\\
+		\pcreturn a'
+	}
+\end{pcvstack}
+\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{FindCover}^{\UPO,\QRYO}(x)$}{%
+	\pcgraycomment{find $2$- cover for x}\\
+	\textrm{cover} \gets \emptyset\\
+	\textrm{found} \gets \mathsf{False}\\
+	%			; \textrm{lessened} \gets \mathsf{False}\\
+	\set{I} \gets \emptyset; a \gets \QRYO(x) \\
+	\hspace{-.5em}
+	\pcwhile \textrm{not found} \\
+	\t \pcif q_U \ \UPO \text{- or } q_Q \ \QRYO\text{-queries made}\\
+	\t \t \pcreturn \textrm{cover}\\
+	\t y \getsr \univ \setminus (\set{I} \cup \{x\})\\
+	\t \set{I} \gets \set{I} \cup \{y\}\\
+	\t \UPO(y); \ a' \gets \QRYO(x)\\
+	\t \pcif a' \not= a: \\
+	\t \t \textrm{cover} \gets \{y\}\\
+	\t \t \textrm{found} \gets \mathsf{True}\\
+	\pcfor i \in [2, 3, \dots, 2 \cdot k]\\
+	\t a \gets \text{MinUncover}^{\UPO,\QRYO}(x, a', \text{cover}) \\
+	\t \pcif a = \textrm{cover}: \pcreturn \textrm{cover}\\
+	\t \pcfor y \in \set{I} \ \pcgraycomment{in order of insertion to $\set{I}$}\\
+	\t \t \pcif q_U \ \UPO \text{- or } q_Q \ \QRYO\text{-queries made}\\
+	\t \t \t \pcreturn \textrm{cover}\\
+	\t \t \UPO(y); a' \gets \QRYO(x) \\
+	\t \t \pcif a' \not= a: \\
+	\t \t \t \textrm{cover} \gets \textrm{cover} \cup \{y\}\\
+	%			This is just here so the algorithm is exactly the same for the CK!
+	\t \t \t \set{I} \gets \set{I} \setminus \{y\}\\
+	\t \t \t \textbf{break}\\
+	\pcreturn \textrm{cover} \ \pcgraycomment{cover is inserted at least once}
+}
+\end{pchstack}
+		%}
+	\caption{Cover Set Attack for the CK in private
+		hash function and representation setting. 
+		The attack is parametrized with the update query and query query budget -- $q_U$ and $q_Q$.}
+%\mia{The attck is 1-1 with CMS attack (Figure \ref{fig:attack-cms-iqcsa}) with $\textrm{FindCover}^{\UPO,\QRYO}(x)$, line \ref{alg:CMS:CK:change} changing to go up to $2k$! This is because we are now finding a two cover! Overall, I think that we do NOT need this code in the paper.}
+%\mia{@Sam I am hesitant to define $\textrm{FindCover}^{\UPO,\QRYO}(x)$ with argument $r$. I do not see if taking the algorithm with $r!=2$ would make any sense for CK (would find $r$ cover, even for $r=4$), or that the algorithm with $r!=1$ actually finds an $r$-cover for CMS.}
+%\mia{Is \textrm{FindCover} alg. name collision between the CMS and CK attack too confusing? (irrelevant if we do not have the code in the paper.)}
+	\label{fig:attack-ck-iq2csa}
+\end{figure*}
+
+Our CK attack for the setting (Figure~\ref{fig:attack-ck-iq2csa}) is essentially the same as the CMS attack, except a 2-cover (as opposed to a 1-cover) is detected and repeatedly inserted to build up the error. Using analysis similar to the CMS case and assuming~$q_Q$ is not the limiting factor,
+
+$$\rverr \geq 
+	\left \lfloor \left( \frac{\ell+1}{2} + \frac{1}{\ell}\left(q_U + \sum_{i=1}^{\ell-1}(\ell-i)\delta_i \right) - L^2 \right) \right\rfloor$$
+
+with~$\ell \leq 2k$ rounds to find a 2-cover. The error bound is similar to the one for the CMS attack, but with $L^1$ replaced with $L^2$ as now $|\streamvar{I}|$ is precisely~$L^2$.  
+
+For reasonable sizes of the CK we mainly expect $\ell = 2k$ (for the CMS case we expected $\ell{=}k$) and that $\mathbb{E}\left[\delta_1\right]$ are bounded by a constant that is small relative to $m, q_U/k$. Given that $k \ll m$, we expect the following to approximate $\mathbb{E}[\rverr]$:
+\begin{align*}
+	&\mathbb{E}\left[\left\lfloor \left( \frac{2k+1}{2} + \frac{1}{2k}\left(q_U + \sum_{i=1}^{2k-1}(2k-i)\delta_i \right) - L^2 \right) \right\rfloor\right]\approx \frac{q_u}{2k} -  \mathbb{E}[L^2].
+\end{align*}
+
+\paragraph{Public hash and private representation setting}
+As with the CMS, the attack and analysis from the public hash and representation setting applies.
+
+\paragraph{Private hash and public representation setting}
+This attack (Figure~\ref{fig:attack-ck-io2csa}) is one-to-one with the CMS attack in the same setting, but again we find 2-cover as opposed to a 1-cover. Hence,
+$\mathbb{E}[\rverr] \geq \frac{q_U-1-\mathbb{E}\left[L^2\right]}{2k} \gtrapprox \frac{q_U-1-2mH_k}{2k}.
+$
+%$
+%\mathbb{E}[\rverr] \geq \Pr[L^2 \leq \ell_U - 1] \left(\floor(\frac{q_U-\ell_U}{2k}) + 1\right)
+%$
+\begin{figure*}[ht!]
+	\centering
+	\begin{pchstack}[boxed,center, space=0.5em]
+		\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{CoverAttack}^{\UPO,\QRYO}(x, \bot, \repr)$}{%
+			\textrm{cover} \gets \textrm{FindCover}^{\UPO}(2,x, \repr)\\
+			\pcuntil q_U \ \UPO \text{-queries made:}\\
+			\t \pcfor e \in \textrm{cover}{:} \ \UPO(e)\\
+			\pcreturn \textrm{done}
+		}
+		\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{FindCover}^{\UPO}(r, x, \repr)$}{%
+			\left<M, A\right> \gets \repr\\
+			\textrm{cover} \gets \emptyset; \,
+			\textrm{found} \gets \mathsf{False}\\
+			\set{I} \gets \emptyset; \,\textrm{tracker} \gets \zeros(k)\\
+			\left<M', A'\right> \gets \UPO(x)\\
+			\pcgraycomment{compute $x$'s indices}\\
+			\pcfor i \in [k] \\
+			\t \pcfor  j \in [m]\\
+			\t \t \pcif M'[i][j] \not= M[i][j]\\
+			\t \t \t  p_i \gets j; \textbf{break};\\
+			\hspace{-.5em}
+			\pcwhile \textrm{not found}\\
+			\t \pcif q_U \ \UPO\text{-queries made}:\pcreturn \emptyset\\
+			\t y \getsr \set{U}\setminus (\set{I} \cup \{x\})\\
+			\t \set{I} \gets \set{I} \cup \{y\}\\
+			\t  \left<M, A\right> \gets \left<M', A'\right> \\
+			\t \left<M', A'\right>  \gets \UPO(y) \\
+			\t \pcgraycomment{compute $y$'s indices}\\
+			\t \pcfor i \in [k] \\
+			\t \t \pcfor  j \in [m]\\
+			\t \t \t \pcif M'[i][j] \not= M[i][j]\\
+			\t \t \t  \t q_i \gets j; \textbf{break};\\
+			\t \pcfor i \in [k]\\
+			\t \t \pcgraycomment{compare $x$'s and $y$'s indices row by row}\\
+			\t \t \pcif p_i = q_i~\textbf{and}~\textrm{tracker}[i] < r\\
+			\t \t \t \textrm{cover} \gets \textrm{cover} \cup \{y\}\\
+			\t \t \t \textrm{tracker}[i]~+= 1\\
+			\t \pcif \mathsf{sum}(\textrm{tracker}) = rk\\
+			\t \t \textrm{found} \gets \mathsf{True}\\
+			\pcreturn \textrm{cover}
+		}
+	\end{pchstack}
+	\caption{Cover Set Attack for the CK in private
+		hash function and public representation setting. 
+		The attack is parametrized with  the update query budget $q_U$.
+	}
+	%\mia{The attck is 1-1 with CMS attack (Figure \ref{fig:attack-cms-iocsa}) with $\textrm{FindCover}^{\UPO,\QRYO}(1,x,\repr=M)$ changing to $\textrm{FindCover}^{\UPO,\QRYO}(2,x,\repr=\left<M,A\right>)$ (first line of the code), and algorithm FindCover only using CMS's part ('half') of the representation to find element's indices (or similarly HK's part of the representation - it is equivalent). So,do we need this code in the paper?}
+	\label{fig:attack-ck-io2csa}
+\end{figure*}
+
+\paragraph{Attack Comparisons}
+\begin{table*}[htb!]
+	\centering
+	\begin{tabular}{|c|ccc|ccc|}
+	\hline
+						 & \multicolumn{3}{c|}{\textbf{Public Hash Setting}}                                                                & \multicolumn{3}{c|}{\textbf{\begin{tabular}[c]{@{}c@{}}Private Hash,\\ Private Rep Setting\end{tabular}}}       \\ \hline
+	\textbf{Structure}   & \multicolumn{1}{c|}{$|\mathrm{cover}|$} & \multicolumn{1}{c|}{Experimental~$\rverr$} & $\mathbb{E}[\rverr]$ & \multicolumn{1}{c|}{$|\mathrm{cover}|$} & \multicolumn{1}{c|}{Experimental~$\rverr$} & $\mathbb{E}[\rverr]$ \\ \hline
+	$\CK,(m=682,k=4)$    & \multicolumn{1}{c|}{$7.96$}             & \multicolumn{1}{c|}{$131821.00$}                & $131072.00$          & \multicolumn{1}{c|}{$7.96$}             & \multicolumn{1}{c|}{$130796.69$}                & $127432.90$          \\ \hline
+	$\CMS, (m=2048,k=4)$ & \multicolumn{1}{c|}{$3.99$}             & \multicolumn{1}{c|}{$263017.82$}                & $262144.00$          & \multicolumn{1}{c|}{$3.99$}             & \multicolumn{1}{c|}{$261116.16$}                & $257877.34$         \\ \hline
+	$\HK, (m=1024,k=4)$  & \multicolumn{1}{c|}{$3.99$}             & \multicolumn{1}{c|}{$1047502.69$}               & $1047500.00$         & \multicolumn{1}{c|}{$4.0$}              & \multicolumn{1}{c|}{$1038804.55$}               & $1038018.54$        \\ \hline
+	$\CK,(m=1365,k=8)$   & \multicolumn{1}{c|}{$15.97$}            & \multicolumn{1}{c|}{$65667.10$}                 & $65536.00$           & \multicolumn{1}{c|}{$15.93$}            & \multicolumn{1}{c|}{$63776.52$}                 & $56618.28$          \\ \hline
+	$\CMS, (m=4096,k=8)$ & \multicolumn{1}{c|}{$8.00$}             & \multicolumn{1}{c|}{$131072.00$}                & $131072.00$          & \multicolumn{1}{c|}{$7.99$}             & \multicolumn{1}{c|}{$127029.66$}                & $119939.65$         \\ \hline
+	$\HK, (m=2048,k=8)$  & \multicolumn{1}{c|}{$7.96$}             & \multicolumn{1}{c|}{$1046434.76$}               & $1046424.00$         & \multicolumn{1}{c|}{$7.98$}             & \multicolumn{1}{c|}{$1007439.04$}               & $996946.87$         \\ \hline
+	\end{tabular}
+	\caption{A comparison of~$\rverr$ accumulated by the different structures during attacks in the public hash setting and the private hash, private representation setting. We give the average size of the cover set and average error accumulated in each structure, setting pair over the~$100$ experiment trials. We also give the~$\mathbb{E}[\rverr]$ according to our analysis. }
+	\label{tab:attack-comp}
+\end{table*}
+We implemented our attacks against all structures in all settings to experimentally verify their correctness and our analysis. In Table~\ref{tab:attack-comp} we present a summary of results for the public hash setting (our least restrictive setting) and the private hash, private representation setting (our most restrictive setting.). We experiment on two sets of parameters, one fixing~$k=4$ and the other~$k=8$. We then select a reasonable value of~$m$ for CMS and then half it for HK and third it for CK so that the same space is used in each structure. We fix adversarial resources such that~$q_H,q_U,q_Q = 2^{20}$. In practice this ensures that the number of~$\HASHO$ queries or~$\QRYO$ queries will not be the bottleneck in our attacks and that we are able to generate sufficient error in each attack to showcase overall trends. We run each attack setting and structure pairing over~$100$ trials, selecting a random target in each trial, and average the results. 
+
+Observe the pattern that when holding~$k$ constant and setting reasonable~$m$ values, adjusting such that CMS, CK, and HK use the same space, attacks against CK generate the least amount of error. The attacks against CK produce about half of the amount of error as opposed to the CMS attacks, and about~$q_U - \frac{q_U}{2k}$ less the amount of error as opposed to the HK attacks. Moreover, observe that our analytical results closely match those of our experimental results. 

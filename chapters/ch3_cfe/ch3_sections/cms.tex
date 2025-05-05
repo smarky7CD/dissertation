@@ -1,0 +1,15 @@
+\figref{fig:cms} gives a pseudocode description of the count-min sketch (CMS), in our syntax. An instance of CMS consists of a $k \times m$ matrix~$M$ of (initially zero) counters, and a mapping~$R$ between the universe~$\set{U}$ of elements and $[m]^k$. 
+An element~$x$ is added to the CMS representation by computing $R(K,x){=}\,(p_1,p_2,\ldots,p_k)$, and then adding~$1$ to each of the counters at $M[i][p_i]$.  
+Traditionally, it is assumed that $(p_1,\ldots,p_k){=}\,(h_1(x),\ldots,h_k(x))$ where the~$h_i$ are sampled at initialization from some family~$H$ of hash functions, 
+but we generalize here to make the exposition cleaner, and to allow for the mapping to depend upon secret randomness (i.e., a key~$K$).  
+
+The point query $\Qry(\qry_x)$ returns $\hat{n}_x\allowbreak{=}\,\min_{i \in [k]} \{M[i][p_i]\}$.  We note that (in the insertion-only model) it must be that $\hat{n}_x \geq n_x$. To see this, 
+let $V^{i}_{x}{=}\,\{y \in \streamvar{S} \,|\, y\neq x \mbox{ and } R(y)[i]=p_i\}$ be the set of elements that ``collide'' with~$x$'s counter in the $i$-th row.  Then we can write $M[i][p_i]{=}\,n_x + \sum_{y \in V^i_x }n_y$, where $n_y \,{\geq}\, 0$.
+Viewed this way, we see that a CMS estimate~$\hat{n}_x$ minimizes the ``collision noise'', i.e., 
+$\hat{n}_x {=}\, n_x + \min_{i \in [k]}\{\sum_{y \in V^i_x }n_y\}$.
+
+For any~$\epsilon,\delta \, {\geq}\, 0$, any~$x {\in}\, \set{U}$, and any stream~$\streamvar{S}$ (over~$\set{U}$) of length $N$, it is guaranteed that $\Prob{\hat{n}_x - n_x \,{>}\, \epsilon N} \,{\leq}\, \delta$ when:
+ (1)~$k\,{=}\,\lceil \ln\frac{1}{\delta}\rceil$, $m\,{=}\,\lceil \frac{e}{\epsilon} \rceil$, and (2)~$\allowbreak R(K,x)=(h_1(K\concat x),h_2(K \concat x),\ldots,h_k(K \concat x))$ 
+for $h_i$ that are uniformly sampled from a pairwise-independent hash family~$H$~\cite{cormode2005improved}.
+Implicitly, there is a third requirement, namely (3) the stream and the target~$x$ are independent of the internal randomness of the structure (i.e., the coins used to sample the $h_i$).
+This is equivalent to saying that the stream~$\streamvar{S}$ and the target~$x$ are determined before the random choices of the structure are made. 

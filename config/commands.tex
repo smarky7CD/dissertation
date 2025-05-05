@@ -45,6 +45,13 @@
 ]{cryptocode}
 \usepackage{thmtools, thm-restate}
 \usepackage{adjustbox}
+\newcommand\Wider[2][3em]{%
+	\makebox[\linewidth][c]{%
+		\begin{minipage}{\dimexpr\textwidth+#1\relax}
+			\raggedright#2
+		\end{minipage}%
+	}%
+}
 
 % Editorial
 \renewcommand{\paragraph}[1]{\smallskip\noindent\textbf{#1}.}

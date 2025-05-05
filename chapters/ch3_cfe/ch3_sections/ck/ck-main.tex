@@ -1,0 +1,16 @@
+In Figure~\ref{fig:ck} we present the Count-Keeper (CK) data structure.  At a high level, CK uses information from both CMS and HK (with $d=1$) to create frequency estimates that are more accurate than either CMS or HK (alone) when the stream is ``honest", and that are more robust in the presence of adversarial streams.  After describing the structure, we will provide analytical support for its design, i.e., why it is more accurate and robust.  To summarize this very briefly and informally: CK is more accurate because its HK component can decrease the effect of ``collision noise" that drives up the values held at the relevant $M[i][p_i]$ in the CMS component; and it is more robust because a 1-cover no longer suffices to create estimation errors (minimally, a 2-cover is needed) and, unlike either CMS or HK alone, CK can detect when the state of $M,A$ is ``abnormal" and prone to producing spurious estimates.
+
+\subsection{Structure}
+\input{chapters/ch3_cfe/ch3_sections/ck/structure.tex}
+
+%\subsection{Analysis}
+\input{chapters/ch3_cfe/ch3_sections/ck/analysis.tex}
+
+\subsection{Experimental Results}\label{sub-sec:experiments}
+\input{chapters/ch3_cfe/ch3_sections/experiments.tex}
+
+\subsection{Attacks Against the CK}\label{sub-sec:ck-attacks}
+\input{chapters/ch3_cfe/ch3_sections/ck/ck-attacks.tex}
+
+\subsection{Adversarial Robustness}\label{sub-sec:ck-flags}
+\input{chapters/ch3_cfe/ch3_sections/ck/robustness.tex}

@@ -1,0 +1,49 @@
+\begin{figure}[thp]
+    \begin{pchstack}[boxed,center,space=0.5em]
+    \begin{pcvstack}[space=0.45em]
+            \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\Rep_{K}(\setS)$}{%
+                \pcgraycomment{initialise $k\times m$ (fp,cnt) 2-d array}\\
+                \pcfor i \in [k] \\
+                \t A[i] \gets [(\star,0)]\times m\\
+                \pcfor x \in \setS \\
+                \t A \gets \Up_{K}(A,\up_{x})\\
+                \pcreturn A
+            }
+%
+            \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\Qry_{K}(A,\qry_x)$}{%
+                (p_1,\ldots,p_k) \gets R(K,x) \\
+                \mathrm{fp}_{x} \gets T(K,x)\\
+                \cnt_x \gets 0\\
+                \pcfor i \in [k] \\
+                \t \pcif  A[i][p_i].\fp = \fp_x \\
+                \t \t \cnt {\gets} {A[i][p_i]}.\cnt\\
+                \t \t  \cnt_x{\gets}{\max}\left\{\cnt_x, \cnt\right\}\\
+                \pcreturn \cnt_x
+            }
+        \end{pcvstack}
+    
+		\begin{pcvstack}[space=0.45em]
+            \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\Up_{K}(A,\up_x)$}{%
+                (p_1,\ldots,p_k) \gets R(K,x) \\
+                \mathrm{fp}_{x} \gets T(K,x)\\
+                \pcfor i \in [k]\\
+                %						\t\pcgraycomment{model behaviour for a specific $d$} \\
+                \t{\pcif} A[i][p_i].\fp \, {\not\in} \{\fp_x, {\star}\}
+                \label{line:A:decremenatcountstart}\\
+                \t \t r \getsr \left[0,1\right)\\
+                \t \t \pcif r \leq d^{A[i][p_i].\cnt}\\
+                \t\t\t A[i][p_i].\cnt \,{-}{=}\, 1\label{line:A:decremenatcountfin}\\
+                \pcgraycomment{overtake the counter if $0$}\label{line:A:overtakebucketstart}\\
+                \t\pcif  A[i][p_i].\cnt = 0 \\
+                \t\t A[i][p_i].\fp  \gets \fp_x \label{line:A:overtakebucketexe}\label{line:A:overtakebucketfin}\\\
+                \pcgraycomment{increase the count if $\fp = \fp_x$}\label{line:A:adjustcountstart}\\
+                \t\pcif A[i][p_i].\fp = \fp_x \\
+                \t\t A[i][p_i].\cnt \,{+}{=}\, 1 \label{line:A:adjustcountfin}\\ 
+                \pcreturn A 
+            }
+			\end{pcvstack}
+    
+    \end{pchstack}
+\caption{Keyed structure $\HK[R,T,m,k,d]$ supporting point-queries for any potential stream element~$x\in\univ$ ($\qry_x$). The parameters are a function $R: \keys\by\univ \to [m]^k$, a function $T: \keys\by\univ \to \bits^n$ for some desired fingerprint length~$n$, decay probability $0<d\leq1$, and integers $m,k\geq 0$.} 
+\label{fig:hk}
+\end{figure}

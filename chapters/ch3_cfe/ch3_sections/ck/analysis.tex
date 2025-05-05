@@ -1,0 +1,62 @@
+\subsection{Frequency estimate errors} 
+In this section we extend the frequency estimation error analysis of CMS to CK.  We have already seen that the CK estimate is never worse than the CMS estimate; in this section, we explore how much better it can be.
+
+We begin with a simple theorem about the relationship between $\Theta_1$ and the plain CMS estimate.
+\begin{theorem}\label{thm:cmsmin-noIx:Theta1-cms-relation}
+	%	Let $\Theta_1$ be as defined in the line \ref{line:ck:finaloverest}.
+	Fix an $x\in\set{U}$, and let $i^{*}$ be any row index such that $\CMS(x) = M[i^*][p_{i^*}]$. 
+	If $i^{*} \in \hat{I}_x$ then either $\CK(x)=n_x$, or $\left(\Theta_1 \leq \frac{\CMS(x)}{2}\right)$. \hfill$\blacklozenge$
+\end{theorem}
+\begin{proof}If any $A[i][p_{i}], i \in [k]$ has an uninitialized fingerprint, then $\CK(x)=n_x=0$.  Now assume this is not the case, so that $A[i][p_i].\cnt \geq 1$ for all the counters associated to~$x$.  By definition $\Theta_1 = \min_{i \in \hat{I}_x} \Theta_1^i \leq \Theta_1^{i^{*}}$, and so
+	$
+	\Theta_1 \leq \frac{M[i^{*}][p_{i^{*}}]-A[i^{*}][p_{i^{*}}].\cnt + 1}{2} \leq \frac{\CMS(x)}{2}
+	$.
+\end{proof}
+
+\noindent 
+Next, a similar theorem relating $\Theta_2$, the plain CMS estimate, and the HK estimate (when $d=1$).
+\begin{theorem}\label{thm:cmsmin-Ix:Theta2-cms-relation}
+	%	Let $\Theta_2$ be as defined in the line \ref{line:ck:finaloverest}.
+	~Fix an $x \in \set{U}$, and let $i^{*}$ be any row index such that $\CMS(x) = M[i^*][p_{i^*}]$. If $i^{*} \in I_x$ then either $\CK(x)=n_x$ or $\left(\Theta_2 \leq \frac{\CMS(x) + \HK(x)}{2}\right)$. \hfill$\blacklozenge$
+\end{theorem}
+\begin{proof} 
+	If any $A[i][p_{i}], i {\in} [k]$ has an uninitialized fingerprint, then $\CK(x)=n_x=0$.
+	Now assume this is not the case, so $A[i^{*}][p_i^{*}].\cnt \leq \max_{i \in \set{I}_x}A[i][p_{i}]=\HK(x)$.
+	We have, $\Theta_2 { =}\, \min_{i \in I_x} \Theta_2^i \leq \Theta_2^{i^{*}} = \frac{M[i^{*}][p_i^{*}]+A[i^{*}][p_i^{*}].\cnt}{2} \leq \frac{\CMS(x) + \HK(x)}{2}$.
+\end{proof}
+
+\noindent
+Now, if $\CK(x)$ is determined by line \ref{line:UB=LB:finish} of Figure~\ref{fig:ck}, then $\CK(x) = \frac{\CMS(x) + \HK(x)}{2}$.  On the other hand, if $\CK(x)$ is determined by line \ref{line:ck:est0}, then
+$\CK(x)= 0 \leq \frac{\CMS(x) + \HK(x)}{2}$.  If neither of these holds, $\CK(x)=\floor(\min \{\Theta_1, \Theta_2\})$. Thus, Theorem \ref{thm:cmsmin-noIx:Theta1-cms-relation} and \ref{thm:cmsmin-Ix:Theta2-cms-relation} imply 
+$\floor(\min \{\Theta_1, \Theta_2\}) \leq \frac{\CMS(x) + \HK(x)}{2}$, giving us the following lemma.
+\begin{lemma}\label{lma:est:cms:hk:2}For any $x \in \set{U}$, $\CK(x) \leq \frac{\CMS(x) + \HK(x)}{2}$.\hfill$\blacklozenge$
+\end{lemma}
+
+\noindent
+From here, it is straightforward to bound the CK estimation error, giving us the main result of this section. 
+\begin{restatable}{corollary}{corrErrCMSHK}\label{cor:esterror:CMSHK}
+	Let $x \in \univ$.  If the stream satifies the NFC condition, then $\CK(x) - n_x \leq \frac{\CMS(x) - \HK(x)}{2}$. \hfill$\blacklozenge$
+\end{restatable}
+
+\begin{proof}[Proof of corollary \ref{cor:esterror:CMSHK}]
+	The NFC condition gives $\CK(x)  \,{\geq}\,  n_x \,{\geq}\,  \HK(x)$, and
+	$\CK(x) - n_x \,{\leq}\, \CK(x)- \HK(x)$. So, by Lemma \ref{lma:est:cms:hk:2} we arrive at
+\begin{align*}
+	\CK(x) - n_x &\leq \left(\frac{\CMS(x) + \HK(x)}{2}\right) - n_x \\
+		&\leq \left(\frac{\CMS(x) + \HK(x)}{2}\right) - \HK(x)\\
+	&\leq \frac{\CMS(x) - \HK(x)}{2}.
+\end{align*}
+\end{proof}
+
+
+\paragraph{Consequences of Corollary~\ref{cor:esterror:CMSHK}}
+First, as $\CMS(x)$ and $\HK(x)$ approach each other ---~even if both are large numbers (e.g. when the stream is long and~$x$ is relatively frequent)~--- the error in $\CK(x)$ approaches \emph{zero}.
+
+%\smnote{You also need all the~$A[i][p_i].\cnt$ to which~$x$ maps to be small~$\approx 1$, as otherwise we will get a nice correction on the estimate using~$\Theta_2$. It is less about whether~$x$ actually owns any of its counters.}
+Next, because CMS is a count-all structure, the \emph{worst case} guarantee is that the error $\CK(x)-n_x \leq \CMS(x)/2$, i.e., when $\HK(x)=0$.  This occurs iff~$x$ does not own any of its counters, which implies that~$x$ is not the majority element in \emph{any} of the substreams observed by the positions $A[i][p_i].\cnt$ to which~$x$ maps. 
+As $M[i][p_i]$ observes the same substream as $A[i][p_i]$, and $\CMS(x)=\allowdisplaybreaks\min_{i \in [k]}\{M[i][p_i]\}$, for practical values of $k,m$ it is unlikely that all~$k$ of the $V^i_x$ have unexpectedly large numbers of elements.  Moreover, for typical distributions seen in practice (e.g., power-law distributions that have few true heavy elements), it is even less likely that \emph{all} of the~$V^i_x$ contain a heavy hitter.  Thus under ``honest'' conditions, we do not expect $\CMS(x)$ be very large when $\HK(x)$ is very small.
+
+This last observation surfaces something that CK can provide, and neither CMS nor HK can: the ability to signal when the incoming stream is atypical. We explore this in detail in Section~\ref{sub-sec:ck-flags}.
+
+
+

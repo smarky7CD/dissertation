@@ -1,0 +1,155 @@
+At initialization, the CK initializes a standard CMS (initialized in the structure as~$M$) and a HK with the decay parameter~$d=1$ (initialized in the structure as~$A$) in their usual way. We set the substructures to be of the same number of rows and buckets and let the elements hash to the same counters' positions in each substructure using the same row hash functions. 
+
+%The update procedure for the CK is a combination of that of the CMS and HK.
+%, except for the latter case, we drop the notion of probabilistic decay (i.e., setting $d=1$).
+% and just always decrement the counter on a fingerprint mismatch.
+To insert a stream element~$x$ arrives, we run the CMS and HK update procedures $M\gets\Up^{\CMS}_{K}(M,\up_x)$ and $A\gets\Up^{\HK}_{K}(M,\up_x)$, respectively.  We note that the same positions $(p_1,\ldots,p_k) \gets R(K,x)$ are visited in both procedures; thus the same elements are observed by $M[i][p_i]$ and $A[i][p_i]$.  By ``observed", we mean that both $M[i][p_i]$ and $A[i][p_i]$ maintain summary information about the same substream, namely the substream of elements~$z$ such that $p_i\,{=}\,R(K,z)[i]$.
+
+
+\input{chapters/ch3_cfe/ch3_sections/ck/ck-code-fig.tex}
+
+When queried for the frequency estimate of an element $x\in \set{U}$, CK first computes the CMS and HK estimates, which we will write as CMS($x$) and HK($x$) for brevity. If CMS($x$)=HK($x$), then we return their shared response.  We will see precisely why this is the correct thing to do, but loosely, it is because (under the NFC assumption) $\HK(x) \leq n_x \leq \CMS(x)$.  If $\CMS(x) \neq \HK(x)$ then CK proceeds row-by-row, using the information held at $A[i][p_i]$ to refine the summary information held at $M[i][p_i]$.  
+If any of the $A[i][p_i].\fp$ are uninitialized, then we are certain that~$n_x=0$; had \emph{any} stream element been mapped to this position, the fingerprint would no longer be uninitialized.
+%\footnote{Equivalently, we could conclusively return zero if any of the $M[i][p_i]=0$.}
+In this case, CK($x$) returns 0.
+
+%To explain this, recall our previously established notation $V^i_{x}\,{=}\,\{y \neq x \in \streamvar{S} \;|\; R(y)[i]=p_i=R(x)[i]\}$, i.e., the
+%set of elements that ``collide" with a target element~$x$ in the CK structure. In particular, note that 
+%if $y \in V^i_x$ then~$y$ covers the $i$-th row counter associated to~$x$, in both the CMS and HK portions of CK.
+
+Now assume that none of the $A[i][p_i]$ have uninitialized fingerprints, and $\CMS(x) \neq \HK(x)$. To explain our row-by-row refinements, let us define two sets  
+$I_x\,{=}\,\{i \in [k] \;|\; A[i][p_i].\fp\,{=}\,\fp_x \}$ and $\hat{I}_x\,{=}\,\{i \in [k] \;|\; A[i][p_i].\fp \neq \fp_x \}$, 
+i.e., the subset of rows in~$M$ (and~$A$) that are ``owned" and not ``owned" (resp.) by~$x$.  
+Observe that we can write the CMS estimate for~$x$ as
+\[
+\mathrm{CMS}(x)
+%=\min_{i \in [k]}\{M[i][p_i ]\}
+=\min \left\{    
+\min_{i \in I_x}\left\{M[i][p_i]  \right\},
+\min_{i \in \hat{I}_x}\left\{M[i][p_i]  \right\}
+\right\}
+\]
+so for each row $i\in[k]$, we have two cases to consider.  For each case, CK maintains an internal estimator: when $i \in \hat{I}_x$ the estimator is~$\Theta^i_1$, and when $i \in I_x$ the estimator is $\Theta^i_2$.  We will talk about each of these, next. The upshot of this discussion is that CK defines $\Theta_1\,{=}\,\min_{i \in \hat{I}_x}\{\Theta^i_1\}$, $\Theta_2\,{=}\,\min_{i \in I_x}\{\Theta^i_2\}$, and its return value $\lfloor\min\{\Theta_1,\Theta_2\}\rfloor$ is always at least as good as $\CMS(x)$.  
+% Later we will argue that the CK estimate can be significantly more precise than the CMS estimate.\tsnote{What about the HK estimate?!}  
+ 
+
+\subsection{Correcting CMS and Correctness of CK}
+In what follows, we will assume the NFC condition. For sufficiently large fingerprints (e.g., $\tau$-bit fingerprints where $2^\tau$ is much larger than the number of distinct elements in the stream) this is reasonable.  Under this assumption, CK may only overestimate the value of~$n_x$.
+
+%\mia{Tom: Make sure that we point out we cover all the cases with the thetas. Most of it is already in the below; possibly add one 'killer' sentence.}
+\paragraph{Correcting ${M[i][p_i]}$ when ${x}$ does not ``own" ${A[i][p_i]}$}
+By its design as a count-all structure, the value of $M[i][p_i]=n_x + \sum_{y \in V^i_x}n_y$.  When $i \in \hat{I}_x$, we claim that $n_x \leq \sum_{y \in V^i_x}n_y$.  To see this, observe that if $n_x > \sum_{y \in V^i_x}n_y$ then~$x$ \emph{would} own $A[i][p_i]$: we can pair up appearances of~$x$ with appearances of elements in $y \in V^i_x$, and because no element of $V^i_x$ has the same fingerprint as~$x$, each pair $(x,y)$ effectively contributes 0 to the value of $A[i][p_i].\cnt$. So if $n_x > \sum_{y \in V^i_x}n_y$, the fingerprint held at $A[i][p_i]$ would be $\fp_x$.  Note that if $n_x\,{=}\,\sum_{y \in V^i_x}n_y$ and $i \in \hat{I}_x$, then $A[i][p_i].\cnt=1$ and some $y \neq x$ was the last insertion.  Thus, $A[i][p_i]-1$ is a lowerbound on the difference $\sum_{y \in V^i_x}n_y - n_x$, i.e., the number of occurrences of $y \in V^i_x$ that are not canceled out by an occurrence of~$x$.  Thus, $n_x + A[i][p_i]-1 \leq \sum_{y \in V^i_x}n_y$, which implies that $M[i][p_i]=n_x + \sum_{y \in V^i_x}n_y \leq 2n_x + A[i][p_i]-1$.
+%
+
+\begin{restatable}{lemma}{lmaThetaOne}\label{lma:fx:MA:Theta1}
+	Let~$\streamvar{S}$ satisfy the NFC condition, and let $x \in \set{U}$.  Then for any $i \in \hat{I}_x$ we have
+	$n_x \leq \frac{M[i][p_i] - A[i][p_i].\cnt +1}{2}\,{=}\,\Theta^i_1$.
+	\hfill$\blacklozenge$
+\end{restatable}
+
+\begin{proof}[Proof of Lemma~\ref{lma:fx:MA:Theta1}]
+    We can think of the counter $A[i][p_i].\cnt$ as counting the depth of a stack of fingerprint-labeled plates.  The rules of the stack are as follows.  Upon insertion of~$x$ into the CK structure: 
+    \begin{enumerate}
+        \item[1.] if $A[i][p_i].\cnt=0$ then the stack is empty; then push an $\fp_x$-labeled plate and set $A[i][p_i].\cnt \gets 1, A[i][p_i].\fp \gets\fp_x$.
+        \item[2(a).] if $A[i][p_i].\cnt=c>0$ and $A[i][p_i].\fp =\fp_x$, then push an $\fp_x$-labeled plate on to the stack and increment $A[i][p_i].\cnt \gets c+1$.
+        \item[2(b).]if $A[i][p_i].\cnt=c > 0$ and $A[i][p_i].\fp \neq \fp_x$, then pop the top ($\fp$-labeled) plate and decrement $A[i][p_i].\cnt \gets c-1$.  If this causes $A[i][p_i].\cnt=0$, then push an $\fp_x$-labeled plate and set $A[i][p_i].\cnt\gets 1, A[i][p_i].\fp \gets \fp_x$.
+    \end{enumerate}
+    These stack rules are precisely the CK rules for handling insertions.  Now, upon the first insertion to CK, by rule 1 it is clear that all plates on the stack (there is only one of them) have label $A[i][p_i].\fp$, and $A[i][p_i].\cnt$ is the number (1) of plates on the stack.  Inductively, assume that $A[i][p_i].\cnt=c>0$ and all~$c$ of the 
+    plates on the stack have the same label $A[i][p_i].\fp$.  Say that the next insertion is~$z$ and $A[i][p_i].\fp=\fp_z$.  By rule 2(a), we push an $\fp_z$-plate on to the stack and increment $A[i][p_i].\cnt \gets c+1$.  In this case, by assumption, it remains the case that all 
+    plates have the same label equal to $A[i][p_i].\fp$, and there are $c+1$ of them. Alternatively, if $ A[i][p_i].\fp \neq \fp_z$ then by rule 2(b) we pop the top plate and decrement $A[i][p_i].\cnt \gets c -1$.  At this point, either the stack is empty and $A[i][p_i].\cnt=0$, 
+    so by 2(b) we push an $\fp_z$-plate and set $A[i][p_i].\cnt \gets 1$ and $A[i][p_i].\fp \gets \fp_z$; or the stack is not empty, and we take no further action.  In the first case, the stack contains a single plate labeled with $A[i][p_i].\fp$ and the 
+    counter is 1; in the second, by assumption all plates on the stack are still labeled with  $A[i][p_i].\fp$, and $A[i][p_i].\cnt$ still gives the number of plates on the stack.
+    
+    Having shown the invariant of the stack, we make the following observation.  
+    Let $\tilde{n} =  \sum_{y\in V_x^i} n_y$. Then $M[i][p_i] = n_x + \tilde{n}$. By the statement of the lemma $i \in \hat{I}_x$, implying that $A[i][p_i].\fp \neq \fp_x$.  
+    We claim that $A[i][p_i].\cnt=c>0$ implies $\tilde{n}-n_x \geq A[i][p_i].\cnt-1$. To see this, note that $A[i][p_i].\cnt=c>0$ means that there are~$c$ plates labeled with~$A[i][p_i].\fp \neq \fp_x$ on the stack associated to $c$ insertions of elements in $V_x^i$ with fingerprint $A[i][p_i].\fp$. If there ever were any $\fp_x$-labeled plates on the stack (i.e., $n_x >0$), they were subsequently popped off by insertions of elements with their fingerprints not equal to $\fp_x$.  
+    On the other hand, if an insertion of $x$ did not place a plate on to the stack, then it popped off a plate corresponding to an insertion of an element in $V_x^i$. Thus, at most $\tilde{n}-n_x$ insertions of elements in  
+    $V_x^i$ have never popped off a plate of $x$, or had their plate popped off by an insertion of $x$.
+    For $\tilde{n}-n_x = 0$ we have that $A[i][p_i].\cnt=1$,
+    and $\tilde{n}-n_x \geq A[i][p_i].\cnt - 1$.  Similarly, if $\tilde{n}-n_x = d > 0$ then
+    $\tilde{n}-n_x \geq A[i][p_i].\cnt - 1$ as there are still $A[i][p_i].\cnt$ plates associated with insertions of elements in $V_x^i$ that
+    have never been popped off and at least $A[i][p_i].\cnt-1$ of them correspond to insertions not popping off a plate of $x$. 
+    
+    We conclude that 
+    $
+    M[i][p_i] = n_x + \tilde{n} \geq n_x + (n_x + A[i][p_i].\cnt -1) = 2n_x +  A[i][p_i].\cnt -1
+    $.  Or, by rearranging,
+    \[
+    n_x \leq \frac{M[i][p_i] - A[i][p_i].\cnt + 1}{2}
+    \] 
+    which proves the lemma.
+\end{proof}
+
+\noindent
+As this lemma holds for every $i \in \hat{I}_x$, we conclude that $n_x \leq \Theta_1=\min_{i \in \hat{I}_x}\{\Theta^i_1\} \leq \min_{i \in \hat{I}_x}\{M[i][p_i]\}$.  
+%Hence, $\min \left\{  \min_{i \in I_x}\left\{M[i][p_i]  \right\}, \min_{i \in \hat{I}_x}\{\Theta^i_1\} \right\} \leq \mathrm{CMS}(x)$.
+
+\paragraph{Correcting $M[i][p_i]$ when $x$ does ``own" $A[i][p_i]$}
+Now, say that row~$i \,{\in}\, I_x$. Under the NFC condition
+%we have $n_x \geq A[i][p_i].\cnt$, and 
+$A[i][p_i].\cnt$ stores the number of occurrences of $x$ that are \textit{not} canceled out by occurrences of~$y \,{\in}\, V^i_x$. So,  
+we must have had at least $\sum_{y \in V^i_x}n_y \,{\geq}\, n_x - A[i][p_i].\cnt$ occurrences of~$y \in V^i_x$. This implies $M[i][p_i] 
+%= n_x + \sum_{y \in V^i_x} n_y 
+\,{\geq}\, 2n_x  - A[i][p_i].\cnt$, and, by rearranging, $n_x \,{\leq}\,  \frac{M[i][p_i] + A[i][p_i].\cnt}{2}$. This sketches a proof of the following lemma, whose full proof appears in Appendix~\ref{sec:app_ck}.
+
+\begin{restatable}{lemma}{lmaThetaTwo}\label{lma:fx:MA:Theta2}
+Let~$\streamvar{S}$ satisfy the NFC condition, and let $x \in \set{U}$.  Then for any $i \in I_x$ we have
+		$n_x \leq  \frac{M[i][p_i] + A[i][p_i].\cnt}{2} =\Theta_2^i$.
+%	\end{align}
+	\hfill$\blacklozenge$
+\end{restatable}
+
+\begin{proof}[Proof of Lemma~\ref{lma:fx:MA:Theta2}]
+	We can think of the counter $A[i][p_i].\cnt$ as counting the depth of a stack of fingerprint-labeled plates as for the proof of Lemma \ref{lma:fx:MA:Theta1}.
+	View an insertion of $x$ being associated with either an insertion of $y \in V_x^i$ that pops off its $\fp_x$-labelled plate from the stack or an insertion of $y \in V_x^i$ of the plate it pops off. 
+	%	Note that each insertion of $x$ is associated with a distinct insertion of $y$.
+	
+	By the statement of the lemma $i \in {I}_x$, $A[i][p_i].\fp = \fp_x$ and under the NFC condition all plates on the stack are of $x$. 
+	Out of the insertions having plates on the stack, only the bottom plate one could have popped off a plate of $y \in V_x^i$. Thus, at least $n_x-A[i][p_i].\cnt$ insertions of $x$ are associated 
+	with an (unique) insertion of $y \in V_x^i$ and
+	\[
+	\tilde{n} \geq n_x-A[i][p_i].\cnt.
+	\]
+	From $M[i][p_i] = n_x + \tilde{n}$ we thus obtain
+	$M[i][p_i] \geq 2n_x -A[i][p_i].\cnt$ and
+	\[
+	n_x \leq \frac{M[i][p_i] + A[i][p_i].\cnt}{2}.
+	\]
+\end{proof}
+
+
+As this lemma holds for every $i \,{\in}\, I_x$, we conclude that $n_x \,{\leq}\, \Theta_2=\min_{i \,{\in}\, I_x}\{\Theta^i_2\} \,{\leq}\, \min_{i \,{\in}\, I_x}\{M[i][p_i]\}$.  Combined with the conclusion of Lemma~\ref{lma:fx:MA:Theta1}, we have $n_x \,{\leq}\, \mathrm{CK}(x) \,{=}\, \lfloor \min\{\Theta_1,\Theta_2\} \rfloor \,{\leq}\, \CMS(x)$. 
+
+\paragraph{Precise estimation when some $|V^i_x| \,{\in}\, \{0,1\}$}
+If there exists an~$i$ such that $\left|{V_x^i}\right|\,{=}\,0$, then $M[i][p_i]\,{=}\,A[i][p_i]=n_x$.  Hence, in this special case, both $\CMS(x)=n_x$ and $\mathrm{HK}(x)=n_x$.  When this is not the case, $n_x < M[i][p_i]$ for all~$i\in[k]$, so $n_x < \CMS(x)$.  For CK, on the other hand, if there exists a row~$i$ such that $|V^i_x|=1$, we still have $\mathrm{CK}(x)=n_x$.  Our next result, which is a corollary of Lemmas~\ref{lma:fx:MA:Theta1} and~\ref{lma:fx:MA:Theta2}, shows that either one of $\Theta_1^i$ or $\Theta_2^i$ is precisely~$n_x$, or the smaller of the two is $n_x \pm 1/2$.  Thus $\mathrm{CK}(x)=\lfloor \min\{\Theta_1,\Theta_2\} \rfloor\,{=}\,n_x$. 
+\begin{restatable}{corollary}{corVxOne}\label{cor:fx:MA:Theta13:nx} Let $i \in [k]$ be such that $|V_x^i|=1$. If the stream satisfies the NFC condition, then
+	\begin{align*}
+		i \in \hat{I}_x &\,{\Rightarrow}&
+				n_x&{=}\,\frac{M[i][p_i] - A[i][p_i].\cnt}{2} {+} c \mbox{ with $c \in \{1/2, 0\}$,} \\
+		i \in I_x &\,{\Rightarrow}&
+				 n_x&{=}\,\frac{M[i][p_i] + A[i][p_i].\cnt}{2} {+} c \mbox{ with $c \in \{-1/2,0\}$.} \ \ \blacklozenge
+		\end{align*} 
+	\hfill
+\end{restatable}
+
+\begin{proof}[Proof of corollary \ref{cor:fx:MA:Theta13:nx}]
+	We think of the counter $A[i][p_i].\cnt$ as counting the depth of a stack of fingerprint-labeled plates as for the proof of Lemma \ref{lma:fx:MA:Theta1} and associate occurrences of~$x$ and~$y \in V_x^i$ in the similar way.
+
+	Moreover, $|V_x^i|\,{=}\,1$ implies $M[i][p_i]\,{=}\,n_x + n_z$, or equivalently,
+	$\allowbreak n_z\,{=}\,M[i][p_i]-n_x$ for $z \,{\not=}\, x$.
+	
+	We start by focusing on the case $i \,{\in}\, \hat{I}_x$ ($A[i][p_i].\fp\,{\not=}\,\fp_z$).
+	Say $x$ at some point owned the counter. 
+	Then, the plate at the bottom of the stack (labeled with $\fp_z$) corresponds to a occurrence of~$z$ that popped off a plate of~$x$. So, only $A[i][p_i].\cnt - 1$ occurrences of~$z$ are not associated with~$x$ implying $n_z = n_x + A[i][p_i].\cnt - 1$. Hence, $M[i][p_i]-n_x = n_x + A[i][p_i].\cnt - 1$, or equivalently, $n_x \,{=}\, \frac{M[i][p_i]-A[i][p_i].\cnt + 1}{2}$.
+	Say~$x$ never owned the counter. Then, none of the occurrences of~$z$ with a plate on the stack popped an~$x$-plate from the stack. This implies that $n_z = n_x + A[i][p_i].\cnt $, and $n_x \,{=}\, \frac{M[i][p_i]-A[i][p_i].\cnt}{2}$.
+	
+	Let now $i \in I_x$ ($A[i][p_i].\fp\,{=}\,\fp_x$). 
+	Say $x$ was the only owner of the counter. Then, none of the occurrences of~$x$ with a plate on the stack popped an~$z$-plate from the stack.  Thus, $n_x = n_z + A[i][p_i].\cnt $ and, adding $n_x$ to both sides and rearranging, $n_x \,{=}\, \frac{M[i][p_i]+A[i][p_i].\cnt}{2}$.
+	Say $z$ at some point owned the counter. Then, the plate at the bottom of the stack (labeled with $\fp_x$) corresponds to the occurrence of~$x$ that popped off a plate of~$z$, and 
+	$n_x \,{=}\, n_z + A[i][p_i].\cnt - 1$ and $n_x \,{=}\, \frac{M[i][p_i]+A[i][p_i].\cnt - 1}{2}$.
+\end{proof}
+
+
+Finally, we note one more case when $\CK(x)\,{=}\,n_x$. 
+If one of the $x$'s buckets holds uninitialized fingerprint, i.e. $i \in [k]$ such that $A[i][p_i].\mathrm{fp}\,{=}\,\star$, then $|\hat{n}_{x} - n_{x}|\,{=}\,0$.
+This is because 1) the HK has the property that if~$x$ maps to a position in~$A$ with an uninitialized fingerprint, then~$x$ was never inserted (i.e., $n_x\,{=}\,0$); and 2) we define CK to return $\hat{n}_x\,{=}\,0$ if any of $x$'s positions in~$A$ holds an uninitialized fingerprint. 

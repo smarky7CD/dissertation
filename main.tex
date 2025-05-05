@@ -13,6 +13,8 @@
 
 
 \usepackage{scrextend}
+\renewcommand{\thefootnote}{\arabic{footnote}}
+\renewcommand{\thefootnotemark}{\arabic{footnote}}
 \deffootnote{1.5em}{0em}{\thefootnotemark\quad}
 \usepackage[all]{nowidow} %avoids single lines of text at the top or bottom of page.  If any of your packages cause this package not to work, you will have to manually remove any orphans/widows or add a line penalty
 
@@ -63,7 +65,7 @@
 \setDedicationFile{required/dedicationFile}%                 Dedication Page
 \setAcknowledgementsFile{required/acknowledgementsFile}%     Acknowledgements Page
 \setAbstractFile{required/abstractFile}%                     Abstract Page (This should only include the abstract itself)
-\setReferenceFile{required/referenceFile}{ACM-Reference-Format}%         References. First argument is your bibtex source file
+\setReferenceFile{required/refs}{ieeetr}%         References. First argument is your bibtex source file
 %                                                       the second argument is your bibtex style file.
 
 \setBiographicalFile{required/biographyFile}%                Biography file of the Author (you).
