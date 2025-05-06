@@ -40,7 +40,7 @@ Then applying the estimation from~$\Theta_1$ we see that we will generate error 
 			}
 		\end{pchstack}
 	}
-	\caption{Cover Set Attack for the CK in public
+	\caption[Public Hash CK Attack.]{Cover Set Attack for the CK in public
 		hash function setting. 
 %		We use $R(K,x)$ to mean $(\HASHO(\encode{1,K,x}),\HASHO(\encode{2,K,x},\ldots,\HASHO(\encode{k,K,x})))$.
 		The attack is parametrized with  the update and $\HASHO$ query budget $q_U$ and $q_H$.
@@ -112,7 +112,7 @@ Using results from Section \ref{sec:cov-set} we can further obtain a concrete ex
 }
 \end{pchstack}
 		%}
-	\caption{Cover Set Attack for the CK in private
+	\caption[Private Hash and Private Representation CK Attack.]{Cover Set Attack for the CK in private
 		hash function and representation setting. 
 		The attack is parametrized with the update query and query query budget -- $q_U$ and $q_Q$.}
 %\mia{The attck is 1-1 with CMS attack (Figure \ref{fig:attack-cms-iqcsa}) with $\textrm{FindCover}^{\UPO,\QRYO}(x)$, line \ref{alg:CMS:CK:change} changing to go up to $2k$! This is because we are now finding a two cover! Overall, I think that we do NOT need this code in the paper.}
@@ -185,7 +185,7 @@ $
 			\pcreturn \textrm{cover}
 		}
 	\end{pchstack}
-	\caption{Cover Set Attack for the CK in private
+	\caption[Private Hash and Public Representation CK Attack.]{Cover Set Attack for the CK in private
 		hash function and public representation setting. 
 		The attack is parametrized with  the update query budget $q_U$.
 	}
@@ -199,7 +199,7 @@ $
 	\begin{tabular}{|c|ccc|ccc|}
 	\hline
 						 & \multicolumn{3}{c|}{\textbf{Public Hash Setting}}                                                                & \multicolumn{3}{c|}{\textbf{\begin{tabular}[c]{@{}c@{}}Private Hash,\\ Private Rep Setting\end{tabular}}}       \\ \hline
-	\textbf{Structure}   & \multicolumn{1}{c|}{$|\mathrm{cover}|$} & \multicolumn{1}{c|}{Experimental~$\rverr$} & $\mathbb{E}[\rverr]$ & \multicolumn{1}{c|}{$|\mathrm{cover}|$} & \multicolumn{1}{c|}{Experimental~$\rverr$} & $\mathbb{E}[\rverr]$ \\ \hline
+	\textbf{Structure}   & \multicolumn{1}{c|}{$|\mathrm{cov}|$} & \multicolumn{1}{c|}{Exp.~$\rverr$} & $\mathbb{E}[\rverr]$ & \multicolumn{1}{c|}{$|\mathrm{cov}|$} & \multicolumn{1}{c|}{Exp.~$\rverr$} & $\mathbb{E}[\rverr]$ \\ \hline
 	$\CK,(m=682,k=4)$    & \multicolumn{1}{c|}{$7.96$}             & \multicolumn{1}{c|}{$131821.00$}                & $131072.00$          & \multicolumn{1}{c|}{$7.96$}             & \multicolumn{1}{c|}{$130796.69$}                & $127432.90$          \\ \hline
 	$\CMS, (m=2048,k=4)$ & \multicolumn{1}{c|}{$3.99$}             & \multicolumn{1}{c|}{$263017.82$}                & $262144.00$          & \multicolumn{1}{c|}{$3.99$}             & \multicolumn{1}{c|}{$261116.16$}                & $257877.34$         \\ \hline
 	$\HK, (m=1024,k=4)$  & \multicolumn{1}{c|}{$3.99$}             & \multicolumn{1}{c|}{$1047502.69$}               & $1047500.00$         & \multicolumn{1}{c|}{$4.0$}              & \multicolumn{1}{c|}{$1038804.55$}               & $1038018.54$        \\ \hline
@@ -207,7 +207,7 @@ $
 	$\CMS, (m=4096,k=8)$ & \multicolumn{1}{c|}{$8.00$}             & \multicolumn{1}{c|}{$131072.00$}                & $131072.00$          & \multicolumn{1}{c|}{$7.99$}             & \multicolumn{1}{c|}{$127029.66$}                & $119939.65$         \\ \hline
 	$\HK, (m=2048,k=8)$  & \multicolumn{1}{c|}{$7.96$}             & \multicolumn{1}{c|}{$1046434.76$}               & $1046424.00$         & \multicolumn{1}{c|}{$7.98$}             & \multicolumn{1}{c|}{$1007439.04$}               & $996946.87$         \\ \hline
 	\end{tabular}
-	\caption{A comparison of~$\rverr$ accumulated by the different structures during attacks in the public hash setting and the private hash, private representation setting. We give the average size of the cover set and average error accumulated in each structure, setting pair over the~$100$ experiment trials. We also give the~$\mathbb{E}[\rverr]$ according to our analysis. }
+	\caption[CFE Attack Comparison.]{A comparison of~$\rverr$ accumulated by the different structures during attacks in the public hash setting and the private hash, private representation setting. We give the average size of the cover set and average error accumulated in each structure, setting pair over the~$100$ experiment trials. We also give the~$\mathbb{E}[\rverr]$ according to our analysis. }
 	\label{tab:attack-comp}
 \end{table*}
 We implemented our attacks against all structures in all settings to experimentally verify their correctness and our analysis. In Table~\ref{tab:attack-comp} we present a summary of results for the public hash setting (our least restrictive setting) and the private hash, private representation setting (our most restrictive setting.). We experiment on two sets of parameters, one fixing~$k=4$ and the other~$k=8$. We then select a reasonable value of~$m$ for CMS and then half it for HK and third it for CK so that the same space is used in each structure. We fix adversarial resources such that~$q_H,q_U,q_Q = 2^{20}$. In practice this ensures that the number of~$\HASHO$ queries or~$\QRYO$ queries will not be the bottleneck in our attacks and that we are able to generate sufficient error in each attack to showcase overall trends. We run each attack setting and structure pairing over~$100$ trials, selecting a random target in each trial, and average the results. 

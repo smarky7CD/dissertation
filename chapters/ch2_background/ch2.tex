@@ -23,7 +23,7 @@ We use the distinguished symbol~$\star$ to mean that a variable is uninitialized
 
 \section{A Syntax for Data Structures}\label{subsec:syntax}
 
-We present (a slightly modified) syntax for data structures first provided by~\cite{clayton2019probabilistic}. While originally used to describe a variety of probabilistic data structures, the syntax is appropriately general. A syntactic formalization of data structures in this way not only allows us to elegantly describe numerous data structures, but also craft security definitions that are directly related to the operations the data structure allows. We will do exactly this in our case studies throughout the rest of this work.
+We present (a slightly modified) syntax for data structures first provided by~\cite{clayton2019}. While originally used to describe a variety of probabilistic data structures, the syntax is appropriately general. A syntactic formalization of data structures in this way not only allows us to elegantly describe numerous data structures, but also craft security definitions that are directly related to the operations the data structure allows. We will do exactly this in our case studies throughout the rest of this work.
 
 We start by fixing three non-empty sets~$\set{D},\set{R},\set{K}$ of \emph{data objects}, \emph{responses} and \emph{keys}, respectively.  Let $\mathcal{Q}\subseteq \Func(\mathcal{D},\mathcal{R})$ be a set of allowed \emph{queries}, and let $\mathcal{U} \subseteq \Func(\mathcal{D},\mathcal{D})$ be a set of allowed data-object \emph{updates}.  A {\em data structure} is a tuple $\Pi =
 (\Rep,\Qry,\Up)$, where:

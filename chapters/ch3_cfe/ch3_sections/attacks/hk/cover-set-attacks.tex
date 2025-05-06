@@ -1,4 +1,3 @@
-
 By examining the HK pseudocode, it is not hard to see that when a stream~$\streamvar{S}$ satisfying the NFC condition is inserted in the HK structure, over-estimations are not possible; any error in frequency estimates is due to underestimation. 
 %
 We also note that if $\streamvar{S}$ satisfies the NFC condition, then any cover that it contains for $x \in \set{U}$ must be a $(\set{FP}_x,x,r)$-cover. In attacking HK, we will build $(\set{FP}_x,x,1)$-covers; as such, in this section we will often just say ``cover'' as shorthand.  
@@ -85,7 +84,7 @@ For the term $\Pr\left[\rvcoverx{1}{x} \given Q = 0\right]$ we can simply apply 
 		}
 	\end{pcvstack}
 	\end{pchstack}
-	\caption{Cover Set Attack for the HK in public
+	\caption[Public Hash HK Attack.]{Cover Set Attack for the HK in public
 		hash function setting. 
 		We use $R(K,x)$ to mean $(\HASHO(\encode{``ct", 1,K,x}),\HASHO(\encode{``ct", 2,K,x},\ldots,\HASHO(\encode{``ct", k,K,x})))$.
 		The attack is parametrized with the update and $\HASHO$ query budget $q_U$ and $q_H$.
@@ -161,7 +160,7 @@ Let $\set{I}_1$ be the set of inserted elements $\not= x$ at the moment that thi
 		}
 	\end{pcvstack}
 	\end{pchstack}
-	\caption{Cover Set Attack for the HK in private
+	\caption[Private Hash and Private Representation HK Attack.]{Cover Set Attack for the HK in private
 		hash function and representation setting. 
 		The attack is parametrised with  the update and query query budget $q_U$ and $q_Q$. The attack uses the function Get-t$(.)$ from Figure \ref{fig:attack-hk-hfis}.
 	}
@@ -285,7 +284,7 @@ As with the CMS, the same attack and analysis applies from the public hash and p
 %			\mia{Recheck. \text{Important?}}\\
 		}
 	\end{pchstack}
-	\caption{Cover Set Attack for the HK in private
+	\caption[Private Hash and Public Representation Attack.]{Cover Set Attack for the HK in private
 		hash function and public representation setting. 
 		The attack is parametrized with  the update query budget $q_U$. The attack uses the function Get-t$(.)$ from Figure \ref{fig:attack-hk-hfis}.
 	}

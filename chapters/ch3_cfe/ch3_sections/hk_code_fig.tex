@@ -28,22 +28,22 @@
                 \mathrm{fp}_{x} \gets T(K,x)\\
                 \pcfor i \in [k]\\
                 %						\t\pcgraycomment{model behaviour for a specific $d$} \\
-                \t{\pcif} A[i][p_i].\fp \, {\not\in} \{\fp_x, {\star}\}
-                \label{line:A:decremenatcountstart}\\
+                \t{\pcif} A[i][p_i].\fp \, {\not\in} \{\fp_x, {\star}\} \\
+                %\label{line:A:decremenatcountstart}\\
                 \t \t r \getsr \left[0,1\right)\\
                 \t \t \pcif r \leq d^{A[i][p_i].\cnt}\\
-                \t\t\t A[i][p_i].\cnt \,{-}{=}\, 1\label{line:A:decremenatcountfin}\\
-                \pcgraycomment{overtake the counter if $0$}\label{line:A:overtakebucketstart}\\
+                \t\t\t A[i][p_i].\cnt \,{-}{=}\, 1 \\%\label{line:A:decremenatcountfin}\\
+                \pcgraycomment{overtake the counter if $0$} \\ %\label{line:A:overtakebucketstart}\\
                 \t\pcif  A[i][p_i].\cnt = 0 \\
-                \t\t A[i][p_i].\fp  \gets \fp_x \label{line:A:overtakebucketexe}\label{line:A:overtakebucketfin}\\\
-                \pcgraycomment{increase the count if $\fp = \fp_x$}\label{line:A:adjustcountstart}\\
+                \t\t A[i][p_i].\fp  \gets \fp_x \\ %\label{line:A:overtakebucketexe}\label{line:A:overtakebucketfin}\\\
+                \pcgraycomment{increase the count if $\fp = \fp_x$} \\ %\label{line:A:adjustcountstart}\\
                 \t\pcif A[i][p_i].\fp = \fp_x \\
-                \t\t A[i][p_i].\cnt \,{+}{=}\, 1 \label{line:A:adjustcountfin}\\ 
+                \t\t A[i][p_i].\cnt \,{+}{=}\, 1 \\ %\label{line:A:adjustcountfin}\\ 
                 \pcreturn A 
             }
 			\end{pcvstack}
     
     \end{pchstack}
-\caption{Keyed structure $\HK[R,T,m,k,d]$ supporting point-queries for any potential stream element~$x\in\univ$ ($\qry_x$). The parameters are a function $R: \keys\by\univ \to [m]^k$, a function $T: \keys\by\univ \to \bits^n$ for some desired fingerprint length~$n$, decay probability $0<d\leq1$, and integers $m,k\geq 0$.} 
+\caption[The HeavyKeeper Structure.]{Keyed structure $\HK[R,T,m,k,d]$ supporting point-queries for any potential stream element~$x\in\univ$ ($\qry_x$). The parameters are a function $R: \keys\by\univ \to [m]^k$, a function $T: \keys\by\univ \to \bits^n$ for some desired fingerprint length~$n$, decay probability $0<d\leq1$, and integers $m,k\geq 0$.} 
 \label{fig:hk}
 \end{figure}

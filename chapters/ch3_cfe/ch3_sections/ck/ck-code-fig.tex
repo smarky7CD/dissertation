@@ -27,17 +27,17 @@
 						(p_1,\ldots,p_k) \gets R(K,x), \, \mathrm{fp}_{x} \gets T(K,x)\\
 						\Theta_1,\Theta_2 \gets \infty\\
 						\pcgraycomment{CMS only overestimates}\\
-						\cnt_{\text{UB},x}\gets \Qry^\CMS_{K}(M,\qry_x)\label{line:ck:cms}\\
+						\cnt_{\text{UB},x}\gets \Qry^\CMS_{K}(M,\qry_x) \\ %\label{line:ck:cms}\\
 						\pcgraycomment{HK only underestimates}\\
-						\cnt_{\text{LB},x} \gets \Qry^\HK_{K}(A,\qry_x) \label{line:ck:finalunderest}\\
+						\cnt_{\text{LB},x} \gets \Qry^\HK_{K}(A,\qry_x) \\ %\label{line:ck:finalunderest}\\
 						\pcgraycomment{return upperbound if equal to lowerbound}\\
-						\pcif \cnt_{\text{UB},x} =  \cnt_{\text{LB},x}\label{line:UB=LB:start}\\
-						\t \pcreturn \cnt_{\text{UB},x} \label{line:UB=LB:finish}\\
-						\pcfor i \in [k] \label{line:ck:startoverestdjust}\\
+						\pcif \cnt_{\text{UB},x} =  \cnt_{\text{LB},x}\\ %\label{line:UB=LB:start}\\
+						\t \pcreturn \cnt_{\text{UB},x} \\ %\label{line:UB=LB:finish}\\
+						\pcfor i \in [k]  \\ %\label{line:ck:startoverestdjust}\\
 						\t \pcgraycomment{if never observed}\\
 						\t \pcif A[i][p_i].\mathrm{fp} = \star\\
 						\t \t \cnt_{\text{UB},x} \gets  0\\
-						\t \t \pcreturn 0 \label{line:ck:est0}\\
+						\t \t \pcreturn 0 \\ %\label{line:ck:est0}\\
 						\t \pcgraycomment{upper bound adjustment}\\
 						\t \pcgraycomment{x does not own counter}\\
 						\t \pcelse \pcif A[i][p_i].\mathrm{fp} \not= \fp_x\\
@@ -57,101 +57,17 @@
 %						{\min}\left\{ 
 %						\Theta_2, \frac{M[i][p_i] {+} A[i][p_i].\cnt}{2}
 %						\right\}\\
-						\cnt_{\text{UB},x} {\gets} \floor(\min\left\{ \Theta_1, \Theta_2 \right\}) \label{line:ck:finaloverest}\\
+						\cnt_{\text{UB},x} {\gets} \floor(\min\left\{ \Theta_1, \Theta_2 \right\}) \\%\label{line:ck:finaloverest}\\
 						\pcreturn \cnt_{\text{UB},x}
 					}
 				\end{pcvstack}
 			\end{pchstack}	
 		\end{pcvstack}
 	}
-	\caption{Keyed structure $\CK[R,T,m,k]$ supporting point-queries for any potential stream element~$x$ ($\qry_x$).
+	\caption[The Count-Keeper Structure.]{Keyed structure $\CK[R,T,m,k]$ supporting point-queries for any potential stream element~$x$ ($\qry_x$).
 		$\Qry^\CMS_{K}, \Up^\CMS_{K}$, resp. $\Qry^\HK_{K},  \Up^\HK_{K}$, denote query and update algorithms of keyed structure $\CMS[R,T,m,k]$ (Figure \ref{fig:cms}), resp. $\HK[R,T,m,k,1]$ (Figure \ref{fig:hk}, but note $d=1$). 
 		The parameters are a function $R: \keys\by\bits^* \to [m]^k$, a function $T: \keys\by\bits^* \to \bits^n$ for some desired fingerprint length~$n$, and integers $m,k \geq 0$. A concrete scheme is given by a particular choice of parameters.}
 	\label{fig:ck}
 \end{figure}
 %\eject
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\ignore{
-\begin{center}
-\mpage{1}{
-	\Wider[5em]{
-		\centering
-		\begin{pcvstack}[boxed,space=0.5em]
-			\begin{pchstack}
-				\begin{pcvstack}
-					\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\Rep_K(\setS)$}{%
-						M \gets \zeros(k,m)\\
-						\pcgraycomment{initialise $k\times m$ (fp,cnt) 2-d array}\\
-						\pcfor i \in [k] \\
-						\t A[i] \gets [(\star,0)]\times m\\
-						\repr \gets \langle M,A\rangle\\
-						\pcfor x \in \setS \\
-						\t \repr \getsr \Up_K(\repr,\up_{x})\\
-						\pcreturn \repr
-					}
-					\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\Up_K(\repr,\up_x)$}{%
-						\langle M,A\rangle \gets \repr\\
-						M  \getsr \Up_{K,\text{CMS}}(M ,\up_x)\\
-						A \getsr \Up_{K,\text{HK}}(A ,\up_x)\\
-						\pcreturn \repr \gets \langle M,A\rangle
-					}
-				\end{pcvstack}
-				\begin{pcvstack}
-					\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\Qry_K(\repr,\qry_x)$}{%
-						\langle M, A \rangle \gets \repr\\
-						(p_1,\ldots,p_k) \gets R(K,x), \, \mathrm{fp}_{x} \gets T(K,x)\\
-						\Theta_1,\Theta_2 \gets \infty\\
-						\pcgraycomment{CMS only overestimates}\\
-						\cnt_{\text{UB},x}\gets \Qry_{K,\text{CMS}}(M,\qry_x)\label{line:ck:cms}\\
-						\pcgraycomment{HK only underestimates}\\
-						\cnt_{\text{LB},x} \gets \Qry_{K,\text{HK}}(A,\qry_x) \label{line:ck:finalunderest}\\
-						\pcgraycomment{return upperbound if equal to lowerbound}\\
-						\pcif \cnt_{\text{UB},x} =  \cnt_{\text{LB},x}\label{line:UB=LB:start}\\
-						\t \pcreturn \cnt_{\text{UB},x} \label{line:UB=LB:finish}\\
-						\pcfor i \in [k] \label{line:ck:startoverestdjust}\\
-						\pcgraycomment{if never observed}\\
-						\t \pcif A[i][p_i].\mathrm{fp} = \star:\\
-%						line added to make presentation simpler?
-						\t \t \cnt_{\text{UB},x} \gets  0\\
-%						\cnt_{\text{LB},x} = 0\\
-						\t \t \pcreturn 0 \label{line:ck:est0}\\
-						\pcgraycomment{upper bound adjustment}\\
-						\pcgraycomment{x does not own counter}\\
-						\t \pcelse \pcif A[i][p_i].\mathrm{fp} \not= \fp_x:\\
-%						\t \t \fp' \gets A[i][p_i].\mathrm{fp}\\
-%						\t \t \cnt'_{\text{LB}}\gets
-%						\underset{A[j][\ell].\fp = \fp'}{\underset{j \in [k], \ell \in [m]}{\max}}
-%						\{A[j][\ell].\cnt\}\\
-%						\t \t \Theta_0 \gets 
-%						\min\left\{ 
-%						\Theta_0, M[i][p_i] - \cnt'_{\text{LB}}
-%						\right\}\\
-						\t \t \Theta_1 \gets 
-						\min\left\{ 
-						\Theta_1, \frac{M[i][p_i] - A[i][p_i].\cnt +1}{2}
-						\right\}\\
-						\pcgraycomment{x owns counter}\\
-						\t \pcelse \pcif A[i][p_i].\mathrm{fp} = \fp_x:\\
-                                                \t \t \Theta_2 \gets 
-						\min\left\{ 
-						\Theta_2, \frac{M[i][p_i] + A[i][p_i].\cnt}{2}
-						\right\}\\
-						\cnt_{\text{UB},x} \gets \floor(\min\left\{ \Theta_1, \Theta_2 \right\}) \label{line:ck:finaloverest}\\
-						\pcreturn \cnt_{\text{UB},x}
-%						\left\lceil\frac{\cnt_{\text{UB},x} +\cnt_{\text{LB},x}}{2} \right\rceil  \label{line:ck:qryout}
-					}
-					\vspace{1cm}
-				\end{pcvstack}
-			\end{pchstack}	
-		\end{pcvstack}
-	}    
-}
-\captionof{figure}{Keyed structure $CK[R,T,m,k]$ supporting point-queries for any potential stream element~$x$ ($\qry_x$).
-$\Qry_{K,\text{CMS}}, \Up_{K,\text{CMS}}$, resp. $\Qry_{K,\text{HK}},  \Up_{K,\text{HK}}$, denote query and update algorithms of keyed structure $CMS[R,T,m,k]$ (Figure \ref{fig:cms}), resp. $HK[R,T,m,k,1]$ (Figure \ref{fig:hk}). 
-The parameters are a function $R: \keys\by\bits^* \to [m]^k$, a function $T: \keys\by\bits^* \to \bits^n$ for some desired fingerprint length~$n$, and integers $m,k \geq 0$. A concrete scheme is given by a particular choice of parameters.}
-
-\end{center}
-}

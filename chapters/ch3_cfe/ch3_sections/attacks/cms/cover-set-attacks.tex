@@ -1,4 +1,4 @@
-\label{sec:cms-attacks}
+%\label{sec:cms-attacks}
 \noindent
 In our attack model, if the mapping~$R(K,\cdot)$ is public, we may use the $\HASHO$ oracle (only) to find a cover set for the target~$x$ ``locally'', i.e., the step is entirely offline.  When this is not the case, we use a combination of queries to the $\UPO$ and $\QRYO$ oracles to signal when a cover set \emph{exists} among the current stream of insertions; then we make additional queries to learn a subset of stream elements that yield a cover. 
 
@@ -72,7 +72,7 @@ The full attack can be found in Figure~\ref{fig:attack-cms-hfcs}.
 	}
 	\end{pchstack}
 }
-\caption{Cover Set Attack for the CMS in public
+\caption[Public Hash CMS Attack.]{Cover Set Attack for the CMS in public
 	hash function setting. 
 We use $R(K,x)$ to mean $(\HASHO(\encode{1,K,x}),\HASHO(\encode{2,K,x},\ldots,\HASHO(\encode{k,K,x})))$.
 The attack is parametrized with  the update and $\HASHO$ query budget $q_U$ and $q_H$.
@@ -138,7 +138,7 @@ This is the most challenging setting to find a cover: the privacy of hash functi
 			}
 		\end{pchstack}
 	%}
-	\caption{Cover Set Attack for the CMS in private
+	\caption[Private Hash and Private Representation CMS Attack.]{Cover Set Attack for the CMS in private
 		hash function and private representation setting. 
 		The attack is parametrised with  the update and query query budget $q_U$ and $q_Q$.
 	}
@@ -281,7 +281,7 @@ $\mathbb{E}[\rverr] \geq \frac{q_U-1-\mathbb{E}\left[L^1\right]}{k} \approx \fra
 			\pcreturn \textrm{cover}
 		}
 	\end{pchstack}
-	\caption{Cover Set Attack for the CMS in private
+	\caption[Private Hash and Public Representation CMS Attack.]{Cover Set Attack for the CMS in private
 		hash function and public representation setting. 
 		The attack is parametrized with  the update query budget $q_U$.
 	}

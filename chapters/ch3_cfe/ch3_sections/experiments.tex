@@ -28,7 +28,7 @@ We summarize each of these three streams and why they are of particular interest
     \includegraphics[width=\linewidth]{chapters/ch3_cfe/images/retail_pm.png}
     \caption*{Retail stream}
   \endminipage
-  \caption{We plot the top~$35\%$ probability mass for each stream. That is the most frequent elements that make up~$35\%$ of the total weight of the stream (i.e. the fewest number of elements in each stream whose frequencies sum to such that when divided by the total length of the stream equal~$35\%$). The first vertical red line in each plot is the top~$20\%$ probability mass, the second the top~$25\%$, the third the top~$30\%$, and the last the top~$35\%$. From visual inspection we decided to make the top-$K$ cut-off at, $20$ for Kosarak stream, $22$ for the Novel stream, and~$22$ for the Retail stream.}
+  \caption[Stream Frequent Elements.]{We plot the top~$35\%$ probability mass for each stream. That is the most frequent elements that make up~$35\%$ of the total weight of the stream (i.e. the fewest number of elements in each stream whose frequencies sum to such that when divided by the total length of the stream equal~$35\%$). The first vertical red line in each plot is the top~$20\%$ probability mass, the second the top~$25\%$, the third the top~$30\%$, and the last the top~$35\%$. From visual inspection we decided to make the top-$K$ cut-off at, $20$ for Kosarak stream, $22$ for the Novel stream, and~$22$ for the Retail stream.}
   \label{fig:stream_pm} 
 \end{figure*}
 \paragraph{Measures and Metrics} We want to measure the performance of the CFEs of interest in the non-adversarial setting by determining how well they are able to identify and characterize the heavy elements in the streams above. %\mia{Why is it satisfactory to do it that way - aka test the streams only on limited number of streams? (if not addressed before)}
@@ -92,7 +92,7 @@ We ran~$1000$ trials for each structure, stream, and parameter triplet using our
   \multicolumn{1}{|c|}{CMS}                & \multicolumn{1}{c|}{(512,4)}                                                             & \multicolumn{1}{c|}{}                                                                                  & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}18.241\\ 21.638\\ 18.745\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}0.841\\ 0.969\\ 0.745\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}24.567\\ 22.473\\ 41.609\end{tabular}}  & \begin{tabular}[c]{@{}c@{}}0.125\\ 0.062\\ 0.296\end{tabular} \\ \cline{1-2} \cline{4-7} 
   \multicolumn{1}{|c|}{HK}                 & \multicolumn{1}{c|}{(256,4)}                                                             & \multicolumn{1}{c|}{}                                                                                  & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}20\\ 22\\ 21.976\end{tabular}}         & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}1\\ 1\\ 0.998\end{tabular}}         & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}20\\ 22\\ 55.008\end{tabular}}          & \begin{tabular}[c]{@{}c@{}} $\approx 0$\\ 0.001\\ 0.005\end{tabular}     \\ \hline
   \end{tabular}
-  \caption{A summary of non-adversarial setting results between the CK, CMS, and HK compact frequency estimators.}
+  \caption[Non-adversarial CFE Results.]{A summary of non-adversarial setting results between the CK, CMS, and HK compact frequency estimators.}
   \label{tab:hon-exp-res}
   \end{table*}
 
@@ -109,28 +109,3 @@ We observe in this constrained space setting across the structures measured perf
 
 In sum, CK performs comparatively well to both CMS and HK in this particular task. In fact, CK performed better than CMS when not burdened with \emph{very} tiny space constraints. It is able to perfectly estimate the true top-$K$ for all streams over all trials with only $2730$ individual counters in the standard parameter setting, while also being adversarial robust where the others structures are not. 
 
-%%%%%
-
-% Please add the following required packages to your document preamble:
-% \usepackage{multirow}
-
-
-\ignore{
-  \begin{table}[!ht]
-    \centering
-    \begin{tabular}{|ccccc|}
-    \hline
-    \multicolumn{1}{|c|}{\textbf{Structure}}                                          & \multicolumn{1}{c|}{\textbf{SIS}}                                                           & \multicolumn{1}{c|}{\textbf{JI}}                                                         & \multicolumn{1}{c|}{\textbf{MCT}}                                                            & \textbf{ARE}                                                                    \\ \hline
-    \multicolumn{5}{|l|}{\textit{Standard}}                                                                                                                                                                                                                                                                                                                                                                                                                     \\ \hline
-    \multicolumn{1}{|c|}{\begin{tabular}[c]{@{}c@{}}$\CK$\\ $(910,3)$\end{tabular}}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$20$\\ $22$\\ $22$\end{tabular}}             & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$1$\\ $1$\\ $1$\end{tabular}}             & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$20$\\ $22$\\ $22$\end{tabular}}              & \begin{tabular}[c]{@{}c@{}}$\approx 0$\\ $\approx 0$\\ $\approx 0$\end{tabular} \\ \hline
-    \multicolumn{1}{|c|}{\begin{tabular}[c]{@{}c@{}}$\CMS$\\ $(2048,4)$\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$19.303$\\ $22.999$\\ $21.643$\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$0.934$\\ $0.999$\\ $0.997$\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$20.901$\\ $22.001$\\ $22.405$\end{tabular}}  & \begin{tabular}[c]{@{}c@{}}$0.017$\\ $0.009$\\ $0.040$\end{tabular}             \\ \hline
-    \multicolumn{1}{|c|}{\begin{tabular}[c]{@{}c@{}}$\HK$\\ $(1024,4)$\end{tabular}}  & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$20$\\ $22$\\ $22$\end{tabular}}             & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$1$\\ $1$\\ $1$\end{tabular}}             & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$20$\\ $22$\\ $22$\end{tabular}}              & \begin{tabular}[c]{@{}c@{}}$\approx 0$\\ $\approx 0$\\ $\approx 0$\end{tabular} \\ \hline
-    \multicolumn{5}{|l|}{\textit{Constrained}}                                                                                                                                                                                                                                                                                                                                                                                                                  \\ \hline
-    \multicolumn{1}{|c|}{\begin{tabular}[c]{@{}c@{}}$\CK$\\ $(341,2)$\end{tabular}}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$17.189$\\ $21.617$\\ $13.442$\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$0.757$\\ $0.967$\\ $0.441$\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$28.695$\\ $22.451$\\ $209.439$\end{tabular}} & \begin{tabular}[c]{@{}c@{}}$\approx 0$\\ $\approx 0$\\ $0.021$\end{tabular}     \\ \hline
-    \multicolumn{1}{|c|}{\begin{tabular}[c]{@{}c@{}}$\CMS$\\ $(512,4)$\end{tabular}}  & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$18.241$\\ $21.638$\\ $18.745$\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$0.841$\\ $0.969$\\ $0.745$\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$24.567$\\ $22.473$\\ $41.609$\end{tabular}}  & \begin{tabular}[c]{@{}c@{}}$0.125$\\ $0.062$\\ $0.296$\end{tabular}             \\ \hline
-    \multicolumn{1}{|c|}{\begin{tabular}[c]{@{}c@{}}$\HK$\\ $(256,4)$\end{tabular}}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$20$\\ $22$\\ $21.976$\end{tabular}}         & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$1$\\ $1$\\ $0.998$\end{tabular}}         & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}$20$\\ $22$\\ $55.008$\end{tabular}}          & \begin{tabular}[c]{@{}c@{}}$\approx 0$\\ $0.001$\\ $0.005$\end{tabular}         \\ \hline
-    \end{tabular}
-    \caption{A comparison of honest setting results between the CK, CMS, and HK compact frequency estimators. Each parameter pair~$(m,k)$ is given under the name of the corresponding structure. The statistics in each cell are listed such that they correspond to the streams in the following order: Kosarak~$(K=20)$, Novel~$(K=22)$, Retail~$(K=22)$-- from ascending to descending.}
-    \label{tab:hon-exp-res-skinny}
-    \end{table}
-}
