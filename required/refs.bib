@@ -1,3 +1,13 @@
+%% CLRS
+
+@book{clrs,
+  title={Introduction to algorithms},
+  author={Cormen, Thomas H and Leiserson, Charles E and Rivest, Ronald L and Stein, Clifford},
+  year={2022},
+  publisher={MIT press}
+}
+
+
 %% PDS Structures
 
 @article{bloom1970space,
@@ -250,12 +260,17 @@ keywords = {robustness, sketches, compressed sensing}
     howpublished = {\url{https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki}} 
 }
 
-@inproceedings{feldman00,
-	author = {Feldmann, Anja and Greenberg, Albert and Lund, Carsten and Reingold, Nick and Rexford, Jennifer and True, Fred},
-	year={2000},
-	doi = {10.1145/347059.347554},
-	booktitle = {AMC SIGCOMM}
+@article{feldmann00,
+  title={NetScope: Traffic engineering for IP networks},
+  author={Feldmann, Anja and Greenberg, Albert and Lund, Carsten and Reingold, Nick and Rexford, Jennifer},
+  journal={IEEE Network},
+  volume={14},
+  number={2},
+  pages={11--19},
+  year={2000},
+  publisher={Citeseer}
 }
+
 
 @inproceedings{lakhina04,
     author = {Lakhina, Anukool and Crovella, Mark and Diot, Christiphe},
@@ -392,4 +407,359 @@ keywords = {adversarial model, robust streaming, distinct elements, adaptive inp
       year = {2023},
       doi = {10.1145/3576915.3623216},
       url = {https://eprint.iacr.org/2023/1366}
+}
+
+% redis paper additions
+
+@inproceedings{FAKM14,
+	author = {Fan, Bin and Andersen, Dave G. and Kaminsky, Michael and Mitzenmacher, Michael D.},
+	booktitle = {CoNEXT},
+	doi = {10.1145/2674005.2674994},
+	isbn = {9781450332798},
+	title = {Cuckoo Filter: Practically Better Than {B}loom},
+	url = {https://doi.org/10.1145/2674005.2674994},
+	year = {2014},
+	Bdsk-Url-1 = {https://doi.org/10.1145/2674005.2674994}}
+
+
+@inproceedings{Yeo22,
+      author = {Kevin Yeo},
+      title = {Cuckoo Hashing in Cryptography: Optimal Parameters, Robustness and Applications},
+      booktitle = {CRYPTO},
+      year = {2023}}
+
+@article{DBLP:journals/jal/PaghR04,
+	author = {Rasmus Pagh and Flemming Friche Rodler},
+	bibsource = {dblp computer science bibliography, https://dblp.org},
+	biburl = {https://dblp.org/rec/journals/jal/PaghR04.bib},
+	doi = {10.1016/j.jalgor.2003.12.002},
+	journal = {J. Algorithms},
+	number = {2},
+	pages = {122--144},
+	timestamp = {Wed, 14 Nov 2018 10:27:34 +0100},
+	title = {Cuckoo hashing},
+	url = {https://doi.org/10.1016/j.jalgor.2003.12.002},
+	volume = {51},
+	year = {2004},
+	Bdsk-Url-1 = {https://doi.org/10.1016/j.jalgor.2003.12.002}}
+
+@article{DBLP:journals/talg/DrmotaK12,
+	author = {Michael Drmota and Reinhard Kutzelnigg},
+	bibsource = {dblp computer science bibliography, https://dblp.org},
+	biburl = {https://dblp.org/rec/journals/talg/DrmotaK12.bib},
+	doi = {10.1145/2151171.2151174},
+	journal = {{ACM} Trans. Algorithms},
+	number = {2},
+	pages = {11:1--11:36},
+	timestamp = {Tue, 06 Nov 2018 12:51:20 +0100},
+	title = {A precise analysis of Cuckoo hashing},
+	url = {https://doi.org/10.1145/2151171.2151174},
+	volume = {8},
+	year = {2012},
+	Bdsk-Url-1 = {https://doi.org/10.1145/2151171.2151174}}
+
+@article{ABPH07,
+title = {Scalable {B}loom {F}ilters},
+journal = {Information Processing Letters},
+volume = {101},
+number = {6},
+pages = {255-261},
+year = {2007},
+issn = {0020-0190},
+doi = {https://doi.org/10.1016/j.ipl.2006.10.007},
+url = {https://www.sciencedirect.com/science/article/pii/S0020019006003127},
+author = {Paulo Sergio Almeida and Carlos Baquero and Nuno Preguica and David Hutchison},
+}
+
+@inproceedings{markelon23,
+  author       = {Sam A. Markelon and
+                  Mia Filić and
+                  Thomas Shrimpton},
+  title        = {Compact Frequency Estimators in Adversarial Environments},
+  booktitle    = {{ACM} {SIGSAC} {CCS}},
+  year         = {2023},
+  url          = {https://doi.org/10.1145/3576915.3623216},
+  doi          = {10.1145/3576915.3623216},
+  timestamp    = {Tue, 28 Nov 2023 20:06:17 +0100},
+  biburl       = {https://dblp.org/rec/conf/ccs/MarkelonFS23.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@inproceedings{FPUV22,
+  author       = {Mia Filić and
+                  Kenneth G. Paterson and
+                  Anupama Unnikrishnan and
+                  Fernando Virdia},
+  title        = {Adversarial Correctness and Privacy for Probabilistic Data Structures},
+  booktitle    = {{ACM} {SIGSAC} {CCS}},
+  year         = {2022},
+  url          = {https://doi.org/10.1145/3548606.3560621},
+  doi          = {10.1145/3548606.3560621},
+  timestamp    = {Sat, 17 Dec 2022 01:15:29 +0100},
+  biburl       = {https://dblp.org/rec/conf/ccs/FilicPUV22.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{PatersonR22,
+  author       = {Kenneth G. Paterson and Mathilde Raynal},
+  title        = {HyperLogLog: Exponentially Bad in Adversarial Settings},
+  booktitle    = {EuroS{\&}P},
+  year         = {2022},
+  url          = {https://doi.org/10.1109/EuroSP53844.2022.00018},
+  doi          = {10.1109/EUROSP53844.2022.00018},
+  timestamp    = {Wed, 29 Jun 2022 16:03:24 +0200},
+  biburl       = {https://dblp.org/rec/conf/eurosp/PatersonR22.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{GerbetKL15,
+  author       = {Thomas Gerbet and
+                  Amrit Kumar and
+                  C{\'{e}}dric Lauradoux},
+  title        = {The Power of Evil Choices in Bloom Filters},
+  booktitle    = {{DSN}},
+  year         = {2015},
+  url          = {https://doi.org/10.1109/DSN.2015.21},
+  doi          = {10.1109/DSN.2015.21},
+  timestamp    = {Fri, 24 Mar 2023 00:01:45 +0100},
+  biburl       = {https://dblp.org/rec/conf/dsn/GerbetKL15.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{NaorY19,
+  author       = {Moni Naor and
+                  Eylon Yogev},
+  title        = {Bloom Filters in Adversarial Environments},
+  journal      = {{ACM} Trans. Algorithms},
+  volume       = {15},
+  number       = {3},
+  pages        = {35:1--35:30},
+  year         = {2019},
+  url          = {https://doi.org/10.1145/3306193},
+  doi          = {10.1145/3306193},
+  timestamp    = {Sat, 08 Jan 2022 02:22:07 +0100},
+  biburl       = {https://dblp.org/rec/journals/talg/NaorY19.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{NaorY15,
+  author       = {Moni Naor and
+                  Eylon Yogev},
+  title        = {Bloom Filters in Adversarial Environments},
+  booktitle    = {{CRYPTO}},
+  series       = {Lecture Notes in Computer Science},
+  year         = {2015},
+  url          = {https://doi.org/10.1007/978-3-662-48000-7\_28},
+  doi          = {10.1007/978-3-662-48000-7\_28},
+  timestamp    = {Tue, 20 Aug 2019 15:26:42 +0200},
+  biburl       = {https://dblp.org/rec/conf/crypto/NaorY15.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{hllvuln,
+  author    = {Pedro Reviriego and
+               Daniel Ting},
+  title     = {Security of HyperLogLog {(HLL)} Cardinality Estimation: Vulnerabilities
+               and Protection},
+  journal   = {{IEEE} Commun. Lett.},
+  volume    = {24},
+  number    = {5},
+  pages     = {976--980},
+  year      = {2020},
+  url       = {https://doi.org/10.1109/LCOMM.2020.2972895},
+  doi       = {10.1109/LCOMM.2020.2972895},
+  timestamp = {Thu, 20 Aug 2020 22:44:50 +0200},
+  biburl    = {https://dblp.org/rec/journals/icl/ReviriegoT20.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{cardestprivacy,
+    title = "{Cardinality Estimators do not Preserve Privacy}",
+    author = "Damien Desfontaines and Andreas Lochbihler and David Basin",
+    year = "2019",
+    booktitle = {PETs}
+}
+
+@article{LiptonN93,
+  author    = {Richard J. Lipton and
+               Jeffrey F. Naughton},
+  title     = {Clocked Adversaries for Hashing},
+  journal   = {Algorithmica},
+  volume    = {9},
+  number    = {3},
+  pages     = {239--252},
+  year      = {1993},
+  url       = {https://doi.org/10.1007/BF01190898},
+  doi       = {10.1007/BF01190898},
+  timestamp = {Wed, 14 Nov 2018 10:49:05 +0100},
+  biburl    = {https://dblp.org/rec/journals/algorithmica/LiptonN93.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{CrosbyW03,
+  author    = {Scott A. Crosby and
+               Dan S. Wallach},
+  title     = {Denial of Service via Algorithmic Complexity Attacks},
+  booktitle = {{USENIX} Security},
+  year      = {2003},
+  url       = {https://www.usenix.org/conference/12th-usenix-security-symposium/denial-service-algorithmic-complexity-attacks},
+  timestamp = {Wed, 04 Jul 2018 13:06:34 +0200},
+  biburl    = {https://dblp.org/rec/conf/uss/CrosbyW03.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{klink2011efficient,
+  title={Efficient denial of service attacks on web application platforms},
+  author={Klink, Alexander and Walde, Julian},
+  booktitle={28th Chaos Communication Congress},
+  year={2011}
+}
+
+@inproceedings{bar2007remote,
+  title={Remote algorithmic complexity attacks against randomized hash tables},
+  author={Bar-Yosef, Noa and Wool, Avishai},
+  booktitle={International Conference on E-Business and Telecommunications},
+  pages={162--174},
+  year={2007},
+  organization={Springer}
+}
+
+@article{dunning2021t,
+  title={The t-digest: Efficient estimates of distributions},
+  author={Dunning, Ted},
+  journal={Software Impacts},
+  volume={7},
+  pages={100049},
+  year={2021},
+  publisher={Elsevier}
+}
+
+@article{kodinariya2013review,
+  title={Review on determining number of Cluster in K-Means Clustering},
+  author={Kodinariya, Trupti M and Makwana, Prashant R and others},
+  journal={International Journal},
+  volume={1},
+  number={6},
+  pages={90--95},
+  year={2013}
+}
+
+@misc{cryptoeprint:2024/532,
+      author = {Martin R. Albrecht and Kenneth G. Paterson},
+      title = {Analysing Cryptography in the Wild - A Retrospective},
+      howpublished = {Cryptology ePrint Archive, Paper 2024/532},
+      year = {2024},
+      note = {\url{https://eprint.iacr.org/2024/532}},
+      url = {https://eprint.iacr.org/2024/532}
+}
+
+@misc{cryptoeprint:2024/1312,
+	author = {Mia Filić and Jonas Hofmann and Sam A. Markelon and Kenneth G. Paterson and Anupama Unnikrishnan},
+	title = {Probabilistic Data Structures in the Wild: A Security Analysis of Redis},
+	howpublished = {Cryptology {ePrint} Archive, Paper 2024/1312},
+	year = {2024},
+	url = {https://eprint.iacr.org/2024/1312}
+}
+
+@inproceedings{FiebigFP16,
+  author       = {Tobias Fiebig and
+                  Anja Feldmann and
+                  Matthias Petschick},
+  title        = {A One-Year Perspective on Exposed In-memory Key-Value Stores},
+  booktitle    = {{ACM} Workshop on Automated Decision Making
+                  for Active Cyber Defense},
+  year         = {2016},
+  url          = {https://doi.org/10.1145/2994475.2994480},
+  doi          = {10.1145/2994475.2994480}
+}
+
+
+@misc{redisPDS,
+howpublished = {\url{https://redis.io/docs/data-types/probabilistic/}},
+title = {Probabilistic: Probabilistic data structures in {R}edis.}}
+
+
+@misc{redisSec,
+howpublished = {\url{https://redis.io/docs/latest/operate/oss_and_stack/management/security/}},
+title = {Redis security: Security model and features in {R}edis.}}
+
+@misc{antirez15,
+author = {Salvatore Sanfilippo},
+howpublished = {\url{http://antirez.com/news/96}},
+title = {A few things about Redis security.}}
+
+@misc{redisblogtopK,
+howpublished = {\url{https://redis.com/blog/meet-top-k-awesome-probabilistic-addition-redis/}},
+title = {Redis blog post on Top-K}}
+
+@misc{murmurhash64Ainv,
+howpublished = {\url{https://bitsquid.blogspot.com/2011/08/code-snippet-murmur-hash-inverse-pre.html}},
+title = {Coding Blog}}
+
+@misc{MurmurUMC,
+author = {Jean-Philippe Aumasson and Daniel J. Bernstein and Martin Boßlet},
+howpublished = {\url{https://web.archive.org/web/20130913185247/https://131002.net/siphash/siphashdos_appsec12_slides.pdf}},
+title = {Hash-flooding {DoS} reloaded: attacks and defenses}}
+
+
+@misc{gitrepo,
+howpublished = {\url{https://anonymous.4open.science/r/PDS-in-the-Wild-A-Security-Analysis-of-Redis-5365}},
+title = {{PDS in the Wild GitHub Repository}}}
+
+
+@online{Web:RedisForAdobe,
+    author = "RedisConf 2021, Robert Taylor",
+    title = {{How Adobe uses the Enterprise tier of Azure Cache for Redis to serve push notifications, Adobe}},
+    year = {2024},
+    note = {\url{https://www.youtube.com/watch?v=OslaeJEXW5k}},
+    urldate = {25-04-2024}
+}
+
+@online{Web:RedisForMicrosoft,
+    author = "RedisDays New York 2022, Charles Morris",
+    title = {{Using AI to Reveal Trading Signals Buried in Corporate Filings}},
+    year = {2024},
+    note = {\url{https://www.youtube.com/watch?v=_Lrbesg4DhY}},
+    urldate = {02-05-2022}
+}
+
+@online{Web:RedisForFacebook,
+    author = "Redis Day TLV 2016, Guy Yonish",
+    title = {{Redis @ Facebook}},
+    year = {2024},
+    note = {\url{https://www.youtube.com/watch?v=XGxntWcjI24}},
+    urldate = {01-06-2016}
+}
+
+@online{Web:RedisForVerizon,
+    author = "RedisConf 2021, Robert Belson",
+    title = {{Redis on the 5G Edge: Practical advice for mobile edge computing, Verizon}},
+    year = {2024},
+    note = {\url{https://www.youtube.com/watch?v=NwQwE2JAIXc}},
+    urldate = {21-05-2021}
+}
+
+@online{Web:RedisForSiemens,
+    author = "The Data Economy Podcast, Kurt John",
+    title = {{Using Real-Time Data and Digital Twins to Improve Cyber Security}},
+    year = {2024},
+    note = {\url{hhttps://www.youtube.com/watch?v=TycylT0J6cc}},
+    urldate = {09-03-2022}
+}
+
+@online{Web:RedisExamples,
+    author = "Redis",
+    title = {{Redis Docs | PDS}},
+    year = {2024},
+    note = {\url{https://redis.io/docs/latest/develop/data-types/probabilistic/}},
+    urldate = {29-11-2024}
+}
+
+@online{github:redisbloom,
+    author = "Redis",
+    title = {RedisBloom GitHub Repository},
+    year = {2024},
+    note = {\url{https://github.com/RedisBloom/RedisBloom}},
+    urldate = {9-12-2024}
 }

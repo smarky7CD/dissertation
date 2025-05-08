@@ -1,0 +1,240 @@
+In this section, we construct attacks against the Redis implementations of  count-min sketches and Top-K structures (for attacks against Bloom filters and Cuckoo filters see~\cite{cryptoeprint:2024/1312}). While our attacks vary in their goals and complexity, at their core, they all exploit Redis' choice of weak hash functions (from the $\mathit{MurmurHash}$ family) and their invertibility.
+By implementing our attacks and giving experimental results, we demonstrate that malicious Redis users can severely disrupt the performance of each PDS. Code for our attacks can be found at~\cite{gitrepo}.
+
+\subsection{MurmurHash Inversion Attacks}\label{sec:MurmurHash}
+The Redis PDS suite relies heavily on two different $\mathit{MurmurHash}$ hash functions: $\murmur$ and $\murmurtwo$. Both functions accept an element, a length parameter and a $\seed$ as input. The functions have, respectively, 64-bit and 32-bit outputs. In Redis, all inputs must have valid ASCII encoding, as the length field is set to the character length of the string representation of the input. Seeds are usually set to fixed values.
+
+The $\mathit{MurmurHash}$ family of hash functions are designed to be fast but are not cryptographically secure. 
+Indeed, starting with a target hash value $h$ and a given seed, it is easy to find one or many elements that hash to $h$ under either $\murmur$ or $\murmurtwo$, so these functions are not even one-way. 
+We refer to these resulting elements as pre-images of $h$, and the algorithms that compute them as \emph{inversion} algorithms. % If explanation of MurmurHash2Inverse, put it here
+Our inversion algorithms for $\murmur$ and $\murmurtwo$ are about as fast as computing the hash functions in the forward direction. They are based on the deterministic approach in \cite{murmurhash64Ainv}. However, we adapt this method to make our algorithms randomized and to be able to produce many pre-images for the same target hash value $h$. 
+For $\murmur$, our inversion algorithm outputs strings consisting of two $64$-bit blocks $B_1, B_2$ in which $B_2$ is chosen arbitrarily and $B_1$ is then determined by $B_2$ and the seed. 
+Similarly, for $\murmurtwo$, but with 32-bit blocks. 
+In both cases, the algorithms can be modified to produce inversions that are $t$-block messages for any $t$; then any $t-1$ of the blocks can be freely chosen (with the remaining one then being determined). 
+However, pre-images that comprise two $64$-bit or $32$-bit blocks suffice for our attacks.
+
+For attacks on Redis, we must also further modify our algorithms to ensure the pre-images are valid ASCII-encoded strings. Meeting this additional requirement incurs extra cost. 
+For $\murmur$, given a valid ASCII-encoded $B_2$, ensuring that $B_1$ has the correct format requires on average $2^8$ trial inversions, hence costing roughly the same as 256 forward hash function computations. 
+Here, the factor of $2^8$ comes from a 64-bit string representing 8 ASCII characters, each of which must have a single bit set to zero. 
+For $\murmurtwo$, an average of 16 trial inversions is needed to obtain a 2-block pre-image respecting the ASCII constraint. 
+Additionally, we enforce the leading byte of $B_1$ to be non-zero to ensure that the length of the pre-image, when viewed as a string, is exactly 16 or 8 bytes. This is important as $\murmur$ and $\murmurtwo$ outputs depend on the input length. 
+%and our inversion process depends on it
+Overall, this results in an average number of an equivalent of $256\cdot \frac{128}{127}\approx258$ and $16\cdot \frac{128}{127}\approx16$ hash function calls to compute a correctly formatted 2-block pre-image for $\murmur$ and $\murmurtwo$.
+% Additionally, we need to assume the length field of the hash function when computing a pre-image. We assume $16$ bytes for $\murmur$ and $8$ bytes for $\murmurtwo$. However, there is a chance that the constructed pre-image has a leading zero byte, in which case we rerun the algorithm. Overall, this results in an average number of $256\cdot \frac{128}{127}\approx258$ and $32\cdot \frac{128}{127}\approx32$ trials to get a correctly formatted pre-image for $\murmur$ and $\murmurtwo$.
+
+It is also possible to construct so-called universal multi-collisions for certain hash functions in the $\mathit{MurmurHash}$ family~\cite{MurmurUMC}. These are large sets of input values that all hash to the same output, irrespective of the seed. For $\murmur$, such inputs could be useful in our targeted false positive attack on Redis' Bloom filter below; however, they seem to be difficult to construct while respecting the ASCII encoding requirement. We leave the construction and exploitation of such collisions to future work.
+
+\subsection{Count-Min Sketch Attack}\label{attacks:cms}
+
+We give an attack against Count-Min sketches in Redis that causes large frequency overestimates for any target element.
+
+\subsubsection{Overestimation attack} 
+\label{sec:cms-overestimation}
+
+Consider a Count-Min sketch with parameters $\varepsilon, \delta$. 
+After initializing CMS[$\varepsilon, \delta$] $\sigma$, an adversary $\advA$ is given access to insertion and query oracles: $\insO(\cdot) := \rCMS.\insS(\cdot, \sigma)$ and $\qryO(\cdot) := \rCMS.\qryS(\cdot, \sigma)$. In a frequency overestimation attack, the adversary is given a target element $x$ as input and is challenged with causing the frequency of $x$ to be overestimated. A metric for the adversary's success is the value $\rCMS.\qryS(x, \sigma) - n_x$, where $n_x$ is the number of times $x$ was actually inserted into the Count-Min sketch. 
+
+We begin by recalling that, for a frequency estimation query on an element $x \in \mathcal{U}$, the response given by a Count-Min sketch has one-sided error, i.e. it only overestimates. In the honest setting, this error can be bounded according to the number of items inserted into the structure and the parameters of the structure (see Section~\ref{sec:cms-intro}). We will show that in an adversarial setting, we can exploit knowledge of the internal randomness of the structure to cause the sketch to make massive overestimates of the frequency of a target element~$x$. 
+
+In~\Cref{sec:cms-attacks} we present attacks against the general CMS structure. 
+We could directly apply their ``public hash'' attack to the Redis implementation of the Count-Min sketch, as the seeds used for each row hash function are hard-coded. However, Redis' choice to use~$\murmurtwo$ for row position hash functions allows us to exploit the invertibility of the function to speed up the attack. As $\murmurtwo$ is invertible, we can generate an arbitrary number of multicollisions for a fixed hash output and seed. This allows us to carry out the attack more efficiently.%for reasonable sized parameters. 
+
+\begin{figure}[htp] 
+    \centering
+    \begin{pcvstack}[boxed,center]
+        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{overestimation\_attack$^{\insO}(x,pp,I)$}{%
+        \textrm{cover} \gets \textrm{find\_cover}(x,pp)\\
+        \pcuntil I \text{ insertions are made}\\
+        \t \pcfor e \in \textrm{cover}{:} \ \insO(e)\\
+        \pcreturn \textrm{done}
+        }
+        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{find\_cover$(x,pp)$}{%
+            \varepsilon, \delta \gets pp \\
+            k \gets  \left\lceil\ ln(\frac{1}{\delta}) \right\rceil\\
+            \textrm{cover} \gets \emptyset\\
+            (p_1,\ldots,p_k) \gets h(x,1),\ldots,h(x,k)\\
+            \pcfor i \in [k]\\
+            \t y \gets \mathit{MurmurHash2Inverse}(p_i,i)\\
+            \t \textrm{cover} \gets \textrm{cover} \cup \{ y \} \\
+            \pcreturn \textrm{cover}
+        }
+        %
+    \end{pcvstack}
+    \caption[Redis CMS Overestimation Attack.]{The count-min sketch overestimation attack. We use the invertibility of $\murmurtwo$ to find a cover. We then repeatedly insert the cover to create error. Note that we abuse notation and assume that~$\mathit{MurmurHash2Inverse}$ is run until a validly encoded pre-image is found.} 
+	\label{fig:cms-attack}
+\end{figure}
+
+To create an overestimation error on~$x$, one must find a cover for~$x$, which (with respect to the parameters of a given Count-Min sketch) is a set of elements~$\{ y_1{,}...{,}y_k\}$ such that ${\forall} i {\in} [k] {:} h(x,i) {=} h(y_i,i)$ and $\forall i {\in} [k] {:} y_i {\neq} x$. We use the fact that $\murmurtwo$ is invertible to find our cover. Let $p_i$ denote $h_i(x)$ for $i \in [k]$, where $h_i(\cdot)$ is instantiated using $\murmurtwo(\cdot,i)$ as in Redis. We then set $y_i$ by inverting $\murmurtwo(\cdot,i)$ at $x$ for $i \in [k]$. Respecting Redis' ASCII encoding constraint, we expect this to cost an equivalent of about 16 hash function evaluations for each $i$ (as per Section~\ref{sec:MurmurHash}). Therefore, we expect a total cost of about~$16 k$ $\murmurtwo$ computations. Once the cover is found, we simply repeatedly insert it, using $\insO$ calls on $y_i$ for $i \in [k]$. Since we never insert $x$ and our covers are always of size $k$, after $I$ insertions we observe an error on $x$ equal to $\lfloor \frac{I}{k}  \rfloor$, i.e. $\rCMS.\qryS(x, \sigma) {-} n_x \geq \lfloor \frac{I}{k} \rfloor$. For a full description of our attack, see~\Cref{fig:cms-attack}.
+
+We remark that the attack also works against structures that already have elements stored in them., as the Count-Min sketch is a linear structure.
+
+
+\begin{table}[htp]
+	\centering
+	\setlength\tabcolsep{4pt}%
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\begin{tabular}[c]{@{}c@{}}$\epsilon,\delta$ $(m,k)$\end{tabular}                          & \begin{tabular}[c]{@{}c@{}} Ours \end{tabular} & \cite{markelon23} \\ \hline
+		\begin{tabular}[c]{@{}c@{}}$2.7 \times 10^{-3},1.8 \times 10^{-2}$\\ $(1024,4)$\end{tabular} & 66.85                                                                          &  8533.32  \\ \hline
+		\begin{tabular}[c]{@{}c@{}}$6.6 \times 10^{-4},1.8 \times 10^{-2}$\\ $(4096,4)$\end{tabular} & 61.11                                                                          & 34133.36   \\ \hline
+		\begin{tabular}[c]{@{}c@{}}$2.7 \times 10^{-3},3.4 \times 10^{-4}$\\ $(1024,8)$\end{tabular} & 124.22                                                                         & 22264.72   \\ \hline
+		\begin{tabular}[c]{@{}c@{}}$6.6 \times 10^{-4},3.4 \times 10^{-4}$\\ $(4096,8)$\end{tabular} & 128.8                                                                          & 89058.72 \\ \hline
+	\end{tabular}
+	\caption[Comparison of Redis CMS Attack Versus Generic Attack.]{Experimental number (average over 100 trials) of equivalent~$\murmurtwo$ calls needed to find a cover for a random target~$x$. We compare the average to the expected number of~$\murmurtwo$ calls needed in the attack of~\cite{markelon23} given in~\Cref{sec:cms-attacks}, namely $kmH_{k}$. 
+	}
+	\label{tab:cms-oe-atk}
+\end{table}
+
+We implemented the attack and measured the computation needed for a variety of~$\varepsilon, \delta$. We compare the error to the forward hash computation based attack of~\cite{markelon23} given in~\Cref{sec:cms-attacks} with the one we present here. The results are summarized in Table~\ref{tab:cms-oe-atk}. As we can see our experimental results tightly match our analysis, and our attack is at least an order of magnitude less expensive than previous best attack in~\cite{markelon23}. Further, to verify the correctness of our attack we mounted it against the Redis Count-Min sketch and selected a random target element. We found a cover for said element and verified that for a fixed number of insertions~$I$ we obtained the expected error on the target, i.e. achieved error~$\lfloor \frac{I}{k}  \rfloor$ in all trials. 
+
+\subsection{Top-K}\label{attacks:tk}
+
+We present three attacks on the Top-K structure in Redis. 
+The first two attacks suppress the reporting of the true top-$K$ elements, while the third attack causes frequency overestimates by violating the no-fingerprint collision assumption.
+
+\subsubsection{Known top-$K$ hiding attack}
+\label{sec:known-top-k-hiding}
+
+Consider a Top-K structure with parameters $m, k, \mathrm{decay}, K$. After initializing TK[$m, k, \mathrm{decay}, K$] $\sigma$, a collection of data $\mathcal{C}$ with true top-$K$ elements $F$ is generated from some honest distribution (that is, a distribution that does not depend on the internal randomness of the structure). In practice, we can take this to be some collection of network traffic or a collection of items in a large database. 
+
+Then, an adversary $\advA$ is given access to insertion and query oracles $\insO(\cdot) := \rTK.\insS(\cdot, \sigma)$ and $\qryO(\cdot) := \rTK.\qryS(\cdot, \sigma)$. In a known top-$K$ hiding attack, the adversary receives $F$ as input and wins if it suppresses the reporting of the true top-$K$ elements $F$. The adversary's success can be checked by inserting $\mathcal{C}$ and checking whether $[f {\notin} \rTK.\listS(\sigma)]$ for all $f \in F$. Due to the probabilistic decay mechanism, we need the adversary to be able to insert elements into the structure before the honest collection is processed. In practice this is reasonable, as adversaries can time their attacks to ensure  they have early access to the structure.
+
+To carry out this attack, we adapt the strategy from~\cite{markelon23} given in~\Cref{sec:hk-attacks}. We begin by computing a cover using the inversion strategy for every element in~$F$. We then insert every element in the cover $t$ times through $\insO(\cdot)$ calls, where 
+$t$ is computed such that there exists negligible probability that, after the cover is inserted, any element from~$F$ will ever own any of their counters. The algorithm to compute~$t$ takes inputs~$p,n$, where $p$ is the probability that a cover element will relinquish ownership of its counters and~$n$ is the number of colliding insertions we expect. We set~$p=2^{-128}$ and~$n$ to the frequency of the maximum~$f \in F$ for this attack. Once~$\mathcal{C}$ is inserted after the attack phase, all elements in~$F$ will have estimated frequency equal to zero, and will in turn not be reported in the top-$K$ list as they should.
+
+In practice, $t$ will be quite small compared to the frequencies of the elements in~$F$ for a real-world data collection~$C$. The frequency of all~$f \in F$ is often of the order of~$10^5$ or greater, yielding~$t$ of the order of~$10^3$ for~$p=2^{-128}$.  Thus, the true top-K of $\mathcal{C}$ equals the top-K of the new stream consisting of our attack elements concatenated with $\mathcal{C}$. For more details on this attack (including the calculation of $t$), see ~\Cref{fig:tk-known-attack}.
+
+We expect an equivalent of $16k|F|$ calls to~$\murmurtwo$ to find a cover for known true top-K list~$F$. To test our attack, we initialized a TK[$4096, 20, 0.9, 20$], selected our data collection~$\mathcal{C}$ as the individual words in the English language version of \emph{War and Peace}, and computed~$F$ for~$K{=}20$ for $\mathcal{C}$. Our choice of $\mathcal{C}$ was inspired by Redis' blog post introducing the structure~\cite{redisblogtopK}. 
+We then computed a cover on~$F$ using our technique described above. Averaged over 100 trials, we made an equivalent of~$2580$ calls to~$\murmurtwo$, matching our analysis. We then inserted each element in the cover~$t$ times for~$t{=}206$ based on input parameters~$p{=}2^{-128}, n{=}34577$ (the frequency of the most frequent element). After this, the entirety of~$\mathcal{C}$ was inserted. In every trial, the reported top-$K$ and $F$ were disjoint as desired. 
+
+\begin{figure}[htp]
+    \centering
+    \begin{pcvstack}[boxed,center]
+        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{known\_F\_attack$^{\insO}(F,n,p,pp)$}{%
+        t \gets \textrm{get\_t}(n,p,pp)\\
+        \textrm{F\_cover} \gets \textrm{find\_F\_cover}(F,pp)\\
+        \pcfor e \in \textrm{F\_cover}\\
+        \t \pcfor i \in [t]\\
+        \t\t \insO(e)\\
+        \pcreturn \textrm{done}
+        }
+        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{get\_t$(n,p,pp)$}{%
+            m, k, \mathrm{decay}, K \gets pp \\
+            g(t) \gets \log_2(k \cdot n^t \cdot \mathrm{decay}^{t(t+1)/2} ) - \log_2(p)\\
+			t_1,t_2 \gets \text{FindRootsOf}(g)\\
+			\pcif t_1 > 1 \textbf{ or } t_2 < 1: t \gets 1\\
+			\pcif t_2 > 1: t \gets \left\lceil t_2 \right\rceil\\
+			\pcif t_2 = 1: t \gets 2\\
+			\pcreturn t
+        }
+        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{find\_F\_cover$(F,pp)$}{%
+            m, k, \mathrm{decay}, K \gets pp \\
+            \textrm{F\_cover} \gets \emptyset\\
+            \pcfor f \in F\\
+            \t (p_1,\ldots,p_k) \gets h(f,1),\ldots,h(f,k)\\
+            \t \pcfor i \in [k]\\
+            \t\t y \gets \mathit{MurmurHash2Inverse}(p_i,i)\\
+            \t\t \textrm{F\_cover} \gets \textrm{F\_cover} \cup \{ y \} \\
+            \pcreturn \textrm{F\_cover}
+        }
+        %
+    \end{pcvstack}	
+	\caption[Redis TK Known Top-$K$ Hiding Attack.]{The Top-K known top-$K$ hiding attack.}\label{fig:tk-known-attack}
+\end{figure}
+
+\subsubsection{Hidden top-$K$ hiding attack}
+
+We consider a similar attack model to~\cref{sec:known-top-k-hiding} with the modification that the adversary $\advA$ receives no input.
+Since $\advA$ does not know~$F$, it must compute a cover for the entire structure, i.e. all~$k {\times} m$ counters. 
+We go counter-by-counter and use hash inversion to compute a cover element for each counter. Note, however, that when computing a cover element for a particular counter, we collect additional positions in other rows that the element touches (if we have not yet covered said positions). In this way, we actually do less work than the expected equivalent of~$16mk$ calls to~$\murmurtwo$. 
+
+After computing this cover for the entire structure, $\advA$ then inserts each element in the cover~$t$ times through $\insO(\cdot)$ calls, with $t{=}500$ (corresponding to~$p{=}2^{-128},n{=}10^{11}$ from the previous method of computing~$t$). In practice, setting~$t{=}500$ means that with overwhelming probability no true top-K element will ever own its counters for any realistic data collection. Then, for any subsequent items inserted that are not part of the cover, their estimated frequency will be zero. In practice, this blocks any~$F$ from any realistic data collection~$\mathcal{C}$ from being reported in the top-$K$ list. This attack can be seen as a denial-of-service attack, as after the attack phase the structure is prevented from making accurate frequency estimates for any elements that are subsequently inserted into the Top-K. Our full attack is given in~\Cref{fig:tk-hidden-attack}.
+
+We verified the correctness of the attack as in~\cref{sec:known-top-k-hiding}, except again now setting~$t{=}500$. 
+
+\begin{figure}[htp]
+    \centering
+    \begin{pcvstack}[boxed,center]
+        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{hidden\_F\_attack$^{\insO}(n,p,pp)$}{%
+        t \gets 500\\%\textrm{get\_t}(n,p,pp)\\
+        \textrm{S\_cover} \gets \textrm{find\_S\_cover}(pp)\\
+        \pcfor e \in \textrm{S\_cover}\\
+        \t \pcfor i \in [t]\\
+        \t\t \insO(e)\\
+        \pcreturn \textrm{done}
+        }
+        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{find\_S\_cover$(pp)$}{%
+            m, k, \mathrm{decay}, K \gets pp \\
+            \eta \gets \zeros(k,m)\\
+            \textrm{S\_cover} \gets \emptyset\\
+            \pcfor i \in [k]\\
+            \t \pcfor j \in [m]\\
+            \t\t \pcif \eta[i][j] = 0\\
+            \t\t\t y \gets \mathit{MurmurHash2Inverse}(j,i)\\
+            \t\t\t \textrm{S\_cover} \gets \textrm{S\_cover} \cup \{ y \}\\
+            \t\t\t (p_1,\ldots,p_k) \gets h(y,1),\ldots,h(y,k)\\
+            \t\t\t \pcfor r \in [k]\\
+            \t\t\t\t \eta[r][p_r] \gets 1\\
+            \pcreturn \textrm{S\_cover}
+        }
+        %
+    \end{pcvstack}
+	\caption[Redis TK Hidden Top-$K$ Hiding Attack.]{The Top-K hidden top-$K$ attack.}
+    \label{fig:tk-hidden-attack} 
+\end{figure}
+
+
+\subsubsection{NFC assumption violation attack}
+
+Consider a Top-K structure with parameters $m, k, \mathrm{decay}, K$. After initializing TK[$m, k, \mathrm{decay}, K$] $\sigma$, an adversary $\advA$ is given access to insertion and query oracles: $\insO(\cdot) := \rTK.\insS(\cdot, \sigma)$ and $\qryO(\cdot) := \rTK.\qryS(\cdot, \sigma)$. The adversary's goal in an NFC assumption violation attack equates to the same goal as of that in Section~\ref{sec:cms-overestimation}. That is, $\advA$ receives $x$ as input and is challenged with causing the frequency of $x$ to be overestimated. Again we can use $\rTK.\qryS(x, \sigma) - n_x$ as a metric of success, where $n_x$ is the number of times $x$ was actually inserted into the Top-K structure.
+
+
+Recall that under the no-fingerprint collision assumption, the Top-K structure only underestimates frequencies of elements. 
+We will show that, with the Redis implementation of Top-K, it is trivial to violate this assumption, and thus create large frequency overestimation errors. 
+
+\begin{table}[htp]
+	\centering
+	\begin{tabular}{|c|c|c|}
+	\hline
+	$(m,k)$    & \begin{tabular}[c]{@{}c@{}}$\murmurtwo$ inversions\end{tabular} & \begin{tabular}[c]{@{}c@{}}$\murmurtwo$ calls\end{tabular} \\ \hline
+	$(1024,4)$ & 4296.69                                                                        & 1072.52                                                    \\ \hline
+	$(4096,4)$ & 18489.68                                                                       & 4602.56                                                    \\ \hline
+	$(1024,8)$ & 1849.71                                                                        & 905.44                                                     \\ \hline
+	$(4096,8)$ & 10058.16                                                                       & 5031.52                                                    \\ \hline
+	\end{tabular}
+	\caption[Cost of Redis TK NFC Violation Attack.]{Experimental number (averaged over 100 trials) of~$\murmurtwo$ inversion trials  and~$\murmurtwo$ calls needed to find a cover element for a randomly selected target~$x$. Recall that the cost of each is about the same.
+	}
+	\label{tab:tk-nfcv-atk}
+\end{table}
+
+To create large error on a given target~$x$, we compute multicollisions on the fingerprint of~$x$, stopping when we find a collision such that it shares one row position with~$x$. Unlike the attack against the Count-Min sketch, we only need to find such a collision in one row, as the Top-K takes the maximum count over all owned counters. Therefore, we are now finding a single cover element $y$. Then, by inserting the cover element $I$ times using $\insO(y)$, $\advA$ can expect to create error $I$ on the frequency estimation of $x$, i.e. $\rTK.\qryS(x, \sigma) - n_x \geq I$. Experimental results measuring the cost for this attack are given in Table~\ref{tab:tk-nfcv-atk}. We need~$\murmurtwo$ computations ($k$ per successful inversion) to check if the collision element we found matches any of the row positions to which our target maps. 
+
+We verified the correctness of the attack in the same way as in~\cref{sec:cms-overestimation}, obtaining the expected error~$I$  on the randomly select target~$x$ over all trials. For more details of our attack, see ~\Cref{fig:tk-nfc-attack}.
+
+\begin{figure}[htp]
+    \centering
+    \begin{pcvstack}[boxed,center]
+        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{nfc\_violation\_attack$^{\insO}(x,pp,I)$}{%
+        y \gets \textrm{find\_cover\_element}(x,pp)\\
+        \pcuntil I \text{ insertions are made}\\
+        \t \insO(y)\\
+        \pcreturn \textrm{done}
+        }
+        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{find\_cover\_element$(x,pp)$}{%
+            m, k, \mathrm{decay}, K \gets pp \\
+            \seed \gets 1919 \\ 
+            \textrm{done} \gets \bot \\
+            P \gets (h(x,1),\ldots,h(x,k))\\
+            \fp_x \gets h_\mathit{fp}(x)\\
+            \pcwhile \textrm{done} = \bot \\
+            \t y \gets \mathit{MurmurHash2Inverse}(\fp_x,\seed)\\
+            \t C \gets (h(y,1),\ldots,h(y,k))\\
+            \t \pcfor i \in [k]\\
+			\t\t \pcif P[i] = C[i] \\
+            \t\t\t \textrm{done} \gets \top \\
+            \pcreturn y
+        }
+        %
+    \end{pcvstack}	
+\caption[Redis TK NFC Violation Attack.]{The Top-K no-fingerprint collision violation attack. We use the invertibility of $\murmurtwo$ to find a single fingerprint collision and row pair element for the target~$x$. We then repeatedly insert the element to create error.}\label{fig:tk-nfc-attack}
+\end{figure}

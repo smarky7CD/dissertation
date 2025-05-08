@@ -77,3 +77,12 @@ A \emph{stream} data-object~$\streamvar{S} = e_1,e_2,\ldots$ is a finite sequenc
 The elements of a stream are not necessarily distinct, and the (stream) frequency of some $x \in \set{U}$ is $|\{i: e_i=x \}|$.  
 From the perspective of the PDS, the stream is presented one element at a time, with no buffering or ``look ahead".  
 That is, processing of a stream is performed in order, and the processing of $e_i$ is completed before the processing of $e_{i+1}$ may begin; once~$e_i$ has been processed, it cannot be revisited.
+
+\section{Redis}
+
+Redis (Remote Dictionary Server) is a general purpose, in-memory database that supports a rich array of functionality, including various Probabilistic Data Structures (PDS), such as Bloom filters, Cuckoo filters, as well as cardinality and frequency estimators. 
+These PDS typically perform well in the average case. However, given that Redis is intended to be used across a diverse array of applications, it is crucial to evaluate how these PDS perform under worst-case scenarios, i.e., when faced with adversarial inputs. We offer a comprehensive analysis to address this question.
+We begin by carefully documenting the different PDS implementations in Redis, explaining how they deviate from those PDS as described in the literature. 
+Then we show that these deviations enable a total of 10 novel attacks that are more severe than the corresponding attacks for generic versions of the PDS. 
+We highlight the critical role of Redis' decision to use non-cryptographic hash functions in the severity of these attacks. 
+We conclude by discussing countermeasures to the attacks, or explaining why, in some cases, countermeasures are not possible.

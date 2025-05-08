@@ -5,7 +5,7 @@ We will now compare non-adversarial performance of the compact frequency estimat
 
 We summarize each of these three streams and why they are of particular interest to experiment on below.
 
-\begin{enumerate}[wide, labelwidth=!, labelindent=0pt]
+\begin{enumerate}
 
     \item \textbf{Kosarak Stream:} This data collection contained anonymized click-rate data collected from visits to an online Hungarian news site. The resultant stream is of total length~$8,019,015$ with~$41,270$ distinct elements. As aforementioned, we sourced this stream from a frequent item mining dataset repository which is a collection of data sets meant to test frequent item finding algorithms on -- the very task which we are doing. We flattened the raw collection of data such that it would resemble a stream that could be processed item-by-item.
 
@@ -14,18 +14,19 @@ We summarize each of these three streams and why they are of particular interest
  
     \item \textbf{Retail Stream:} This data collection contained anonymized shopping data from a Belgian retail store. The resultant stream is of total length~$908,576$ and contains~$16,740$ distinct elements. This data set is also from the frequent items mining dataset repository. As with the Kosarak stream we flattened the raw data such that it would resemble a stream after processing. 
 \end{enumerate}
+
 \begin{figure*}[!ht]
   \centering
   \minipage{0.32\textwidth}
-    \includegraphics[width=\linewidth]{chapters/ch3_cfe/images/kosarak_pm.png}
+    \includegraphics[width=\linewidth]{chapters/ch3_cfe/ch3_images/kosarak_pm.png}
     \caption*{Kosarak stream}
   \endminipage\hfill
   \minipage{0.32\textwidth}
-    \includegraphics[width=\linewidth]{chapters/ch3_cfe/images/novel_pm.png}
+    \includegraphics[width=\linewidth]{chapters/ch3_cfe/ch3_images/novel_pm.png}
     \caption*{Novel stream}
   \endminipage\hfill
   \minipage{0.32\textwidth}%
-    \includegraphics[width=\linewidth]{chapters/ch3_cfe/images/retail_pm.png}
+    \includegraphics[width=\linewidth]{chapters/ch3_cfe/ch3_images/retail_pm.png}
     \caption*{Retail stream}
   \endminipage
   \caption[Stream Frequent Elements.]{We plot the top~$35\%$ probability mass for each stream. That is the most frequent elements that make up~$35\%$ of the total weight of the stream (i.e. the fewest number of elements in each stream whose frequencies sum to such that when divided by the total length of the stream equal~$35\%$). The first vertical red line in each plot is the top~$20\%$ probability mass, the second the top~$25\%$, the third the top~$30\%$, and the last the top~$35\%$. From visual inspection we decided to make the top-$K$ cut-off at, $20$ for Kosarak stream, $22$ for the Novel stream, and~$22$ for the Retail stream.}
@@ -52,7 +53,7 @@ We select~$K$ for each stream by observing the number of clearly identifiable ou
 
 We measure the accuracy of the non-adversarial performance according to four different metrics.
 
-\begin{enumerate}[wide, labelwidth=!, labelindent=0pt]
+\begin{enumerate}
     \item \textbf{Set Intersection Size (SIS):} This measures the size of the set intersection of the true top-$K$ set~$\set{K}$ of the stream and the estimated top-$K$ set~$\tilde{\set{K}}$ as reported by the CFE:~$\text{SIS} = |\set{K} \cap \tilde{\set{K}}|$. This is measure of precision on the estimated top-$K$ set as compared to the true top-$K$ set. A SIS of~$K$ would imply perfect precision. 
     
     \item \textbf{Jaccard Index (JI):} The JI is a statistic that measures the similarity of two sets~\cite{real1996probabilistic}. We use the statistic to determine the similarity of the true top-$K$ set~$\set{K}$ of the stream and the estimated top-$K$ set~$\tilde{\set{K}}$ as reported by the CFE. It is defined as~$\mathrm{JI} = \frac{|\set{K} \cap \tilde{\set{K}}|}{|\set{K} \cup \tilde{\set{K}}|}$. A JI can be in the range~$[0,1]$, with a JI of~$1$ implying a perfect characterization of the true top-$K$ set by the CFE in its top-$K$ estimation. 

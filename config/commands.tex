@@ -10,6 +10,14 @@
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
+% math script font; extra commands to make slightly larger
+\DeclareFontFamily{OT1}{pzc}{}
+\DeclareFontShape{OT1}{pzc}{m}{it}%
+{<-> s * [1.150] pzcmi7t}{}
+\DeclareMathAlphabet{\mathscript}{OT1}{pzc}{m}{it}
+\DeclareMathAlphabet{\mathsc}{OT1}{cmr}{m}{sc}
+\DeclareMathAlphabet{\mathsl}{OT1}{cmr}{m}{sl}
+
 % Formatting and common macros for crypto papers. Include this first.
 \usepackage{graphics}
 \usepackage[font={small}]{caption}
@@ -174,6 +182,13 @@
 \def\toint{\procfont{int}}
 \def\tostr{\procfont{str}}
 \def\byte(#1){[#1]}
+\newcommand*{\st}{~|~}
+\newcommand{\size}[1]{\left|#1\right|}
+\newcommand{\mb}{\ell}
+\newcommand{\cb}{\ell}
+\newcommand{\m}{\{1, 2, \dots, m\}}
+\newcommand{\trunc}{\text{trunc}}
+
 
 % - Boolean operators
 \newcommand*\AND{\wedge}
@@ -279,7 +294,7 @@
 \newcommand{\SKBF}{\schemefont{KBF}} % FIXME deprecate
 \newcommand{\PRLBF}{\schemefont{PPRL}}
 \newcommand{\DICT}{\schemefont{DICT}}
-\newcommand{\bloom}{\schemefont{Bloom}}
+%\newcommand{\bloom}{\schemefont{Bloom}}
 \newcommand{\bff}{\mathrm{bf}}
 \newcommand{\saltybloom}{\mathrm{sbf}}
 \newcommand{\prfbloom}{\mathrm{kbf}}
@@ -316,3 +331,78 @@
 \newcommand{\rverr}{\mathsf{Err}}
 \newcommand{\figref}[1]{Figure~\ref{#1}}
 \newcommand{\encode}[1]{\langle #1 \rangle}
+
+% Redis things
+\newcommand{\ef}{\mathit{ef}}
+\newcommand{\subf}{\mathit{subf}}
+\newcommand{\pref}{\mathit{pref}}
+\newcommand{\unique}{\mathit{unique}}
+\newcommand{\murmur}{\mathit{MurmurHash64A}}
+\newcommand{\murmurtwo}{\mathit{MurmurHash2}}
+\newcommand{\slot}{\mathit{slot}}
+\newcommand{\fmax}{\mathit{fmax}}
+\newcommand{\bs}{\mathit{bs}}
+\renewcommand{\pp}{\mathit{pp}}
+
+
+%% syntax
+\newcommand{\setupS}{\textsf{setup}}
+\newcommand{\upS}{\textsf{up}}
+\newcommand{\insS}{\textsf{ins}}
+\newcommand{\qryS}{\textsf{qry}}
+\newcommand{\delS}{\textsf{del}}
+\newcommand{\infoS}{\textsf{info}}
+\newcommand{\listS}{\textsf{list}}
+\newcommand{\patchS}{\textsf{patch}}
+\newcommand{\diffS}{\textsf{diff}}
+\newcommand{\somealgS}{\textsf{alg}}
+\newcommand{\nai}{\text{NAI}}
+\newcommand{\naigen}{\text{\nai-gen}}
+\newcommand{\statdist}{SD}
+\newcommand{\image}{\text{Im}}
+\newcommand{\upO}{\textbf{Up}}
+\newcommand{\insO}{\textbf{Ins}}
+\newcommand{\qryO}{\textbf{Qry}}
+
+
+\newcommand{\oCuckoo}{\textsf{originalCF}}
+\newcommand{\rCuckoo}{\textsf{CF}}
+\newcommand{\oBloom}{\textsf{originalBF}}
+\newcommand{\rBloom}{\textsf{BF}}
+\newcommand{\rCMS}{\textsf{CMS}}
+\newcommand{\rTK}{\textsf{TK}}
+\newcommand{\seed}{\mathit{seed}} 
+\newcommand{\unset}{\mathit{unset}} 
+\newcommand{\unused}{\mathit{unused}} 
+\newcommand{\bpe}{\mathit{bpe}} 
+\newcommand{\const}{\mathit{const}} 
+
+\newcommand{\load}{{\textsc{load}}}
+\newcommand{\save}{{\textsc{save}}}
+%%correctness error vector.
+\newcommand{\levels}{{\textsf{levels}}}
+\newcommand{\correrrs}{\textsc{corr.errors}}
+\newcommand{\trans}{\textsf{trans}}
+\newcommand{\fplist}{{\textsf{fp.list}}}
+\newcommand{\lost}{\mathsf{lost}} 
+\newcommand{\win}{\mathsf{win}} 
+%\newcommand{\lid}{{\textsf{l}_{id}}}
+%\newcommand{\fp}{{\textit{Fp}_{m,k}}}
+\newcommand{\pmk}{{\textit{P}_{m,k}}}
+\newcommand{\pfpsym}{P_{\Pi,pp}}
+\newcommand{\pfp}[1]{\pfpsym(FP\,|\,{#1})}
+\newcommand{\opfp}[1]{\overline{\pfpsym}(FP \mid {#1})}
+%\newcommand{\pufp}[1]{\pfpsym(UFP\,|\,{#1})}
+\newcommand{\pufp}[1]{\pfpsym^*(FP\,|\,{#1})}
+\newcommand{\opufp}[1]{\overline{\pfpsym}(UFP \mid {#1})}
+\newcommand{\pifp}[1]{\pfpsym(IF\,|\,{#1})} %insertion failure
+\newcommand{\oifp}[1]{\overline{\pfpsym}(IF \mid {#1})} %insertion failure 
+%\newcommand{\puifp}[1]{\pfpsym(UIF\,|\,{#1})} %insertion failure universal 
+\newcommand{\puifp}[1]{\pfpsym^*(IF\,|\,{#1})} %insertion failure universal 
+\newcommand{\ouifp}[1]{\overline{\pfpsym}(UIF \mid {#1})} %insertion failure universal 
+\newcommand{\pfn}{P^{FN}_{pp}}
+\newcommand{\pmkreal}{\overline{\textit{P}_{m,k}}}
+\newcommand{\fpreal}{\overline{\fp}}
+\newcommand{\Load}[1]{\text{load}(\ensuremath{#1})}
+\newcommand{\Keys}[1]{\text{keys}(\ensuremath{#1})}
+\newcommand{\Values}[1]{\text{vals}(\ensuremath{#1})}
