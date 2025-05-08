@@ -9,7 +9,9 @@
 Let $\bits^*$ denote the set of bitstrings and let~$\emptystr$ denote the empty
 string. Let $X \cat Y$ denote the concatenation of bitstrings~$X$ and~$Y$.  When~$\col$ is an abstract data-object (e.g., a (multi)set, a list) and~$e$ is an object that can be appended (in some understood fashion) to~$\col$, we overload the $\cat$ operator and write $\col \cat e$.
 
-Let $x \getsr \setX$ denote sampling~$x$ from a set~$\setX$ according to the distribution associated with~$\setX$; if~$\setX$ is finite and the distribution is unspecified, then it is uniform. Let $[i..j]$ denote the set of integers $\{i, \ldots, j\}$; if $i > j$, then define $[i..j] = \emptyset$. For all $m \geq 2$, let $[m] = \{1,2,\ldots,m\}$.
+Let $x \getsr \setX$ denote sampling~$x$ from a set~$\setX$ according to the distribution associated with~$\setX$; if~$\setX$ is finite and the distribution is unspecified, then it is uniform. Moreover, we denote by $\mathsf{U}(S)$ the uniform distribution on the (finite or uncountable) set $S\neq\emptyset$, and by $\mathsf{G}(p)$ be the geometric distribution for success probability $p$.
+
+Let $[i..j]$ denote the set of integers $\{i, \ldots, j\}$; if $i > j$, then define $[i..j] = \emptyset$. For all $m \geq 2$, let $[m] = \{1,2,\ldots,m\}$.
 
 Let $\mathcal{A}$ and $\mathcal{B}$ be sets. We take $\mathcal{A} \cup \mathcal{B}$ to be the union of the sets, $\mathcal{A} \cap \mathcal{B}$ to be the intersection of the sets, and $\mathcal{A} \setminus \mathcal{B}$ to be set-theoretic difference of $\mathcal{A}$ and $\mathcal{B}$.
 

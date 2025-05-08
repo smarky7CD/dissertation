@@ -1,0 +1,258 @@
+We give pseudocode and textual description of the probabilistic skipping-based data structures we consider in this work: hash tables, skip lists and treaps.
+
+\subsection{Hash Tables}
+\label{prelim:ht}
+
+\begin{figure*}[!htbp]
+    %	\Wider[4em]{
+            \centering
+            \begin{pchstack}[boxed,center,space=0.5em]
+                \begin{pcvstack}[space=1ex]
+    \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Rep_{\key}(\setS)$}{%
+                              \pcfor i \gets 1 \ \mathbf{to} \ m \pcdo \\
+                                \t T[i] \gets \kwnew\; \llst\\
+                            \pcfor (x,v) \in \setS \\
+                            \t T \gets \Up_{\key}(T,\ins_{(x,v)})\\
+                            \pcreturn T \pcskipln\\ 
+                        }
+                        
+                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{\key}(T,\ins_{(x,v)})$}{%
+                              v' \gets \Qry_{\key}(T,\qry_{x})\\
+                            \pcif v' \neq \star\\
+                            \t \Up_{\key}(T,\del_{x})\\
+                            i \gets \hash(\key,x)\\
+                            T[i].\mathsf{insert}((x,v))\\
+                            \pcreturn T
+                        }
+                \end{pcvstack}	
+                \begin{pcvstack}[space=0.45em]
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{\key}(T,\del_{x})$}{%
+                            i \gets \hash(\key,x)\\
+                            T[i].\mathsf{remove}(x)\\
+                          \pcreturn T\pcskipln\\ 
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Qry_{\key}(T,\qry_{x})$}{%
+                            v \gets \star \\
+                            i \gets \hash(\key,x)\\
+                           v' \gets T[i].\mathsf{find}(x)\\
+                            \pcif v' \neq \nlll\\
+                            \t v \gets v'\\
+                            \pcreturn v
+                        }
+                \end{pcvstack}	
+            \end{pchstack}
+    %	}
+      \caption[Hash Table Structure.]{A possibly keyed hash-table structure $\mathrm{HT}[\hash_\key,b]$ admitting insertions, deletions, and queries for any~$k \in \univ_{\kappa}$ and its associated value~$v$. The parameters are an integer $b \geq 1$, and a keyed function $\hash: \keys\times\univ_{\kappa} \to [b]$ that maps the key part of key-value pair data-object elements (encoded as strings) to a position in the one of the table buckets~$v.T$. A particular choice of parameters gives a concrete scheme. Each bucket contains a simple linked list~$\llst$ equipped with its usual operations $\mathsf{insert}$, $\mathsf{find}$, and $\mathsf{remove}$ for insertion, searching, and deletion. If an item is not contained in the map, the distinguished symbol~$\star$ is returned.} 
+      \label{fig:ht}
+    \end{figure*}
+
+We give a pseudocode description of a hash table (HT) in~\Cref{fig:ht}. Elements consist of a pair of entries $(x,v)$ of a unique index value $x$ and the value $v$. An instance of HT consists of~$b$ buckets, each containing an (initially empty) linked list~$\llst$, and a mapping~$\hash(\key,\cdot)$ from the index value $x$ to the bucket number in $[b]$. 
+
+An index-value pair~$(x,v)$ is inserted into the HT representation by computing $\hash(\key,x){=} i$ and traversing it to the $i$-th bucket. We then check if the pair is already in the linked list~$\llst[i]$ stored and delete the prior mapping if this is the case. This is necessary since we insert elements according to the index key $x$, and the value entry $v$ may have changed in the new request. Finally, we insert the new pair into~$\llst[i]$. Likewise, a key is deleted by searching in the bucket to which it is assigned and removing the key and its associated value from the linked list~$\llst[i]$ in the bucket if this pair exists there. Traditionally, it is assumed that $i = \hash(\key,x)$, where~$\hash$ is a fast-to-compute hash function with good (enough) collision resistance properties. However, we generalize here to make the exposition cleaner and allow the mapping to depend upon secret randomness (i.e., a key~$\key$). To query a key for its associated value, the algorithm $\Qry(\qry_x)$ searches the bucket~$x$ maps to and returns the index-value pair if it exists there; otherwise, we return the distinguished null symbol~$\star$.
+
+Hash tables are widely adopted for their $O(1)$ amortized average-case complexity for insertions, deletions, and look-ups, assuming "good" collision-resistance properties in the internal hash function. This efficiency has led to their extensive use across various applications, including implementations of associative arrays \cite{mehlhorn2008hash} and sets \cite{blandy2021programming} in programming languages, cache systems \cite{istvan2015hash}, and database indexing \cite{zobel2001memory}. However, despite their performance advantages, hash tables have inherent functional limitations—they cannot efficiently support operations that depend on order relationships between keys, such as range queries, predecessor/successor lookups, or sorted traversals, restricting their applicability in scenarios where such operations are essential.
+
+\subsection{Skip Lists}
+\label{prelim:sl}
+
+\begin{figure*}[thp]
+    %	\Wider[4em]{
+            \centering
+            \begin{pchstack}[boxed,center,space=0.5em]
+                \begin{pcvstack}[space=0.45em]
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Rep_{\key}(\setS)$}{%
+                            \mathsf{h} \gets \schemefont{NewNode}(m,\star)\\
+                            \llst.\hdr \gets \mathsf{h}, \;
+                            \llst.\lvl \gets 1\\
+                            \pcfor (x,v) \in \setS \\
+                            \t \llst \gets \Up_{\key}(\llst,\ins_{(x,v)})\\						
+                            \pcreturn \llst
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{NewNode}(\ell,(x,v))$}{%
+                            \pccomment{array position $0$ is reserved for a key, value pair $(x,v)$}\\
+                            \pccomment{accessible via $n.\keyacc$ and $n.\valueacc$}\\
+                            \pccomment{array positions $1 \ldots \ell$ are forward pointers}\\
+                            \pccomment{level is accessible via $n.\lvl$}\\
+                            \node \gets \kwnew\; [0,..,\ell]\\
+                            \node[0] \gets (x,v)\\
+                            \pcfor i \gets \ell \ \mathbf{downto} \ 1 \pcdo\\
+                            \t \node[i] \gets \nlll\\
+                            \pcreturn \node
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{RandomLevel}_{\key}(\boxed{x})$}{%
+                            \boxed{\ell \gets R(\key,x,m,p)}\\
+                            \boxed{\pcreturn \ell}\\
+                            \ell \gets 1, \;
+                            r \getsr [0,1)\\
+                            \pcwhile r < p \ \mathbf{and} \ \ell < m \pcdo\\
+                            \t \ell \gets \ell + 1, \; r \getsr [0,1)\\
+                            \pcreturn \ell
+                        }
+                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Qry(\llst,\qry_{x})$}{%
+                          c \gets \llst.\hdr\\
+                            \pcfor i \gets \llst.\lvl \ \mathbf{downto} \ 1 \pcdo\\
+                            \t \pcwhile c[i] \neq \nlll \ \mathbf{and} \ c[i][0].\keyacc < x \pcdo \\
+                            \t \t c \gets c[i]\\
+                            c \gets c[1]\\
+                            \pcif c \neq \nlll \ \mathbf{and} \  c[0].\keyacc = x \pcthen\\
+                            \t \pcreturn c[0].\valueacc \\
+                            \pcelse \\
+                            \t \pcreturn \star
+                        }
+                \end{pcvstack}	
+                \begin{pcvstack}[space=0.45em]
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{\key}(\llst,\ins_{(x,v)})$}{%
+                            \mathsf{u} \gets \kwnew \ [1,..,m] \pccomment{local array of pointers}\\
+                            c \gets \llst.\hdr\\
+                            \pcfor i \gets \llst.\lvl \ \mathbf{downto} \ 1 \pcdo\\
+                            \t \pcwhile c[i] \neq \nlll \ \mathbf{and} \ c[i][0].\keyacc < x \pcdo \\
+                            \t \t c \gets c[i]\\
+                            \t u[i] \gets c\\
+                            c \gets c[1]\\
+                            \pcif c \neq \nlll \ \mathbf{and} \  c[0].\keyacc = x \pcthen\\
+                            \t c[0].\valueacc \gets v \\
+                            \t \pcreturn \llst \\
+                            \pcelse\\
+                            \t \ell \gets \schemefont{RandomLevel}_{\key}(\boxed{x})\\
+                            \t \pcif \ell > \llst.\lvl \pcthen \\
+                            \t\t \pcfor i \gets \llst.\lvl + 1 \ \mathbf{upto} \ \ell \pcdo\\
+                            \t\t\t \mathsf{u}[i] \gets \llst.\hdr\\
+                            \t\t \llst.\lvl \gets \ell\\
+                            \mathsf{n} \gets \schemefont{NewNode}(\ell,(x,v))\\
+                            \pcfor i \gets 1 \ \mathbf{upto} \ \ell \pcdo\\
+                            \t \mathsf{n}[i]\gets \mathsf{u}[i][i] ,\;
+                            u[i][i]  \gets \mathsf{n}\\
+                            \pcreturn \llst
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up(\llst,\del_{x})$}{%
+                            \mathsf{u} \gets \kwnew \ [1,..,m] \pccomment{local array of pointers}\\
+                            c \gets \llst.\hdr\\
+                            \pcfor i \gets \llst.\lvl \ \mathbf{downto} \ 1 \pcdo\\
+                            \t \pcwhile c[i] \neq \nlll \ \mathbf{and} \ c[i][0].\keyacc < x \pcdo \\
+                            \t \t c \gets c[i]\\
+                            \t u[i] \gets c\\
+                            c \gets c[1]\\
+                            \pcif c \neq \nlll \ \mathbf{and} \  c[0].\keyacc = x \pcthen\\
+                            \t \pcfor i \gets 1 \ \mathbf{upto} \ c.\lvl \pcdo \\
+                            \t\t \mathsf{u}[i][i] \gets c[i] \pccomment{free c}\\
+                            \t \pcwhile \llst.\lvl > 1 \ \textbf{and} \ \llst.\hdr[\llst.\lvl] = \nlll \pcdo\\
+                           \t \t \llst.\lvl \gets \llst.\lvl - 1\\
+                            \pcreturn \llst
+                        }
+                \end{pcvstack}	
+            \end{pchstack}
+    %	}
+      \caption[Skip List Structure.]{A possibly ``deterministic'' (and keyed) skip list structure $\SL[\boxed{R},m,p]$ admitting insertions, deletions, and queries for any~$x \in \univ$ for some well-ordered universe~$\univ$. The parameters are an integer $m \geq 0$ representing the maximum level of the structure, a fraction~$p \in (0,1)$ used for determining an element's random level, and, if using the deterministic version of the structure, a keyed function $R: \keys \by \univ \by \mathbb{Z}^{+} \by (0,1) \to [m]$ that maps an element to a level in accordance with the distribution imposed by~$m$ and~$p$. A concrete scheme is given by a particular choice of parameters. Subroutines used by the deterministic version of the structure appear in the boxed environment. 
+      } 
+      \label{fig:sl}
+    \end{figure*}
+
+In~\Cref{fig:sl}, we give a pseudocode description of the skip list (\SL). \SL \ maintains an ordered collection of data that allows for average-case runtime~$O(\log n)$ for search, insertions, and deletions (where the size of the represented collection is~$n$). The structure is maintained as a hierarchy of linked lists, with the first level containing all the elements of the collection and each higher level in the structure skipping over an increasing number of elements. Searching (as well as insertions and deletions) starts at the highest level, only moving down to lower levels as necessary. The specific elements that are skipped at each level are determined either probabilistically or deterministically (using (say) a PRF) at insertion time -- we focus on the probabilistic version of this structure in this paper. For a full structure description, we point to the original paper~\cite{pugh}. 
+
+Skip lists provide an elegant probabilistic alternative to balanced binary search trees. They are widely deployed in industry applications -- managing millions of Discord server members~\cite{discord}, storing data in Apache Web Servers~\cite{apache}, and indexing SingleStore databases~\cite{singlestore}. Unlike hash tables, skip lists efficiently support range queries, ordered traversals, and predecessor/successor operations, making them valuable for various applications~\cite{quantumwalk, skabnet, InPlaceKV}.
+
+\subsection{Treaps}
+\label{prelim:tr}
+
+\begin{figure*}[thp]
+    %	\Wider[4em]{
+            \centering
+            \begin{pchstack}[boxed,center,space=0.5em]
+                \begin{pcvstack}[space=0.45em]
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Rep_{K}(\setS)$}{%
+                            \ttree.\rt \gets \nlll \\
+                            \pcfor (x,v) \in \setS \pcdo \\
+                            \t \ttree \gets \Up_{K}(\ttree,\ins_{(x,v)})\\						
+                            \pcreturn \ttree
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{RandomPriority}_{K}(\boxed{x})$}{%
+                            \boxed{p \gets R(K,x)}\\
+                            \boxed{\pcreturn p}\\
+                            p \getsr (0,1)\\
+                          \pcreturn p
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{NewNode}((x,v),p)$}{%
+                            \pccomment{array position $0$ is reserved for a key, value pair $(x,v)$}\\
+                            \pccomment{accessible via $n.\keyacc$ and $n.\valueacc$}\\
+                            \pccomment{array positions $2, 3$ are child pointers and $1$ is priority}\\
+                            \node \gets [(x,v),p,\nlll,\nlll]\\
+                          \pcreturn \node
+                        }
+                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Qry(\ttree,\qry_{x})$}{%
+                          \ttree.\rt \gets \Qry^{\text{rec}}(\ttree.\rt,\qry_{x}) \\
+                          \pcreturn \ttree
+                        }
+                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Qry^{\text{rec}}(c,\qry_{x})$}{%
+                          \pcif c = \nlll \pcthen \\
+                            \t \pcreturn \star \\
+                          \pcif c[0].\keyacc = x \pcthen \\
+                            \t \pcreturn c[0].\keyacc \\
+                            b \gets (x > c[0].\keyacc)\\
+                            \pcreturn \Qry^{\text{rec}}(c[2+b],\qry_{x})
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{Rotate}(c,b)$}{%
+                             \tmp \gets c[2+b][3-b] \\
+                             c[2+b][3-b] \gets c \\
+                             c[2+b] \gets \tmp \\
+                            \pcreturn \tmp
+                        }
+                \end{pcvstack}	
+                \begin{pcvstack}[space=0.45em]
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{K}(\ttree,\ins_{(x,v)})$}{%
+                            \ttree.\rt \gets \Up^{\text{rec}}_{K}(\ttree.\rt,\ins_{(x,v)}) \\
+                            \pcreturn \ttree
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up^{\text{rec}}_{K}(c,\ins_{(x,v)})$}{%
+                            \pcif c = \nlll \pcthen \\
+                             \t p \gets \schemefont{RandomPriority}_{K}(\boxed{x})\\
+                            \t \pcreturn \schemefont{NewNode}((x,v),p) \\
+                            \pcif c[0].\keyacc = x \pcthen \\
+                            \t c[0].\valueacc \gets v \\
+                            \t \pcreturn c \\
+                            b \gets (x > c[0].\keyacc) \\
+                            c[2+b] \gets \Up^{\text{rec}}_{K}(c[2+b],\ins_{(x,v)}) \\ 
+                            \pccomment{maintain MIN Heap property}\\
+                            \pcif c[1] > c[2+b][1] \pcthen \\
+                            \t c \gets \schemefont{Rotate}(c,b) \\
+                            \pcreturn c
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{K}(\ttree,\del_{x})$}{%
+                            \ttree.\rt \gets \Up^{\text{rec}}_{K}(\ttree.\rt,\del_{x}) \\
+                            \pcreturn \ttree
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up^{\text{rec}}(c,\del_{x})$}{%
+                            \pcif c = \nlll \pcthen \\
+                            \t \pcreturn \nlll \\
+                            \pcif c[0].\keyacc = x \pcthen \\
+                            \pccomment{Remove node} \\
+                            \t \pcif c[2]=\nlll \ \mathbf{and} \ c[3]=\nlll \pcthen \\
+                            \t \t \pcreturn \nlll \\
+                            \t \pcif c[2]=\nlll \pcthen \\
+                            \t \t \pcreturn c[3] \\
+                            \t \pcif c[3]=\nlll \pcthen \\
+                            \t \t \pcreturn c[2] \\
+                            \pccomment{Rotate node down before removing} \\
+                            \t b \gets c[3][1] > c[2][1] \pcthen \\
+                            \t c \gets \schemefont{Rotate}(c,b) \\
+                            \t c[3-b] \gets \Up^{\text{rec}}_{K}(c[3-b],\del_{x})) \\
+                            \pcelse \\
+                            \t b \gets (x > c[0].\keyacc) \\
+                            \t c[2+b] \gets \Up^{\text{rec}}_{K}(c[2+b],\del_{x})) \\ 
+                            \pcreturn c
+                        }
+                \end{pcvstack}	
+            \end{pchstack}
+    %	}
+      \caption[Treap Structure.]{A possibly ``deterministic'' (and keyed) MIN treap structure $\TR[\boxed{R}]$ admitting insertions, deletions, and queries for any~$x \in \univ$ for some well-ordered universe~$\univ$. The parameter is a keyed function $R: \keys \by \univ \to (0,1)$ that assigns an element a random priority. Subroutines used by the deterministic version of the structure appear in the boxed environment. Let $\schemefont{MinPrioChild}(c)$ denote the function that returns the child index (0 or 1) of node $c$ with the minimum priority, or null if $c$ has no children.} 
+      \label{fig:treap}
+\end{figure*}
+
+In~\Cref{fig:treap} , we give a pseudocode description of the treap (\TR).
+A treap~\cite{aragon1989randomized} combines the algorithms of a binary search tree (BST) and a heap and achieves an expected height of $O(\log n)$ \cite{aragon1989randomized}.
+Inserting a node into a treap works analogously to a BST, but the node gets assigned an additional random priority value.
+Subsequently, the algorithm rotates the tree to maintain a heap order amongst the priority values without affecting the key ordering.
+For instance, in a MIN heap, the parent nodes are guaranteed lower priority values than their children.
+Intuitively, when interpreting the priority values as timestamps, the resulting treap will correspond to a binary search tree in which all nodes have been inserted in random order (i.e., a randomized binary search tree). 
+Deletion first rotates a node down the heap without affecting the key ordering and then removes it once it reaches a leaf position. 
+
+Treaps efficiently support the full spectrum of binary tree operations, including range queries, predecessor/successor lookups, in-order traversals, and advanced tree operations like join, split, and union. This versatility has made treaps valuable in applications where search efficiency and ordered operations are critical requirements, such as implementing retroactive data structures~\cite{demaine2007retroactive}.

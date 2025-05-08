@@ -1,0 +1,157 @@
+\paragraph{Informal Security for Probabilistic Skipping-based  Structures}
+
+Our goal is to capture the average-case run time of operations PSDS being \emph{conserved} in the face of an adaptive adversary that can control the data represented by the structure. Loosely, the average-case run time of PSDS relates to how data is ``distributed'' in the representation.  For instance, an ideal hash table would distribute the elements it represents equally among the buckets. Analogously, ideal ordered structures (e.g., a skip list or a treap) would be isomorphic to a balanced tree. If a data collection was fixed, and we ignored a desire for efficiency, one could always craft an ideal representation with respect to the runtime of queries. For a hash table, one could find a hash function that equally distributes the fixed collection to its buckets. For a fixed-ordered structure, one could simply assign the heights (depths) of elements such that the shortest possible search paths are guaranteed, as with a perfectly balanced tree structure. 
+
+However, PSDS are used in mutable settings. For this reason (and for efficiency), PSDS use some form of randomness to process updates dynamically and update their representation. Hash tables select a random hash function to map elements to buckets, and ordered PSDS employ per-operation randomization during insertion to determine an element's position in the structure --- typically through coin flips for skip lists or random priority assignments for treaps. These processes have been shown (with high probability) to yield representations of a dynamic data collection that are ``close'' to the ideal representations. Hash tables are analyzed using standard ball-and-bin arguments. Assuming a collision-resistant hash function and a load factor such that~$n \approx b$ (i.e., the size $n$ of the data collection stored is about equal to the number $b$ of buckets), it is known \cite{chawla09} that with probability~$p = 1 - \frac{1}{b}$ that at any point in time no bucket has more than~$3\frac{\log b}{\log \log b}$ entries. This maximum bucket population bounds directly corresponds with a subsequent operation's maximum insertion, deletion, or query time. Likewise, the maximum search cost path of any element queried to a skip list or treap has been shown to not exceed~$O (\log n)$ with high probability (where the exact constants are functions of the parameters of the structure).  
+
+The above analyses are done under a strictly \emph{non-adaptive} adversarial assumption. That is, these probabilistic bounds on the ``distribution'' of elements are done under the assumption that the updates and queries made to the structure do not depend on the internal randomness of the structure, the results of past operations, or the state of the representation. In the adaptive adversarial setting, this cannot be assumed. This is seen in both the hash flooding attack and the skip list degeneration attack~\cite{CrosbyW03,bar2007remote,klink2011efficient,nussbaum2019skiplist}. 
+Therefore, intuitively, a robust PSDS would conserve the desired element distribution property of the structure with high probability, even in the face of an adaptive adversary. This is what we aim to capture with our formal security model.
+
+\paragraph{Formal Security Model}
+
+\begin{figure}[thp]
+ \centering
+    
+
+	\begin{pchstack}[boxed,center,space=0.5em]
+	
+	\begin{pcvstack}[space=0.45em]
+		
+    \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.8em}}]{$\Exp{\text{aapc}}_{\struct, \phi, \beta, \epsilon}(\advA)$}{%
+                r \gets 0; K \getsr \mathcal{K}\\
+                %\mathsf{kv} \gets \top; \mathsf{rv} \gets \top\\
+                %\pcif u = 1 : \mathsf{kv} \gets K\\
+                %\pcif v = 1 : \mathsf{rv} \gets \repr\\
+				\mathrm{done} \getsr \advA^{\REPO,\UPO,\QRYO}\\%(\mathsf{kv},\mathsf{rv})\\
+				\pcreturn \big[\frac{\phi(D,\repr)}{\beta(\mathcal{P},|D|)} \geq \epsilon\big]
+		}
+
+  \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.8em}}]{$\HASHO(X)$}{%
+        \pcif X \not\in \mathcal{X} : \pcreturn \bot\\
+        \pcif H[X] = \bot\\
+        \t X[X] \getsr \mathcal{Y}\\
+		\pcreturn H[X]
+	}
+
+	\end{pcvstack}
+
+	\begin{pcvstack}[space=0.45em]
+
+ 		\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.8em}}]{$\REPO(C)$}{%
+        \pcif r = 1 : \pcreturn \bot \\
+        r \gets 1\\
+		\pub \getsr \Rep_{K}(C)\\
+        D \gets C\\
+        %\pcif v = 0 : \pcreturn \top\\ 
+		\pcreturn \pub
+	}
+ 
+		\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.8em}}]{$\UPO(\up)$}{%
+		\pub \getsr \Up_{K}(\pub, \up)\\
+		D \gets \up(D)\\
+        %\pcif v = 0 : \pcreturn \top\\ 
+		\pcreturn \pub
+	}
+
+	\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.8em}}]{$\QRYO(\qry)$}{%
+		\pcreturn \Qry_{K}(\pub, \qry)
+	}
+	\end{pcvstack}
+ \end{pchstack}
+
+
+  \caption[The AAPC Security Model.]{The Adaptive Adversary Property Conservation (AAPC) security game. The experiment enforces that the adversary is only able to call~$\REPO$ once. The experiment returns the output of a predicate that returns~$1$ iff the property function~$\phi(D,\repr)$ computed over the representation the adversary interacts with is greater than~$\epsilon$-times (for some~$\epsilon > 0$) larger than some target bound~$\beta$ (that only depends on the parameters of the structure~$\mathcal{P}$ and the size of the represented data object~$|D|$). The $\HASHO$ oracle computes a random mapping $\set{X}\to\set{Y}$ (i.e., a random oracle), and is implicitly provided to $\Rep$, $\Up$ and $\Qry$ as needed.}
+  \label{fig:aapc}
+\end{figure}
+
+Let~$\Pi = (\Rep,\Up,\Qry)$ be a probabilistic skipping-based  data structure. We define a notion of adversarial property conservation involving~$\Pi$, a property function~$\prop : \dataobjects \times \{0,1\}^{*} \rightarrow \mathbb{R}$, a target bound~$\beta : \mathcal{P} \times \mathbb{Z}^{+} \rightarrow \mathbb{R}$, and a threshold $\epsilon \in \mathbb{R},\epsilon > 0$.   
+
+
+\begin{figure}
+    %	\Wider[4em]{
+            \centering
+            \begin{pchstack}[boxed,center,space=0.5em]
+                \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.8em}}]{HT Maximum Search Path: $\phi(D,\repr)$}{%
+                    e \gets 0\\
+                    \pcfor i \gets 1 \ \mathbf{to} \ m\\
+                    \t \ell \gets \mathsf{length}(T[i])\\
+                    \t \pcif \ell > e\\
+                    \t \t e \gets \ell\\
+                    \pcreturn e
+                }
+            \end{pchstack}
+    %	}
+      \caption[HT Maximum Search Path.]{The HT Maximum Search Path function~$\prop : \dataobjects \times \{0,1 \}^{*} \rightarrow  \mathbb{R}$. The function iterates through all $m$ buckets, returning the bucket with the greatest population, which is equivalent to the longest search path in the table.
+      } 
+      \label{fig:ht-pop}
+\end{figure}
+
+    \begin{figure}
+    %	\Wider[4em]{
+            \centering
+            \begin{pcvstack}[boxed,center,space=0.5em]
+                \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.8em}}]{TR Maximum Search Path: $\phi(D,\repr)$}{%
+                    \pcreturn \phi^{\text{rec}}(\ttree.\rt, 0) 
+                }
+                \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\phi^{\text{rec}}(n,e)$}{%
+                    \pcif n = \nlll \pcthen \\
+                     \t \pcreturn  \\
+                    e_1 \gets \phi^{\text{rec}}(n[2],e+1) \\
+                    e_2 \gets \phi^{\text{rec}}(n[3],e+1) \\
+                    \pcreturn \max(e_1, e_2)
+                }
+            \end{pcvstack}
+    %	}
+      \caption[Treap Maximum Search Path.]{The TR Maximum Search Path function~$\prop : \dataobjects \times \{0,1 \}^{*} \rightarrow  \mathbb{R}$. The function performs an in-order traversal for all elements~$d \in D$, returning the longest search path cost among them.
+      } 
+      \label{fig:t-cost}
+\end{figure}
+    
+\begin{figure}
+    %	\Wider[4em]{
+            \centering
+            \begin{pchstack}[boxed,center,space=0.5em]
+                \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.8em}}]{SL Maximum Search Path: $\phi(D,\repr)$}{%
+                    m \gets 0\\
+                    \pcfor d \in D \\
+                    \t \ell \gets 0, \;
+                    c \gets \llst.\hdr\\
+                    \t \pcfor i \gets \llst.\lvl \ \mathbf{downto} \ 1 \pcdo\\
+                    \t \t \pcwhile c[i] \neq \nlll \ \mathbf{and} \ c[i][0].\keyacc < d \t \pcdo \\
+                    \t \t \t c \gets c[i], \;
+                    \ell \gets \ell + 1\\
+                    \t c \gets c[1], \;
+                    \ell \gets \ell + 1\\
+                    \t \pcif c \neq \nlll \ \mathbf{and} \  c[0].\keyacc = d \pcthen\\
+                    \t\t \pcif \ell > m \pcthen \\
+                    \t\t\t m \gets \ell\\
+                    \pcreturn m
+            }
+            \end{pchstack}
+    %	}
+      \caption[SL Maxium Search Path.]{The SL Maximum Search Path functions~$\prop : \dataobjects \times \{0,1 \}^{*} \rightarrow  \mathbb{R}$. The function iterates through all elements~$d \in D$, returning the longest search path cost among them. Our function only computes rightward pointer traversals, as downward movements equate to a simple array lookup. 
+      } 
+      \label{fig:sl-cost}
+\end{figure}
+
+
+A property function~$\prop$ takes as input the data object~$D \subseteq \dataobjects$  represented by~$\repr$ (the representation the adversary produces during its execution) and the representation~$\repr$ itself and outputs a value that indicates the concrete property for the given adversarially chosen data collection and corresponding representation. This function represents the desired property one would like to conserve. For all structures of interest, this is the maximum search path cost over all elements~$d \in D$~\footnote{This property sufficiently captures the search path cost of any~$d$ in the universe of all possible elements, as a search for an element not in the representation terminates with at most one more pointer traversal compared to any element in the representation.}. The intuition is that a complexity attack is deemed successful precisely when it significantly increases the maximum search path cost; therefore, a robust data structure must maintain nearly equivalent worst-case performance (with high probability) regardless of adversarial manipulation. We give the exact property function for a hash table in ~\Cref{fig:ht-pop},  for a skip list in ~\Cref{fig:sl-cost} , and for a treap in~\Cref{fig:t-cost}.
+
+A target bound~$\beta$ takes as input the structure parameters~$\mathcal{P}$ (e.g., the number of buckets for a given hash table) and a size of the represented data object~$|\mathcal{D}|$ (denoted~$n$ below), and outputs the resulting bound value. We choose a target bound such that it corresponds to the known non-adaptive bound for the property we want to conserve. For the hash table maximum search path cost, this is~$\beta(\langle b \rangle, n) = 3\frac{\log b}{\log \log b}$. For the skip list and treap maximum search path, we chose~$\beta (\langle p,m \rangle, n) = c \log_{1/p}(n)$ (for a small constant~$c$), and $\beta (\langle  \rangle, n) = 2\lg(n)+1$, respectively, as these are the (blunt) non-adversarial expected search path lengths~\cite{pugh,reingold1994randomized}.
+
+We give this notion of adversarial property conservation in~\Cref{fig:aapc}. The \emph{Adaptive Adversary Property Conservation} (AAPC) experiment aims to capture an adversary's ability to adaptively craft a representation~$\repr$ of some dynamic and adversarially decided data object~$D$, such that when the property function~$\phi$ is computed, the ratio of its output to the target bound's output is large (to win the experiment this ratio needs to exceed~$\epsilon$). As the properties (and their accompanying target bounds) measure how data elements are distributed in a particular representation (and bound how they are distributed in the non-adaptive setting), this notion directly translates to an adversary's ability to disrupt the expected runtime of a data structure's operations. 
+
+The AAPC experiment begins by setting a parameter~$r=0$ and selecting a key~$K$ from the key space~$\mathcal{K}$. For unkeyed hash tables (insecure) and non-deterministic versions of the ordered PSDS, the key space is the empty set. The adversary is then allowed to instantiate the data structure with any initial data object~$C$ (including the empty data object) via the~$\REPO$ oracle and receives back the resulting representation. We enforce that the adversary is only allowed to call~$\REPO$ once via the parameter~$r$. This is to disallow the adversary from leveraging past information from a data structure that is keyed with the same key~$K$ to trivially win the game. That is, keyed hash tables and deterministic PSDS must sample a fresh random key to guarantee security. 
+
+The adversary is then allowed to make any sequence of~$\UPO$ and~$\QRYO$ calls. Upon each update, we also update the internal data object~$D$ kept by the experiment, as this is used for computing~$\phi$ and~$\beta$. After each update, the updated representation~$\repr$ is returned to the adversary. Thus, the notion of security we propose is quite strong in that it allows an adversary to have complete access to the structure's internals during its execution (as discussed in Section~\ref{sec:side}). The only information kept from the adversary is the secret key (in the case the structure relies on one). This further makes calls to~$\QRYO$ unnecessary, as the adversary entirely determines the underlying collection represented by the structure and has access to the internal representation at all times. 
+
+The adversary ends its execution by announcing \textbf{done} or is implicitly done when it exhausts its~$\UPO$ budget (the number of updates they are allowed to make). The experiment concludes by outputting a bit that determines whether the adversary has successfully met the winning condition.
+
+With this intuition built, we give our succinct formal definition of security. 
+
+\begin{definition}[$(\phi,\beta,\epsilon,\delta,t)$-Conserved]\label{def:aapc}
+    We say a skipping-based probabilistic data structure $\Pi$ is $(\phi,\beta,\epsilon,\delta,t)$-conserved if the advantage of an AAPC-adversary~$\advA$ running in time~$t$ is less-than-or-equal to~$\delta$ for some property function~$\phi$, some target bound~$\beta$, some~$\epsilon \in \mathbb{R}, \epsilon > 0$, and some~$\delta \in [0,1)$. More precisely, we say the structure is $(\phi,\epsilon,\beta,\delta,t)$-conserved iff,
+    \[ \Adv{\text{aapc}}_{\struct, \phi, \beta,\epsilon}(\advA) = \Pr[\Exp{\text{aapc}}_{\struct, \phi, \beta,\epsilon}(\advA) =1] \leq \delta
+    \]
+    and write $\Adv{\text{aapc}[u,v]}_{\struct, \phi, \beta, \epsilon}(t,q_Q,q_U,q_H)$ as the maximum advantage of any AAPC-adversary running in~$t$ time steps and making~$q_Q$ calls to~$\QRYO$,~$q_U$ calls to~$\UPO$, and~$q_H$ calls to~$\HASHO$ in the ROM. We are interested in ensuring  $\Adv{\text{aapc}}_{\struct, \phi, \beta,\epsilon}(t,q_Q,q_U,q_H) \leq \delta$.
+\end{definition}

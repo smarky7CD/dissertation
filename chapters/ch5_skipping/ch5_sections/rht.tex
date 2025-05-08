@@ -1,0 +1,103 @@
+\subsection{Insecurity Of Standard Hash Tables}
+
+\paragraph{Unkeyed Hash Tables}
+
+Consider a standard hash table instantiated with a fixed and publicly known hash function. A simple pre-computation attack will trivially win our security experiment (with the experiment parameters the same as in Theorem~\ref{thm:rhtsr}) with probability one (assuming the ability to make sufficiently many local hash computations). An adversary can sample index keys from the universe and compute the bucket they will map to by using the public hash function (assuming the parameters of the structure are known). The adversary can select a target bucket and insert index keys (with some arbitrary value) iff they map to this target bucket. In this way, an adversary can ensure that all elements go to a single bucket, causing a linear overhead when searching for an element in this bucket.
+
+\paragraph{Keyed Hash Tables with Deletions}
+
+Consider a hash table where we replace a public hash function with a secretly keyed primitive, like a PRF. Our security game also yields a simple strategy for an adversary to win our game with a high probability if the hash tables support deletions in the usual way. The adversary selects a target bucket. Then it samples keys from the universe (along with arbitrary values for these keys) and inserts them into the table. Observing the state of the table after each insertion, the adversary deletes the element unless it has been inserted in the target bucket. At the end of the adversary's execution, the hash table will only have elements that reside in a single bucket. For this reason, we do not allow adversaries to make deletions that actually remove elements from the hash table and compare our adversarial results to a standard ball-in-bins result that assumes no deletions. 
+
+While an attack of this nature may seem vacuous and an artifact of our security experiment, it is designed to capture something more complex. Consider if you could guarantee that the state of the hash table could remain hidden during the adversary's execution. Then, it seems intuitive that just keying the structure would result in robust construction per our security definition. However, as evidenced by side-channel attacks against hash tables~\cite{bar2007remote}, it is nearly impossible to guarantee that the internal structure of the hash table remains entirely hidden. Therefore, we continually leak the entire state of the structure to the adversary during its execution to emulate the best possible side channel (as detailed in \Cref{sec:side}). 
+
+\subsection{A Robust Construction}
+
+\begin{figure*}[!htbp]
+    %	\Wider[4em]{
+            \centering
+            \begin{pchstack}[boxed,center,space=0.5em]
+                \begin{pcvstack}[space=0.45em]
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Rep_{\key}(\setS)$}{%
+                              \pcfor i \gets 1 \ \mathbf{to} \ m \pcdo \\
+                                \t T[i] \gets \kwnew\; \llst\\
+                            \pcfor (x,v) \in \setS \\
+                            \t T \gets \Up_{\key}(T,\ins_{(x,v)})\\
+                            \pcreturn T \pcskipln\\ 
+                        }
+                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{\key}(T,\up_{(x,v)})$}{%
+                              v \gets \Qry_{\key}(T,\qry_{x})\\
+                            \pcif v \neq \star\\
+                            \t \Up_{\key}(T,\del_{x})\\
+                            i \gets \hash(\key,x)\\
+                            T[i].\mathsf{ireplace}((x,v),(\diamond,\diamond))\\
+                            \pcreturn T
+                        }
+                \end{pcvstack}	
+                \begin{pcvstack}[space=1ex]
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{\key}(T,\del_{x})$}{%
+                            v \gets \Qry_{\key}(T,\qry_{x})\\
+                            \pcif v \neq \star\\
+                            \t i \gets \hash(\key,x)\\
+                            \t T[i].\mathsf{replace}((x,v),(\diamond,\diamond))\\
+                            \pcreturn T\pcskipln\\ 
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Qry_{\key}(T,\qry_{x})$}{%
+                            v \gets \star \\
+                            i \gets \hash(\key,x)\\
+                            v' \gets T[i].\mathsf{find}(x)\\
+                            \pcif v' \neq \nlll\\
+                            \t v \gets v'\\
+                            \pcreturn v
+                        }
+                \end{pcvstack}	
+            \end{pchstack}
+    %	}
+      \caption[A Robust Hash Table.]{
+      A robust hash table in the AAPC security model. It is an explicitly keyed hash-table structure $\mathrm{RHT}[\hash,b]$ admitting insertions, modified deletions, and queries for any~$k \in \univ_{\kappa}$ and its associated value~$v$. The parameters are an integer $b \geq 1$, and a keyed function $\hash: \keys\by\univ_{\kappa} \to [b]$ that maps the key part of key-value pair data-object elements (encoded as strings) to a position in the one of the table buckets~$v.T$. A particular choice of parameters gives a concrete scheme. Each bucket contains a simple linked list~$\llst$ equipped with its usual operations. We define the~$\mathsf{replace}$ operation of~$\llst$, such that if it finds an item with~$(x,v)=(\diamond,\diamond)$ during its internal search, the item to be inserted is written in this location; otherwise a regular insertion occurs. If an item is not contained in the map, the distinguished symbol~$\star$ is returned. 
+      } 
+      \label{fig:robust_ht}
+\end{figure*}
+
+We give a robust hash table construction in Figure~\ref{fig:robust_ht}. The robust hash table requires that a keyed mapping function~$R$ is used. Concretely, this can be instantiated as PRF that is then mapped to~$b$ (by, say, taking the output of the PRF modulo~$b$). In particular, SipHash~\cite{aumasson2012siphash} provides performance that is comparable to traditionally used non-cryptographic hash functions~\cite{paterson2022hyperloglog}. We also use our modified deletion scheme. The deletion functionality simply relabels the key-value pair to be deleted as~$(\diamond,\diamond)$, where~$\diamond$ is a distinguished symbol. The insertion functionality changes such that if an element to be inserted can overwrite a linked list node containing~$(\diamond,\diamond)$, it does; otherwise, a normal insertion occurs. The query functionality remains unchanged.
+
+We will now state and prove a formal security theorem and prove the robust hash table construction secure in the AAPC model.
+
+\begin{theorem}[Robust Hash Table AAPC Security Result]\label{thm:rhtsr2}
+    Let~$\Pi$ be our robust hash table from ~\Cref{fig:robust_ht}, using PRF~$F$ to map elements to buckets. For integers~$q_U,q_Q,q_H,t \geq 0$ such that $q_U = b$ (i.e., $b$ is the number of buckets in the hash table~$\Pi$), it holds that~$\Pi$ is~$(\phi,\beta,\epsilon,\delta,t)$-conserved with $\phi$ being the HT Maximum Bucket Population function (~\Cref{fig:ht-pop}), $\beta = 3 \frac{\log b}{\log \log b}$, $\epsilon = 1$, and $\delta = (\frac{1}{n} + \Adv{\text{prf}}_{F}(O(t),b+q_Q))$.
+\end{theorem}
+
+\begin{proof}
+    Observe that the modified insertion and deletion procedures ensure that once an element is inserted into a bucket, it cannot actually be removed but rather only relabeled (either to $(\diamond,\diamond)$ or a newly inserted key-value pair). Observe that an optimal adversary never makes deletions for our construction, as our modified deletion procedure ensures this cannot possibly add to the maximum search path cost. Thus, we start with a game that assumes the adversary never makes deletions, and the proof follows from a simple hybrid argument.
+    
+    We start with a game~$\game_0$ that is that the AAPC security game instantiated with our robust hash table~$\Pi$ using PRF~$F$, property function~$\phi$ as the HT Maximum Bucket Population function (~\Cref{fig:ht-pop}), and target bound~$\beta = 3 \frac{\log b}{\log \log b}$. As indicated by the theorem statement, we assume that the adversary cannot insert more than~$q_U = b$ distinct elements into the table and, from above, never makes a deletion. In this game, the number of times~$F$ is evaluated on distinct inputs bounded by the adversary's resource budget. Calls to~$\UPO$ (also implicitly used by~$\REPO$) call~$F$ once. Calls to~$\QRYO$ also call~$F$ once. Thus, when executed with~$\advA$, game~$\game_0$ makes at most~$Q = b + q_Q$ queries to~$F$.
+    
+    Let~$\game_1$ be identical to~$\game_0$ except we use truly random sampling (modeled in the ROM) in place of the PRF. If~$\advA$ cannot distinguish~$F$ from a random function. Then, these games are indistinguishable from the adversary's perspective. We build a~$O(t)$-time PRF distinguishing adversary~$\advB$ making at most~$Q$ queries to its oracle such that
+    \begin{equation}
+        \Adv{\text{prf}}_{F}(\advB) = \Pr[\game_0(\advA) = 1] - \Pr[\game_1(\advA) = 1].
+    \end{equation}
+    
+    Adversary~$\advB^{F}$ works by executing~$\advA$ in~$\game_1$. Whenever~$\game_1$ calls~$F$, adversary~$\advB$ computes the response using its own oracle. When~$\advA$ halts, if the winning condition of~$\game_1$ is satisfied, then~$\advB$ outputs~$1$; otherwise it outputs~$0$. Conditioning on the outcome of the coin flip~$z$ in~$\advB$'s game, we have the following: 
+    
+    \begin{align*}
+        \Adv{\text{prf}}_{F}(\advB) &= 2\Pr[\Exp{\text{prf}}_{F}(\advB = 1)] -1\\
+        &= 2(\frac{1}{2}\Pr[\Exp{\text{prf}}_{F}(\advB = 1) | z =1]   \\  &+ \frac{1}{2}\Pr[\Exp{\text{prf}}_{F}(\advB = 1) | z =0])-1\\
+        &= \Pr[\Exp{\text{prf}}_{F}(\advB = 1) | z =1]  + \Pr[\Exp{\text{prf}}_{F}(\advB = 1) | z =0]-1\\
+        &= \Pr[\game_0(\advA) = 1] - \Pr[\game_1(\advA) = 1].
+    \end{align*}
+    
+    Now, with~$\game_1$, we immediately have a standard insertion-only truly random balls-and-bins problem with~$\leq q_U = b$ balls being randomly thrown into~$q_U = b$ bins. We can apply the standard bound and conclude~$\phi(\cdot) \leq \beta (\cdot)$ (that is~$\frac{\phi(\cdot)}{\beta (\cdot)} \leq \epsilon = 1$) with probability~$1-\delta$ where~$\delta = (\frac{1}{b} + \Adv{\text{prf}}_{F}(O(t),Q))$. The first term comes from the standard bound and the second results from the hybrid we showed above.
+\end{proof} 
+
+To give a concrete illustration of this bound, suppose we had~$n = b = 2^{32}$ and~$\epsilon = 1$. Leveraging our results from~\cref{thm:rhtsr2}, the probability our maximum search cost path is greater than~$M = 3 \frac{\log 2^{32}}{\log\log 2^{32}} \approx 21.47$ is less than or equal to $\delta = \frac{1}{2^{32}} + \Adv{\text{prf}}_{F}(O(t),b+q_Q) \approx 2.33 \cdot 10^{-10} + \Adv{\text{prf}}_{F}(O(t),b+q_Q)$.
+
+\subsection{Robust Hash Tables in Real World Deployments}
+
+When initializing a hash table, there's an implicit promise to allocate enough memory for a pre-defined number of elements. If the collection grows too large and exceeds this capacity, the structure must be resized, typically by doubling the number of buckets. For a key-value pair where keys are~$x$ bits and values are~$v$ bits, we expect to allocate up to~$\alpha \cdot b \cdot x \cdot v$ bits of memory, where~$\alpha$ is the load factor defined as~$\alpha = \frac{n}{b}$, with~$n$ being the number of elements and~$b$ the number of buckets~\cite{clrs}. If the load factor exceeds a set limit, resizing is required. In our security experiment, we implicitly specify a load factor of~$\alpha \leq 1$ by setting~$q_U = b$, and in turn, never allow this load factor to be exceeded. That is, we do not consider attacks that would trigger resizing. Hence, we discuss the consequences of our robust construction in real-world deployments below by analyzing how our modifications change the frequency of required resizing. 
+
+Consider a standard hash table with~$I$ successful insertions and~$D$ successful deletions. For resizing to be necessary, it must be that~$\frac{I-D}{b}$ has exceeded $\alpha$. At some point, before resizing is triggered, if the rate of insertions and deletions are roughly equal, a structure could persist indefinitely without resizing.
+
+Now consider a modification where deletions merely mark elements as deleted without allowing for the possibility of being replaced by fresh insertions. That is, we do not modify the insertion procedure to replace previously deleted elements. In this scenario, resizing occurs when~$\frac{I}{b}$ has surpassed~$\alpha$, even if only a few elements are actually represented in the structure. This could occur when an adversary inserts~$\approx \alpha \cdot b$ elements, then deletes nearly all of them\footnote{Of course, if an adversary deleted all elements, it would be trivial to flush the table and reinitialize the structure.}, and finally triggers a resizing with a few subsequent fresh insertions. Although this seems wasteful, it aligns with the resizing logic since the total insertions exceed the threshold. That is, a resizing is triggered only after the total number of insertions exceeds the threshold set by~$\alpha$ (regardless if a deletion has subsequently nullified them).
+
+We would like our robust hash table to conserve the property where deletions free space, such that $\frac{I}{b} > \alpha$ does not necessarily trigger a resizing. Thus, in addition to marking deleted elements, we also prefer replacing said deleted elements with new insertions. This is desirable in the non-adversarial case (where insertions, deletions, and queries do not depend on the internal randomness of the structure, the internal state of the structure, or past operations), as one expects freshly inserted elements will eventually replace deleted elements.
+
+Adversarial strategies can still trigger resizing with few non-deleted elements. For example, an adversary could insert~$I = \alpha \cdot b - 1$ elements, delete all but those in the least populated bucket, and with a~$1/b$ probability, trigger resizing with only those elements in that bucket remaining. While this requires the adversary to exceed the threshold number of insertions, making it marginally problematic in practice, the collection size at the time of resizing may be smaller than the non-adversarial threshold. In sum, while adversaries can still trigger small collection resizing under certain conditions, our approach ensures the hash table is provably robust and allows it to persist for extended periods without resizing if insertions and deletions are balanced in the non-adversarial setting.

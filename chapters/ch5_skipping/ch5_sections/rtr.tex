@@ -1,0 +1,274 @@
+\subsection{(In)Security of the Standard Treap}
+Unlike other probabilistic data structures in this study, treaps (without deletions) demonstrate intrinsic security against search path cost blow-up. However, adaptive adversaries can still mount attacks that force certain elements to be near the root with high probability. 
+
+Consider a lottery system designed to select a number of winners with uniform probability from a participant pool. Imagine, the implementation uses a treap data structure with an in-order traversal limited to a constant path length, thereby theoretically ensuring equal selection probability for all participants.
+
+However, this implementation contains a critical security vulnerability against adaptive adversaries. While attackers cannot directly manipulate the random priority values assigned to entries, they can execute a more sophisticated attack by strategically inserting elements with carefully chosen keys positioned adjacent to a target element. By continuing this insertion pattern until placing an element with exceptionally low priority, they force the treap to perform rotation operations that elevate their target element toward the root. Since elements closer to the root are more likely to be selected during the limited-depth traversal, this compromises the lottery's fairness.
+
+Concretely, let $x_1, x_2, \ldots, x_{j-1}$ be the keys inserted in sorted order with associated priorities 
+$$r^{x_1}, r^{x_2}, \ldots, r^{x_{j-1}},$$
+drawn independently from the uniform distribution on $[0,1]$. An adaptive adversary selects an arbitrary target element $x_i$. The adversary then repeatedly inserts new elements into the gaps between $x_i$ and $x_{i+1}$ and between $x_{i-1}$ and $x_i$ until obtaining an exceptionally low priority value. This is expected to occur after a linear number of insertions.
+
+After inserting, let $S^n_{x_i}$ denote the search path to $x_i$. Since
+\begin{align*}
+S^n_{x_i} &= |\{\text{records in sequence } r^{x_i},r^{x_{i-1}},\ldots,r^{x_1}\}| + \\&|\{\text{records in sequence } r^{x_i},r^{x_{i+1}},\ldots,r^{x_n}\}| - 1,
+\end{align*}
+and the number of records in these intervals is constant (as the neighboring elements to $x_i$ have exceptionally low priorities for which there exists only a constant number of nodes with lower priorities), $x_i$ now resides near the top of the treap with high probability.
+
+Importantly, for our purposes, treaps maintain their expected $O(\log n)$ operational complexity against adaptive adversaries only when our modified deletion procedure is applied. Without it, an adversary could simply re-insert (and delete) an element until obtaining a favorable priority, making degeneration attacks trivial.
+
+This resistance to performance degradation attacks under lazy deletion represents a significant finding, as all other PSDS examined proved vulnerable. The treap's rebalancing mechanism, based on previously sampled priorities, provides a natural defense against malicious attempts to create operation sequences that would otherwise lead to worst-case runtime scenarios.
+
+\subsection{A Robust Construction}
+
+\begin{figure*}[thp]
+    %	\Wider[4em]{
+            \centering
+            \begin{pchstack}[boxed,center,space=0.5em]
+                \begin{pcvstack}[space=0.45em]
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Rep_{K}(\setS)$}{%
+                            \ttree.\rt \gets \nlll \\
+                            \pcfor (x,v) \in \setS \pcdo \\
+                            \t \ttree \gets \Up_{K}(\ttree,\ins_{(x,v)})\\						
+                            \pcreturn \ttree
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{RandomPriority}_{K}(\boxed{x})$}{%
+                            \boxed{p \gets R(K,x)}\\
+                            \boxed{\pcreturn p}\\
+                            p \getsr (0,1)\\
+                          \pcreturn p
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{NewNode}((x,v),p)$}{%
+                            \pccomment{array position $0$ is reserved for} \\
+                            \pccomment{a deleted bit, key, value triple $(d,x,v)$}\\
+                            \pccomment{accessible via $n.\delacc$,, $n.\keyacc$ and $n.\valueacc$}\\
+                            \pccomment{array positions $2, 3$ are child pointers and $1$ is priority}\\
+                            \node \gets [(\bot, x,v),p,\nlll,\nlll]\\
+                          \pcreturn \node
+                        }
+                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Qry(\ttree,\qry_{x})$}{%
+                          \ttree.\rt \gets \Qry^{\text{rec}}(\ttree.\rt,\qry_{x}) \\
+                          \pcreturn \ttree
+                        }
+                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Qry^{\text{rec}}(c,\qry_{x})$}{%
+                          \pcif c = \nlll \pcthen \\
+                            \t \pcreturn \star \\
+                          \pcif c[0].\keyacc = x \pcthen \\
+                            \t \pcreturn c[0].\keyacc \\
+                            b \gets (x > c[0].\keyacc)\\
+                            \pcreturn \Qry^{\text{rec}}(c[2+b],\qry_{x})
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{Rotate}(c,b)$}{%
+                             \tmp \gets c[2+b][3-b] \\
+                             c[2+b][3-b] \gets c \\
+                             c[2+b] \gets \tmp \\
+                            \pcreturn \tmp
+                        }
+                \end{pcvstack}	
+                \begin{pcvstack}[space=0.45em]
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{K}(\ttree,\ins_{(x,v)})$}{%
+                            \ttree.\rt \gets \Up^{\text{rec}}_{K}(\ttree.\rt,\ins_{(x,v)}) \\
+                            \pcreturn \ttree
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up^{\text{rec}}_{K}(c,\ins_{(x,v)})$}{%
+                            \pcif c = \nlll \pcthen \\
+                             \t p \gets \schemefont{RandomPriority}_{K}(\boxed{x})\\
+                            \t \pcreturn \schemefont{NewNode}((x,v),p) \\
+                            \pcif c[0].\keyacc = x \pcthen \\
+                            \t c[0].\valueacc \gets v, \; 
+                            c[0].\keyacc \gets \bot \\
+                            \t \pcreturn c \\
+                            b \gets (x > c[0].\keyacc) \\
+                            c[2+b] \gets \Up^{\text{rec}}_{K}(c[2+b],\ins_{(x,v)}) \\ 
+                            \pccomment{maintain MIN Heap property}\\
+                            \pcif c[1] > c[2+b][1] \pcthen \\
+                            \t c \gets \schemefont{Rotate}(c,b) \\
+                            \pcreturn c
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{K}(\ttree,\del_{x})$}{%
+                             \Up^{\text{rec}}_{K}(\ttree.\rt,\del_{x}) \\
+                            \pcreturn \ttree
+                        }
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up^{\text{rec}}(c,\del_{x})$}{%
+                            \pcif c = \nlll \pcthen \\
+                            \t \pcreturn \\
+                            \pcif c[0].\keyacc = x \pcthen \\
+                            \pccomment{Remove node} \\
+                            \t c[0].\delacc \gets  \top \\
+                            \pcelse \\
+                            \t b \gets (x > c[0].\keyacc) \\
+                            \t \Up^{\text{rec}}_{K}(c[2+b],\del_{x}) \\ 
+                            \pcreturn
+                        }
+                \end{pcvstack}	
+            \end{pchstack}
+    %	}
+      \caption[A Robust Treap.]{A robust, possibly ``deterministic'' (and keyed) robust MIN treap structure $\TR[\boxed{R}]$ admitting insertions, deletions, and queries for any~$x \in \univ$ for some well-ordered universe~$\univ$. The parameter is a keyed function $R: \keys \by \univ \to (0,1))$ that assigns an element a random priority. Subroutines used by the deterministic version of the structure appear in the boxed environment. Let $\schemefont{MinPrioChild}(c)$ denote the function that returns the child index (0 or 1) of node $c$ with the minimum priority, or null if $c$ has no children.} 
+      \label{fig:rtreap}
+    \end{figure*}
+
+We give a pseudocode description of the robust treap using our modified deletion procedure in~\Cref{fig:rtreap}. We will formally show the security (with regard to the maximal search path) of our modified-deletion treap. However, we first formalize a view of the treap's representation via a stochastic process. We start by analyzing the representation formed by a non-adaptive adversary and the subsequent maximum search path cost. 
+
+Consider a treap containing $n$ elements inserted by a non-adaptive adversary, i.e., selected uniformly at random from the universe of all possible elements. Consider all inserted elements in the sorted order of their key value $x_1 \leq x_2 \leq \ldots \leq x_n$. Each key~$x_i$ is assigned a random priority~$r^{x_{i}}$ drawn independently from the uniform distribution on~$[0,1]$. 
+
+Let $S^n_{x_i}$ denote the random variable representing the search path length for a fixed element $x_i$. The search path to element $x_i$ consists of all ancestors of $x_i$ in the treap structure. From Aragon and Seidel~\cite{aragon1989randomized}, $x_j$ is an ancestor of $x_i$ if and only if $x_j$ has the lowest priority among all elements between $x_i$ and $x_j$ (inclusive). Specifically:
+
+\begin{itemize}
+    \item If $j > i$, then $x_j$ is an ancestor of $x_i$ if and only if $r^{x_j} = \min\{r^{x_i}, r^{x_{i+1}}, \ldots, r^{x_j}\}$
+    \item If $j < i$, then $x_j$ is an ancestor of $x_i$ if and only if $r^{x_j} = \min\{r^{x_j}, r^{x_{j+1}}, \ldots, r^{x_i}\}$
+\end{itemize}
+
+This means that an element is an ancestor of $x_i$ precisely when its priority is a minimum value -- what we will refer to as a "record" -- in one of two sequences extending from $x_i$. Hence, we can interpret $S^n_{x_i}$ as:
+
+\begin{align*}
+S^n_{x_i} &= |\{\text{records in sequence } r^{x_i},r^{x_{i-1}},\ldots,r^{x_1}\}| + \\&|\{\text{records in sequence } r^{x_i},r^{x_{i+1}},\ldots,r^{x_n}\}| - 1,
+\end{align*}
+
+where the subtraction of~$1$ accounts for $x_i$ being counted in both sequences. 
+
+A classical fact about random permutations is the behavior of records. For a sequence of~$k$ i.i.d. uniformly distributed random variables, the probability that the~$j\text{-th}$ element is a record (i.e., it is less all~$j-1$ preceding values is exactly~$\frac{1}{j}$). More precisely, define the following indicator variables for a given sequence:
+
+$$ I_j = 
+\begin{cases}
+    1, & \text{if the } j\text{-th} \text{ element is a record,}\\
+    0, & \text{otherwise.}
+\end{cases}
+$$
+
+Then we have~$\mathbb{E}[I_j] = \frac{1}{j}$. For a sequence of length~$k$, the total number of records is~$R_k = \sum_{j=1}^{k} I_j$ and its expectation is~$\mathbb{E}[R_k] = \sum_{j=1}^{k} \frac{1}{j} = H_k$, where~$H_k$ is the $k\text{-th}$ harmonic number. In our context, when considering the ``leftward'' sequence of priority values~$L_i$ (of length~$i$) and the ``rightward'' sequence if priority~$R_i$ (of length~$n-i+1$) with respect to key at index ~$i$, we have~$\mathbb{E}[L_i] = H_i$ and~$\mathbb{E}[R_i] = H_{n-i+1}$. 
+
+Thus, for a fixed~$x_i$,
+$$\mathbb{E}[S^{n}_{x_i}] = \mathbb{E}[L_i + R_i - 1] = H_i + H_{n-i+1} - 1.$$
+
+Nothing, that for any~$i$ it must be that~$ H_i \leq H_n$ and $H_{n-i+1} \leq H_n$, and the well known fact~$H_n \leq \ln(n) + 1$, we have
+\begin{align*}
+    \mathbb{E}[S^{n}_{x_i}] &\leq 2H_n - 1 \\
+    &\leq 2\ln(n) + 1.
+\end{align*}
+
+We next argue that even when an adaptive adversary determines the insertions, each inserted element's probability of forming a record remains exactly~$\frac{1}{j}$ when it is the~$j\text{-th}$ element inserted -- exactly the same as the non-adaptive case. Even though an adaptive adversary can observe all previous outcomes and choose the next element adaptively (that is, select the key value so it falls into any ``gap'' of existing key values, like in the case of the skip list in~\Cref{sec:skiplist}), the new priority is still drawn uniformly and independently from~$[0,1]$. The joint distribution of the prior priorities is unchanged. We formalize this idea in the following lemma. 
+
+\begin{lemma}[Invariant Record Probability under Adaptive Insertion]\label{lemma:tre}
+Let $x_1, x_2, \ldots, x_{j-1}$ be the keys inserted in sorted order with associated priorities 
+$$r^{x_1}, r^{x_2}, \ldots, r^{x_{j-1}},$$
+drawn independently from the uniform distribution on $[0,1]$. An adaptive adversary (chooses a gap (i.e., a position between any two or before/after these keys) into which to insert a new key $x_j$. The new key receives an independent priority $r^{x_j} \sim \mathsf{U}[0,1]$. After relabeling the keys according to their inherent order, let the sorted sequence of priorities (of all $j$ keys) be
+$$r_{(1)} \le r_{(2)} \le \cdots \le r_{(j)}.$$
+
+Then, even conditioned on the past $\sigma$-algebra $\mathcal{F}_{j-1}$ (which contains the ordered priority values and all adversarial decisions regarding the first $j-1$ insertions), we have
+$$\Pr\Bigl(r^{x_j} = r_{(1)} \,\Big|\, \mathcal{F}_{j-1}\Bigr) = \frac{1}{j}.$$
+
+\end{lemma}
+
+\begin{proof}
+Condition on the $\sigma$-algebra $\mathcal{F}_{j-1}$; that is, assume the priorities
+$$r^{x_1}, r^{x_2}, \ldots, r^{x_{j-1}}$$
+are fixed and rearranged in increasing order:
+$$r_{(1)} \le r_{(2)} \le \cdots \le r_{(j-1)}.$$
+
+An adaptive adversary may insert the new key~$x_j$ in any gap between any two keys in the current sequence (or before the smallest or after the largest). Still, such a decision affects only the position of the key in the \emph{key order} and does not alter the statistical properties of the newly drawn priority.
+
+The new priority $r^{x_j}$ is drawn independently from $\mathsf{U}[0,1]$. Thus, when the new key is inserted, the complete set of $j$ priorities is
+$$\{r^{x_j}, r_{(1)}, r_{(2)}, \ldots, r_{(j-1)}\}.$$
+
+Since the first $j-1$ values are already fixed and $r^{x_j}$ is independent and uniformly distributed over $[0,1]$, the resulting set of $j$ priorities is exactly equivalent to a set of $j$ independent uniform samples upon relabeling.
+
+In any sequence of $j$ i.i.d. $\mathsf{U}[0,1]$ random variables, symmetry implies that the probability that any particular one (here, the newly inserted element) is the minimum is exactly $1/j$. Formally, we have
+$$\Pr\Bigl(r^{x_j} = \min\{r^{x_j},r_{(1)}, r_{(2)}, \ldots, r_{(j-1)}\}\,\Big|\, \mathcal{F}_{j-1} \Bigr) = \frac{1}{j}.$$
+
+Thus, regardless of where the adversary chooses to insert $x_j$, the probability that $x_j$ is a record (i.e., its priority is the smallest among the first $j$ keys) remains equal to $1/j$, as in the non-adaptive setting.
+\qed
+\end{proof}
+
+\begin{theorem}[Treap AAPC Result]\label{thm:tsb}
+Let~$\Pi$ be the robust treap from Figure~\ref{fig:rtreap}. For integers~$q_U,q_Q,t \geq 0$, it holds that~$\Pi$ is~$(\phi,\beta,\epsilon,\delta,t)$-conserved with $\phi$ being the Maximum Search Path Cost function (Figure~\ref{fig:t-cost}), $\beta = 2\ln n + 1$, any~$\epsilon > 0$ and 
+    
+   $$\delta = n e^{-\frac{\epsilon^2 H_{n}}{2(1 + \epsilon)}},$$
+
+where~$n=q_U$ and~$H_n$ is the~$n\text{-th}$ harmonic number.
+\end{theorem}
+
+\begin{proof}
+Observe that deletions do not help the adversary, as by construction, they at most relabel an existing entry and cannot possibly extend the longest path. Therefore, we consider a treap of~$n=q_U$ keys (i.e., a treap with the maximal number of insertions made) built by an adaptive adversary.  
+
+\textit{Casting the Insertion Process as a Doob Martingale.}\\
+For a fresh key inserted at step~$j$, take the indicator variable~$I_j$ as defined above. Then, conditioned on the past $\sigma$-algebra $\mathcal{F}_{j-1}$ (which contains the ordered priority values and all adversarial decisions regarding the first $j-1$ insertions), and letting
+$$m_{j-1} := \min\{r^{x_1}, r^{x_2}, \ldots, r^{x_{j-1}}\} \quad (\text{with } m_0 = 1),$$
+it is easy to see that
+$$\Pr(I_j = 1 | \mathcal{F}_{j-1}) = \Pr(r^{x_{j}} < m_{j-1} | \mathcal{F}_{j-1}) = m_{j-1}.$$
+
+From~\cref{lemma:tre}, we have that even under adaptive insertions, the unconditional expectation remains
+$$\mathbb{E}[m_{j-1}] = \frac{1}{j}.$$
+
+Then, if letting~$X_n$ denote the total number of records over all~$n$ insertions, the unconditional expected number of records is
+$$\mathbb{E}[X_n] = \sum_{j=1}^{n} \mathbb{E}[I_j] =  \sum_{j=1}^{n} \frac{1}{j} = H_n,$$
+where~$H_n$ is the~$n\text{-th}$ harmonic number. 
+
+From our above analysis, we have that the search path length~$S^{n}_x$ for key~$x$ is bounded in terms of the number of records~$X_n$ by
+$$S_{n}^x \leq 2X_n -1.$$ 
+
+Thus, if we can show that~$X_n$ is concentrated around~$H_n,$ we also have a bound on the search cost for a particular element. To do this, define the Doob martingale
+$$M_j = \sum_{i=1}^{j} (I_i - \mathbb{E}[I_i | \mathcal{F}_{i-1}]), \quad j=0,1,2,\ldots,n,$$
+with~$M_0=0.$ By construction,~$\{M_j\}$ is a martingale relative to the filtration~$\{F_j\}$. 
+
+Next, observe that the martingale difference satisfy
+$$D_j = M_j - M_{j-1} = I_j - \mathbb{E}[I_i | \mathcal{F}_{i-1}].$$
+Since $I_j \in \{0,1\}$ and $\mathbb{E}[I_i | \mathcal{F}_{i-1} \in [0,1]$, we have~$|D_j| \leq 1$. 
+
+Since $I_j\in\{0,1\}$ is a Bernoulli random variable with parameter~$m_{j-1}$, its conditional expectation is
+$$
+\mathbb{E}[I_j\mid \mathcal{F}_{j-1}] = m_{j-1},
+$$
+and the conditional variance is computed as:
+\begin{align*}
+\mathrm{Var}(I_j\mid \mathcal{F}_{j-1}) &= \mathbb{E}\Bigl[(I_j - m_{j-1})^2 \,\big|\, \mathcal{F}_{j-1}\Bigr] \\
+&= m_{j-1}(1-m_{j-1}).
+\end{align*}
+
+Now, note that subtracting the constant $\mathbb{E}[I_j\mid \mathcal{F}_{j-1}]$ does not change the variance. That is,
+\begin{align*}
+    \mathrm{Var}(D_j\mid \mathcal{F}_{j-1}) &= \mathrm{Var}(I_j - \mathbb{E}[I_j\mid \mathcal{F}_{j-1}]\mid \mathcal{F}_{j-1})\\
+&= \mathrm{Var}(I_j\mid \mathcal{F}_{j-1})\\
+&= m_{j-1}(1-m_{j-1}).
+\end{align*}
+
+Thus, computing the predictable quadratic variation, we have
+$$V_n = \sum_{j=1}^{n} \mathrm{Var}(D_j\mid \mathcal{F}_{j-1}) = \sum_{j=1}^{n} m_{j-1}(1-m_{j-1}).$$
+
+Since $m_{j-1}(1-m_{j-1}) \leq m_{j-1}$ (because $1-m_{j-1}\le 1$ for all $m_{j-1}\in [0,1]$), we obtain
+$$V_n \le \sum_{j=1}^{n} m_{j-1}.$$
+
+Further, as~$E[m_{j-1}] = \frac{1}{j}$, we have
+$$\mathbb{E}[V_n] \leq \sum_{j=1}^{n} \frac{1}{j} = H_n.$$
+
+\textit{Applying A Concentration Bound.}\\
+
+Freedman's inequality~\cite{freedman1975tail} states that if~$\{M_j\}$ is a martingale with a difference bounded by~$1$ with predictable quadratic variation~$V_n$, then for any~$a,b>0$,
+$$\Pr(M_{n} \geq a \text{ and } V_n \leq b) \leq e^{-\frac{a^{2}}{2(a+b)}}.$$
+
+We set~$b = H_n$ (as typically~$V_n$ will not exceed~$H_n$ by much) and chose~$a = \epsilon H_n$, where~$\epsilon > 0$ is our parameter from our security statement. 
+
+Then, Freedman's inequality gives us
+$$\Pr(M_n \geq \epsilon H_n) \leq  e^{-\frac{\epsilon^2H_{n}^{2}}{2(\epsilon H_n+H_n)}} = e^{-\frac{\epsilon^2 H_{n}}{2(1 + \epsilon)}}.$$
+
+Since
+$$X_n = \sum_{j=1}^{n} I_j = M_n + \sum_{j=1}^{n} \mathbb{E}[I_j | \mathcal{F}_{j-1}],$$
+and~$\sum_{j=1}^{n} \mathbb{E}[I_j | \mathcal{F}_{j-1}]$ has expectation~$H_n$, the above inequality shows that with probability at least~$1 - e^{-\frac{\epsilon^2 H_{n}}{2(1 + \epsilon)}}$ we have~$X_n \leq (1+ \epsilon)H_n$. Further, recalling that~$S^{n}_{x} \leq 2X_n -1$, this implies with the same probability, $S^{n}_{x} \leq 2(1+\epsilon)H_n-1$.
+
+\textit{Bounding the Search Cost Path Over All Elements.} \\
+
+Let~$E_x$ be the event that the search path cost for a fixed element exceeds the threshold~$T = 2(1+\epsilon) \ln(n) + 1$. 
+
+From the above, we have that
+$$ \Pr(E_x) \leq e^{-\frac{\epsilon^2 H_{n}}{2(1 + \epsilon)}},$$
+
+as~$H_n \leq ln(n) + 1$.
+
+Then, applying a standard union bound over all the~$n$ elements in the treap, the event that there exists some element with a search path cost exceeding~$T$ is bounded by 
+$$\Pr \left(\bigcup_{x \in \{x_1,\ldots,x_n \}} E_x  \right) \leq n e^{-\frac{\epsilon^2 H_{n}}{2(1 + \epsilon)}}.$$
+\end{proof}
+
+give a concrete illustration of this bound, suppose we had~$n = 2^{32}$ and select~$\epsilon = 5$. Our expected search path cost is~$2 \ln(2^{32}) + 1 \approx 45.36$, and leveraging our results from~\Cref{thm:tsb2} the probability the maximum search cost path exceeds this by five times is~$\leq \delta = e^{-\frac{25 H_{2^{32}}}{12}} \approx 1.09 \times 10^{-11}$.
+
+\subsection{Robust Treaps in Real World Deployments}
+
+Unlike hash tables and skip lists, treaps operate without an implicit maximum capacity and typically don't require resizing operations. However, our modified structure -- which only marks elements as ``deleted'' without allowing replacement -- may still necessitate periodic treap re-initialization to reclaim memory occupied by deleted elements. This limitation exists because allowing the replacement of deleted nodes would create a security vulnerability, enabling attackers to strategically shift unfavorable priorities to different parts of the treap. Similar to our skip list approach, we cannot simply reuse deleted nodes without compromising security. While this design choice increases maintenance overhead compared to standard treaps, it represents an essential trade-off that ensures provable robustness against adversarial attacks while maintaining the treap's expected performance characteristics in adversarial environments.
