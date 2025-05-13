@@ -34,7 +34,7 @@ The resulting skip list is now highly degenerated in the interval $[0,L]$. Speci
             \centering
             \begin{pchstack}[boxed,center,space=0.5em]
                 \begin{pcvstack}[space=0.45em]
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Rep_{\key}(\setS)$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\scriptsize]{$\Rep_{\key}(\setS)$}{%
                             \mathsf{h} \gets \schemefont{NewNode}(m,\star)\\
                             \llst.\hdr \gets \mathsf{h}, \;
                             \llst.\lvl \gets 1\\
@@ -42,7 +42,7 @@ The resulting skip list is now highly degenerated in the interval $[0,L]$. Speci
                             \t \llst \gets \Up_{\key}(\llst,\ins_{(x,v)})\\						
                             \pcreturn \llst
                         }
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{NewNode}(\ell,(x,v))$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\scriptsize]{$\schemefont{NewNode}(\ell,(x,v))$}{%
                             \pccomment{array position $0$ is reserved for}\\
                             \pccomment{a deleted bit, key, value triple $(d,x,v)$}\\
                             \pccomment{accessible via $n.\delacc$, $n.\keyacc$ and $n.\valueacc$}\\
@@ -54,7 +54,7 @@ The resulting skip list is now highly degenerated in the interval $[0,L]$. Speci
                             \t \node[i] \gets \nlll\\
                             \pcreturn \node
                         }
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{RandomLevel}_{\key}(\boxed{x})$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\scriptsize]{$\schemefont{RandomLevel}_{\key}(\boxed{x})$}{%
                             \boxed{\ell \gets R(\key,x,m,p)}\\
                             \boxed{\pcreturn \ell}\\
                             \ell \gets 1, \;
@@ -63,7 +63,7 @@ The resulting skip list is now highly degenerated in the interval $[0,L]$. Speci
                             \t \ell \gets \ell + 1, \; r \getsr [0,1)\\
                             \pcreturn \ell
                         }
-                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Qry(\llst,\qry_{x})$}{%
+                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\scriptsize]{$\Qry(\llst,\qry_{x})$}{%
                           c \gets \llst.\hdr\\
                             \pcfor i \gets \llst.\lvl \ \mathbf{downto} \ 1 \pcdo\\
                             \t \pcwhile c[i] \neq \nlll \ \mathbf{and} \ c[i][0].\keyacc < x \pcdo \\
@@ -76,7 +76,7 @@ The resulting skip list is now highly degenerated in the interval $[0,L]$. Speci
                         }
                 \end{pcvstack}	
                 \begin{pcvstack}[space=0.45em]
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{\key}(\llst,\ins_{(x,v)})$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\scriptsize]{$\Up_{\key}(\llst,\ins_{(x,v)})$}{%
                             \mathsf{u} \gets \kwnew  [1,..,m] \pccomment{local array of pointers}\\
                             c \gets \llst.\hdr\\
                             \pcfor i \gets \llst.\lvl \ \mathbf{downto} \ 1 \pcdo\\
@@ -109,7 +109,7 @@ The resulting skip list is now highly degenerated in the interval $[0,L]$. Speci
                             \t \t u[\ell][\ell] \gets \mathsf{middle} \\
                             \pcreturn \llst
                         }
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up(\llst,\del_{x})$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\scriptsize]{$\Up(\llst,\del_{x})$}{%
                             c \gets \llst.\hdr\\
                             \pcfor i \gets \llst.\lvl \ \mathbf{downto} \ 1 \pcdo\\
                             \t \pcwhile c[i] \neq \nlll \ \mathbf{and} \ c[i][0].\keyacc < x \pcdo \\
@@ -321,7 +321,6 @@ In our robust skip list, we define a maximum level~$m$. This, in turn, defines t
 
 \begin{proof}
     The theorem directly follows from the observation deletions do not help the adversary as with our robust hash table and \Cref{lemma:ncdsl}, \Cref{lemma:rslspc}, and~\Cref{lemma:lvlbound}.
-    \qed
 \end{proof}
 
 To give a concrete illustration of this bound, suppose we had~$n = 2^{32}$, $p=\frac{1}{2}$. Then our fixed point~$a = 6$, and solving for~$\lambda^{*}$ numerically yields~$\lambda^{*} \approx 0.34$. Then, choosing~$\epsilon = 8$ (hence, $c=54$), the probability that the maximum search cost path exceeds~$54 \log_{1/p}(n)$ is less than or equal to~$\delta =  6.28 \times 10^{-7}$. While a constant~$c = 54$ may appear large, consider that that,~$\lambda^{*}$ solely depends on~$p$. In turn, for any fixed~$\epsilon$ this bound is constant as~$n\to\infty$, showing that our adaptive search path is indeed~$O(\log n)$. We further, remark that this constant is likely ``artificially'' large, in the sense that the stochastic process we bound is complex, leaving us only to be able to use blunt Markov-like concentration bounds.

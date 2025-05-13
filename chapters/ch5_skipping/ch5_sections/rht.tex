@@ -62,7 +62,7 @@ We give a robust hash table construction in Figure~\ref{fig:robust_ht}. The robu
 
 We will now state and prove a formal security theorem and prove the robust hash table construction secure in the AAPC model.
 
-\begin{theorem}[Robust Hash Table AAPC Security Result]\label{thm:rhtsr2}
+\begin{theorem}[Robust Hash Table AAPC Security Result]\label{thm:rhtsr}
     Let~$\Pi$ be our robust hash table from ~\Cref{fig:robust_ht}, using PRF~$F$ to map elements to buckets. For integers~$q_U,q_Q,q_H,t \geq 0$ such that $q_U = b$ (i.e., $b$ is the number of buckets in the hash table~$\Pi$), it holds that~$\Pi$ is~$(\phi,\beta,\epsilon,\delta,t)$-conserved with $\phi$ being the HT Maximum Bucket Population function (~\Cref{fig:ht-pop}), $\beta = 3 \frac{\log b}{\log \log b}$, $\epsilon = 1$, and $\delta = (\frac{1}{n} + \Adv{\text{prf}}_{F}(O(t),b+q_Q))$.
 \end{theorem}
 

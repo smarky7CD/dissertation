@@ -26,19 +26,19 @@ This resistance to performance degradation attacks under lazy deletion represent
             \centering
             \begin{pchstack}[boxed,center,space=0.5em]
                 \begin{pcvstack}[space=0.45em]
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Rep_{K}(\setS)$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\footnotesize]{$\Rep_{K}(\setS)$}{%
                             \ttree.\rt \gets \nlll \\
                             \pcfor (x,v) \in \setS \pcdo \\
                             \t \ttree \gets \Up_{K}(\ttree,\ins_{(x,v)})\\						
                             \pcreturn \ttree
                         }
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{RandomPriority}_{K}(\boxed{x})$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\footnotesize]{$\schemefont{RandomPriority}_{K}(\boxed{x})$}{%
                             \boxed{p \gets R(K,x)}\\
                             \boxed{\pcreturn p}\\
                             p \getsr (0,1)\\
                           \pcreturn p
                         }
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{NewNode}((x,v),p)$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\footnotesize]{$\schemefont{NewNode}((x,v),p)$}{%
                             \pccomment{array position $0$ is reserved for} \\
                             \pccomment{a deleted bit, key, value triple $(d,x,v)$}\\
                             \pccomment{accessible via $n.\delacc$,, $n.\keyacc$ and $n.\valueacc$}\\
@@ -46,11 +46,11 @@ This resistance to performance degradation attacks under lazy deletion represent
                             \node \gets [(\bot, x,v),p,\nlll,\nlll]\\
                           \pcreturn \node
                         }
-                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Qry(\ttree,\qry_{x})$}{%
+                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\footnotesize]{$\Qry(\ttree,\qry_{x})$}{%
                           \ttree.\rt \gets \Qry^{\text{rec}}(\ttree.\rt,\qry_{x}) \\
                           \pcreturn \ttree
                         }
-                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Qry^{\text{rec}}(c,\qry_{x})$}{%
+                       \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\footnotesize]{$\Qry^{\text{rec}}(c,\qry_{x})$}{%
                           \pcif c = \nlll \pcthen \\
                             \t \pcreturn \star \\
                           \pcif c[0].\keyacc = x \pcthen \\
@@ -58,7 +58,7 @@ This resistance to performance degradation attacks under lazy deletion represent
                             b \gets (x > c[0].\keyacc)\\
                             \pcreturn \Qry^{\text{rec}}(c[2+b],\qry_{x})
                         }
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\schemefont{Rotate}(c,b)$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\footnotesize]{$\schemefont{Rotate}(c,b)$}{%
                              \tmp \gets c[2+b][3-b] \\
                              c[2+b][3-b] \gets c \\
                              c[2+b] \gets \tmp \\
@@ -66,11 +66,11 @@ This resistance to performance degradation attacks under lazy deletion represent
                         }
                 \end{pcvstack}	
                 \begin{pcvstack}[space=0.45em]
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{K}(\ttree,\ins_{(x,v)})$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\footnotesize]{$\Up_{K}(\ttree,\ins_{(x,v)})$}{%
                             \ttree.\rt \gets \Up^{\text{rec}}_{K}(\ttree.\rt,\ins_{(x,v)}) \\
                             \pcreturn \ttree
                         }
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up^{\text{rec}}_{K}(c,\ins_{(x,v)})$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\footnotesize]{$\Up^{\text{rec}}_{K}(c,\ins_{(x,v)})$}{%
                             \pcif c = \nlll \pcthen \\
                              \t p \gets \schemefont{RandomPriority}_{K}(\boxed{x})\\
                             \t \pcreturn \schemefont{NewNode}((x,v),p) \\
@@ -85,11 +85,11 @@ This resistance to performance degradation attacks under lazy deletion represent
                             \t c \gets \schemefont{Rotate}(c,b) \\
                             \pcreturn c
                         }
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up_{K}(\ttree,\del_{x})$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\footnotesize]{$\Up_{K}(\ttree,\del_{x})$}{%
                              \Up^{\text{rec}}_{K}(\ttree.\rt,\del_{x}) \\
                             \pcreturn \ttree
                         }
-                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}}]{$\Up^{\text{rec}}(c,\del_{x})$}{%
+                        \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.1em}},codesize=\footnotesize]{$\Up^{\text{rec}}(c,\del_{x})$}{%
                             \pcif c = \nlll \pcthen \\
                             \t \pcreturn \\
                             \pcif c[0].\keyacc = x \pcthen \\
@@ -176,7 +176,6 @@ In any sequence of $j$ i.i.d. $\mathsf{U}[0,1]$ random variables, symmetry impli
 $$\Pr\Bigl(r^{x_j} = \min\{r^{x_j},r_{(1)}, r_{(2)}, \ldots, r_{(j-1)}\}\,\Big|\, \mathcal{F}_{j-1} \Bigr) = \frac{1}{j}.$$
 
 Thus, regardless of where the adversary chooses to insert $x_j$, the probability that $x_j$ is a record (i.e., its priority is the smallest among the first $j$ keys) remains equal to $1/j$, as in the non-adaptive setting.
-\qed
 \end{proof}
 
 \begin{theorem}[Treap AAPC Result]\label{thm:tsb}
@@ -267,7 +266,7 @@ Then, applying a standard union bound over all the~$n$ elements in the treap, th
 $$\Pr \left(\bigcup_{x \in \{x_1,\ldots,x_n \}} E_x  \right) \leq n e^{-\frac{\epsilon^2 H_{n}}{2(1 + \epsilon)}}.$$
 \end{proof}
 
-give a concrete illustration of this bound, suppose we had~$n = 2^{32}$ and select~$\epsilon = 5$. Our expected search path cost is~$2 \ln(2^{32}) + 1 \approx 45.36$, and leveraging our results from~\Cref{thm:tsb2} the probability the maximum search cost path exceeds this by five times is~$\leq \delta = e^{-\frac{25 H_{2^{32}}}{12}} \approx 1.09 \times 10^{-11}$.
+To give a concrete illustration of this bound, suppose we had~$n = 2^{32}$ and select~$\epsilon = 5$. Our expected search path cost is~$2 \ln(2^{32}) + 1 \approx 45.36$, and leveraging our results from~\Cref{thm:tsb} the probability the maximum search cost path exceeds this by five times is~$\leq \delta = 2^{32} \cdot e^{-\frac{25 H_{2^{32}}}{12}} \approx 6.65 \times 10^{-12}$.
 
 \subsection{Robust Treaps in Real World Deployments}
 
