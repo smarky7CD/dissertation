@@ -1,3 +1,23 @@
 \chapter{Conclusion and Future Work}
 
 \authorRemark{The following needs to be re-organized and re-written.}
+
+In \cite{HassidimKMMS20}, the authors consider adding robustness to streaming algorithms using differential privacy.
+Meanwhile, Hardt and Woodruff~\cite{hardt2013}, Cohen et al.~\cite{cohen2022robust} and Ben-Eliezer et al.\cite{BenEliezer2022} have shown that linear sketches (including CMS but not HK) are not ``robust" to well-resourced adaptive attacks, when it comes to various $L_p$-norm estimation tasks, e.g., solving the $k$-heavy-hitters problem relative to the $L_2$-norm.  
+These works are mostly of theoretical importance, whereas we aim to give concrete  attacks and results that are (more) approachable for practitioners.
+
+We made a comprehensive security analysis of the Redis CPDS suite, developing 10 different attacks across four CPDS. 
+Our attacks can be used to cause severe disruptions to the performance of systems relying on these CPDS, ranging from mis-estimation of data statistics to triggering denial-of-service attacks. 
+Our work illustrates the importance of low-level algorithmic choices and the dangers of using weak hash functions in CPDS. 
+
+Our work opens up interesting directions for future work. Various other PDS suites exist in the wild, such as in Google BigQuery and Apache Spark, and could also be subjected to detailed security analysis as we have done for Redis here. 
+Methods to provably protect PDS against attacks have been proposed in~\cite{NaorY15,clayton2019,FPUV22,PatersonR22}. However, these analyses tend to focus on textbook versions of the CPDS. 
+Adapting these analyses to cater to the specifics of different implementations would help improve confidence in the deployed variants.
+
+At a higher level, there still seems to be a lack of understanding  in the broader developer community about the risks of using CPDS in potentially adversarial settings. 
+Work is needed to educate developers about these risks; we hope this paper can play a part in this effort. 
+As an alternative, in an effort to shield developers from these risks, one could develop new CPDS implementations that are secure by default and package them in the form of easily consumed libraries with safe APIs. Such an effort could leverage the experience that the research community has gained from developing ``safe by default'' cryptographic libraries.
+
+In this work, we conducted the first systematic analysis of probabilistic skipping-based data structures -- specifically hash tables, skip lists, and treaps -- in adaptive adversarial settings. Further, we established formal security notions and provide provably secure variants of each structure. Moreover, we uncovered innate vulnerabilities in the standard constructions of hash tables and skip lists that allowed adversaries to carry out attacks that degraded the expected performance of these structures exponentially.  Remarkably, we found that (insertion-only) treaps demonstrated inherent resilience against adaptive adversarial manipulation.
+
+While our theoretical bounds provide rigorous security guarantees, there remains scope for developing tighter bounds. Further future research directions include extending our analysis to related data structures such as zip trees \cite{tarjan2021zip}, zip-zip trees \cite{gila2023zip}, skip graphs \cite{aspnes2007skip}, and randomized meldable heaps \cite{gambin1998randomized}. Moreover, a more sophisticated approach to deletions could potentially eliminate memory overhead while maintaining security guarantees. One promising direction involves localized re-initializations that would allow portions of the data structure to be safely rebuilt without compromising robustness. Additionally, it may be of interest to apply our AAPC framework to more classes of data structures and properties, as it is inherently quite extensible.

@@ -1,4 +1,4 @@
-We start by (re)introducing the PDS that we consider in this chapter -- the count-min sketch and the Top-K (HeavyKeeper). We will describe their original specification, the probabilistic guarantees they provide, and give a detailed description of their Redis implementation.
+We start by (re)introducing theC PDS that we consider in this chapter -- the count-min sketch and the Top-K (HeavyKeeper). We will describe their original specification, the probabilistic guarantees they provide, and give a detailed description of their Redis implementation. We depart from our use of the generic data structure's syntax of~\cite{clayton2019}, instead using an ad-hoc syntax that better matches how the structures are defined and implemented in Redis. 
 
 \subsection{Count-min Sketches}
 \label{sec:cms-intro}
@@ -33,7 +33,7 @@ We start by (re)introducing the PDS that we consider in this chapter -- the coun
 \end{pcvstack}
 \caption[The Redis CMS Structure.]{Redis count-min sketch algorithms. 
 The analogous functions in the Redis API are: $\rCMS.\setupS$ is \textsf{CMS.INITBYPROB}, $\rCMS.\insS$ is \textsf{CMS.INCRBY}, and $\rCMS.\qryS$ is \textsf{CMS.QUERY}.
-We refer to a Redis count-min sketch initialized with $pp=\varepsilon, \delta$ as CMS[$\varepsilon, \delta$].} 
+We refer to a Redis count-min sketch initialized with $\varepsilon, \delta \in (0,1)$ as CMS[$\varepsilon, \delta$].} 
 \label{fig:redis-cms}
 \end{figure*}
 
@@ -123,7 +123,7 @@ To instantiate the $k$ pairwise independent hash functions, Redis uses $\murmurt
         \end{pchstack}
         \end{pcvstack}
 	\caption[The Redis Top-K Structure.]{Redis Top-K structure algorithms. The analogous functions in the Redis API are: $\rTK.\setupS$ is \textsf{TOPK.RESERVE}, $\rTK.\insS$ is \textsf{TOPK.ADD}, $\rTK.\qryS$ is \textsf{TOPK.COUNT}, and $\rTK.\listS$ is \textsf{TOPK.LIST}.
-		  We refer to a Redis Top-K structure initialised with $pp=m,k,\mathrm{decay}, K$ as TK[$m,k,\mathrm{decay}, K$]. 
+		  We refer to a Redis Top-K structure initialized with $pp=m,k,\mathrm{decay}, K$ as TK[$m,k,\mathrm{decay}, K$]. 
 	} 
 	\label{fig:redis-topk}	
 \end{figure*}

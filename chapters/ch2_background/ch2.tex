@@ -71,7 +71,9 @@ using for storage. This is common for operation on probabilistic data structures
 
 We also note that the query algorithm $\Qry$ is deterministic, which reflects the overwhelming majority of data structures in practice. Allowing~$\Qry$ to be randomized would allow for a greater degree of syntactic expressiveness, particularly for some data structures that provide privacy guarantees. However, it can make it more difficult to craft correctness properties in that it may be difficult to discern the errors caused by an adaptive adversary versus ``intended'' error arising from the randomized query algorithm. Care must be taken when both designing structures and defining security properties to ensure issues do not arise from this.  
 
-%Further, while the syntax from~\cite{clayton2019probabilistic} that we present above is highly expressive, it may not capture all data structures one may want to examine. For instance, an \emph{authenticated data structure}~\cite{tamassia2003authenticated} may require some changed to the functional definitions, as well as the addition of a \emph{verification function}~$\schemefont{VFY}$ that would act to verify proofs to query responses. Lastly, we note that the syntax does not support describing (nor is it clear how to easily modify the syntax to be able to support) what could be viewed as distributed data structures, such as blockchains and distributed hash tables. This is not the focus of this work, and we point to the reader~\cite{zhang2019security} and~\cite{needels2009secure}, respectively, if interested in such areas.
+\section{Compact Probabilistic Data Structures and Compact Frequency Estimators}
+
+\section{Probabilistic Skipping-Based Data Structures}
 
 \section{Streaming Data}
 
