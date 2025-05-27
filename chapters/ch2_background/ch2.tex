@@ -1,6 +1,4 @@
-\chapter{Background}
-
-\authorRemark{The following needs to be re-organized and re-written.}
+\chapter{Background}\label{chap:background}
 
 \section{Notation}
 
@@ -25,7 +23,7 @@ We use the distinguished symbol~$\star$ to mean that a variable is uninitialized
 
 \section{A Syntax for Data Structures}\label{subsec:syntax}
 
-We present (a slightly modified) syntax for data structures first provided by~\cite{clayton2019}. While originally used to describe a variety of probabilistic data structures, the syntax is appropriately general. A syntactic formalization of data structures in this way not only allows us to elegantly describe numerous data structures, but also craft security definitions that are directly related to the operations the data structure allows. We will do exactly this in our case studies throughout the rest of this work.
+We present a syntax for data structures first provided by~\cite{clayton2019}. While originally used to describe a variety of probabilistic data structures, the syntax is appropriately general. A syntactic formalization of data structures in this way not only allows us to elegantly describe numerous data structures, but also craft security definitions that are directly related to the operations the data structure allows. We will do exactly this throughout the rest of this work.
 
 We start by fixing three non-empty sets~$\set{D},\set{R},\set{K}$ of \emph{data objects}, \emph{responses} and \emph{keys}, respectively.  Let $\mathcal{Q}\subseteq \Func(\mathcal{D},\mathcal{R})$ be a set of allowed \emph{queries}, and let $\mathcal{U} \subseteq \Func(\mathcal{D},\mathcal{D})$ be a set of allowed data-object \emph{updates}.  A {\em data structure} is a tuple $\Pi =
 (\Rep,\Qry,\Up)$, where:
@@ -71,10 +69,6 @@ using for storage. This is common for operation on probabilistic data structures
 
 We also note that the query algorithm $\Qry$ is deterministic, which reflects the overwhelming majority of data structures in practice. Allowing~$\Qry$ to be randomized would allow for a greater degree of syntactic expressiveness, particularly for some data structures that provide privacy guarantees. However, it can make it more difficult to craft correctness properties in that it may be difficult to discern the errors caused by an adaptive adversary versus ``intended'' error arising from the randomized query algorithm. Care must be taken when both designing structures and defining security properties to ensure issues do not arise from this.  
 
-\section{Compact Probabilistic Data Structures and Compact Frequency Estimators}
-
-\section{Probabilistic Skipping-Based Data Structures}
-
 \section{Streaming Data}
 
 A \emph{stream} data-object~$\streamvar{S} = e_1,e_2,\ldots$ is a finite sequence of elements $e_i \in \set{U}$ for some universe~$\set{U}$.  
@@ -82,11 +76,82 @@ The elements of a stream are not necessarily distinct, and the (stream) frequenc
 From the perspective of the PDS, the stream is presented one element at a time, with no buffering or ``look ahead".  
 That is, processing of a stream is performed in order, and the processing of $e_i$ is completed before the processing of $e_{i+1}$ may begin; once~$e_i$ has been processed, it cannot be revisited.
 
-\section{Redis}
+\section{Related Works}
 
-Redis (Remote Dictionary Server) is a general purpose, in-memory database that supports a rich array of functionality, including various Probabilistic Data Structures (PDS), such as Bloom filters, Cuckoo filters, as well as cardinality and frequency estimators. 
-These PDS typically perform well in the average case. However, given that Redis is intended to be used across a diverse array of applications, it is crucial to evaluate how these PDS perform under worst-case scenarios, i.e., when faced with adversarial inputs. We offer a comprehensive analysis to address this question.
-We begin by carefully documenting the different PDS implementations in Redis, explaining how they deviate from those PDS as described in the literature. 
-Then we show that these deviations enable a total of 10 novel attacks that are more severe than the corresponding attacks for generic versions of the PDS. 
-We highlight the critical role of Redis' decision to use non-cryptographic hash functions in the severity of these attacks. 
-We conclude by discussing countermeasures to the attacks, or explaining why, in some cases, countermeasures are not possible.
+We now provide a summary of related work for the classes of data structures that we focus on in this dissertation.
+
+\subsection{Compact Probabilistic Data Structures and Compact Frequency Estimators}
+
+\subsubsection{Approximate Set Membership Data Structures}
+
+The first works to explore CPDS in a provable security style focused on the Bloom filter~\cite{bloom1970space}. The Bloom filter admits approximate set-membership queries. The structure is widely used in many computing contexts, such as databases~\cite{chang2008bigtable}, networking~\cite{broder2004network}, distributed systems~\cite{tarkoma2011theory}, and search~\cite{goodwin2017bitfunnel}. 
+
+Naor and Yogev were the first to consider settings in which inputs and queries may be chosen by an adaptive adversary and formally investigate attacks that can occur in such a setting~\cite{naor2015bloom}. Their results show that adversaries can find queries that are guaranteed to be false positive for a given instantiation of a filter and data collection. They formalized a notion of adversarial correctness for a modified Bloom filter structure of their own construction and provide a correctness bound for it.  Clayton et al.~\cite{clayton2019} extend this work by considering stronger adversaries. They allow for the adversary to insert elements into the structure after the adversary has started to issue queries -- that is, they consider a fully mutable setting.  They find that the basic Bloom filter is vulnerable to adversarial manipulation, which can increase false positives to nearly $100\%$. To secure it, they recommend adding a unique salt in an immutable setup, or using a private representation, keyed hash functions, and insertion thresholds in a mutable setting. Further, they formalize a notion of adversarial correctness that extends past only Bloom filters, also concretely analyzing the counting filter~\cite{fan2000summary} and the Count-min sketch~\cite{cormode2005improved}. Filić et al.~\cite{FPUV22,filic2025deletions} further analyze the adversarial correctness of Bloom filters and Cuckoo filters (another approximate membership data structure) in a simulation style security notion. They reach similar conclusions to~\cite{clayton2019}. 
+
+\subsubsection{HyperLogLog}
+
+The HyperLogLog (HLL)~\cite{flajolet2007hyperloglog} is a CPDS that provides a compact representation of a set and can accurately approximate the number of distinct elements in the set (i.e., the set's cardinality). Patterson and Raynal~\cite{PatersonR22} provide a provable security treatment of the HLL. They first present attacks which exploit the use of fixed and publicly computable hash function in the HLL to cause large cardinality estimate errors. They then show that by switching these hash functions for a secretly keyed primitive that (even in the setting where an adversary has complete access to the internal state of the structure) the structure remains secure in terms of conserving the non-adversarial correctness guarantees of the structure. Prior to this, Revirigeo and Ting provide attacks against the HLL in a model where the adversary has access to a ``shadow'' device that mirrors the structure that is being attacked~\cite{reviriego2020security}. Patterson and Raynal point out this setting in unrealistic, but nonetheless improve the attack in this model. 
+
+
+\subsubsection{Compact Frequency Estimators}
+
+Recall that compact frequency estimators are a class of CPDS that compactly represent a collection of streaming data (usually modeled as a multiset), and provide approximately correct frequency estimates (that is, the number of times any particular element has appeared in the stream). Alternately, compact frequency estimators can be viewed as providing a compact representation of the frequency distribution of a particular data stream. 
+
+As previously stated, Clayton et al. were the first to examine compact frequency estimators from a provable security perspective~\cite{clayton2019}. They specifically examined the Count-min sketch and presented attacks that could cause large frequency estimation error when the internals state of the structure or the hash functions used by the structure were made available to the adversary. They were able to prove security of the structure when the internal state of the structure is kept private and a secretly keyed primitive was used in place of the usual hash functions. However, their defined adversarial goal was very conservative. Any fixed amount of frequency estimation error was considered a win for the adversary, rather than an accumulated error that surpassed that of the non-adversarial correctness guarantee. Further, their construction relied on a thresholding technique, in which the structure would not accept any more updates after a bounded number of insertions -- something that in practice is unrealistic.  
+
+\subsection{Probabilistic Skipping-Based Data Structures}
+
+\subsubsection{Self-Balancing and Self-Organizing Data Structures}
+
+Although PSDS share conceptual similarities with self-balancing and self-organizing data structures, they differ fundamentally in their guarantees and methodological approach. 
+Notably, self-organizing data structures have been extensively analyzed under adversarial models where input sequences are deliberately constructed to degrade performance, whereas the corresponding analysis for PSDS against adaptive adversaries remains a significant open problem. Similarly, self-balancing data structures have been studied extensively under worst-case analyses that inherently account for adversarial strategies.
+
+\emph{Self-organizing data structures}~\cite{albers2005self}, whether randomized or deterministic, dynamically adjust their internal ordering of elements to optimize performance based on a given (potentially adversarial) sequence of input requests. For instance, self-organizing lists may employ the move-to-front heuristic, where accessed elements are relocated to the front of the list, or the transpose method, where elements swap positions with their predecessors when accessed. Similarly, splay trees~\cite{sleator1985self} rotate frequently accessed nodes closer to the root to reduce future access times. This approach has been shown to be challenging in adaptive adversarial settings, with (randomized) self-organizing lists incurring a cost at least three times that of the optimal reordering strategy \cite{reingold1994randomized}. 
+
+\emph{Self-balancing} data structures, such as Red-Black trees~\cite{bayer1972symmetric} and AVL trees~\cite{adel1962algorithm}, \emph{deterministically} ensure an upper-bound on node depth, thereby providing worst-case performance guarantees for search operations. This deterministic approach is also exemplified by the deterministic skip list~\cite{munro1992deterministic}, which enforces an optimal structure by carefully promoting inserted nodes and their neighborhoods to appropriate levels. While these structures guarantee bounded search path lengths (even in adversarial settings), they require complex re-balancing mechanisms. In steep contrast, PSDS, such as the treap~\cite{seidel1996randomized} and the original skip list~\cite{pugh}, offer comparable expected performance, achieved through simple, probabilistic updating mechanisms. This presents a clear trade-off: deterministic structures provide absolute performance guarantees at the cost of implementation complexity, while probabilistic alternatives offer simplicity, albeit, with only probabilistic guarantees. In this work, we investigate whether we can maintain the implementation simplicity of probabilistic data structures while preserving their performance guarantees even in adversarial settings.
+
+\subsubsection{Complexity Attacks Against Probabilistic Skipping-Based Data Structures}
+
+This section provides a concise overview of so-called \emph{complexity attacks} targeting PSDS. Previous research has identified clear vulnerabilities in hash tables and skip lists, but these works lack formal security analysis and rigorous proofs of security when potential mitigations are put forth. Hash tables have received the most attention, while skip lists have been addressed (to our knowledge) in only a single paper in this context. Further, to our knowledge, no prior work has examined complexity attacks against treaps. This absence is consistent with our finding that treaps possess inherent resistance to such attacks.
+
+\paragraph{Hash Tables} Assuming a hash table's internal hash function has ``good'' collision-resistance properties, the amortized average-case complexity of insertions, deletions, and look-ups is~$O(1)$. For these efficiency reasons, hash tables are widely used in many applications such as implementing associative arrays~\cite{mehlhorn2008hash} and sets~\cite{blandy2021programming} in many programming languages, in cache systems~\cite{istvan2015hash}, as well as for database indexing~\cite{zobel2001memory}.
+
+However, this average-case performance relies on a critical assumption: that the data inserted into a hash table is independent of the (potentially randomly selected) hash function used to map key-value pairs to buckets. This assumption fundamentally breaks down in adversarial scenarios where an attacker can deliberately craft insertions that exploit knowledge of the hash function or its outputs. Given the ubiquity of hash tables in modern computing systems, numerous researchers \cite{paxson1999bro, CrosbyW03, bar2007remote, eckhoff2009hash, klink2011efficient, aumasson2012hash,bottinelli2025hash} have investigated techniques to compromise the data structure, forcing operations to degrade from expected $O(1)$ to worst-case $O(n)$ time complexity, where $n$ represents the total number of elements in the structure. These adversarial approaches typically constitute complexity attacks that strategically engineer inputs causing multi-collisions -- deliberately exploiting hash function properties to force numerous distinct keys into identical buckets.
+
+Crosby and Wallach~\cite{CrosbyW03} demonstrated denial-of-service attacks via complexity attacks in applications using hash tables, such as the Bro intrusion detection system~\cite{paxson1999bro}, by forcing collisions with weak, fixed hash functions. They suggested universal hashing~\cite{carter1977universal} as a mitigation, though without any formal guarantees. Klink and Walde~\cite{klink2011efficient} showed similar CPU exhaustion attacks on web servers (e.g., PHP, ASP.NET, Java), only using a single carefully crafted HTTP request. Aumasson et al.\cite{aumasson2012hash} further revealed vulnerabilities in hash tables using non-cryptographic hash functions (like MurmurHash and CityHash\cite{appleby2016smhasher}), proposing SipHash~\cite{aumasson2012hash} as a secure alternative -- which is widely adopted but lacks a holistic formal analysis as it comes to security of hash tables in adversarial settings. Complexity attacks have also been shown effective in causing denial-of-service against flow-monitoring systems~\cite{eckhoff2009hash}. Further, the use of salting was undermined by remote timing attacks~\cite{bar2007remote}. Recently, Bottinelli et al.~\cite{bottinelli2025hash} found nearly a third of QUIC implementations vulnerable to similar attacks. Despite these works and many proposed defenses, no formal framework exists for the provable security of (keyed) hash tables against adaptive adversaries. We address this gap by introducing the first rigorous security model for this setting, along with formal proofs establishing bounds on adversarial runtime degradation.
+
+\paragraph{Skip Lists}
+In the original skip list paper~\cite{pugh}, it is noted that it is imperative to keep the internal structure of the skip list hidden. Otherwise, adversarial users could observe the levels of individual elements and delete any element at a level greater than zero (the bottom layer). This would degenerate the structure to a simple linked list and force worst-case run time ($O(n)$) on subsequent operations after these deletions occur. 
+
+Nussbaum and Segal~\cite{nussbaum2019skiplist} demonstrate that private internal structure alone fails to protect skip lists against this style of attack. They present a (remote) timing attack that correlates query response times with element heights, ultimately allowing adversaries to force all elements in the structure to the lowest level. Their adversarial model is notably limited: the adversary cannot access the internal skip list structure, the initial data collection is non-adversarially selected, and the original data collection must be preserved during the attack. While they propose a structure called the \emph{splay skip list} as a countermeasure, their solution lacks formal security analysis. Our work presents a significantly stronger adversarial model and provides a construction with formal security guarantees. We give an extensive commentary on~\cite{nussbaum2019skiplist} and vulnerabilities below. 
+
+Nussbaum and Segal~\cite{nussbaum2019skiplist} show that keeping the internal structure of the skip list private is insufficient to protect against complexity attacks. We discuss their attack in more detail because it is instructive in light of how to model attacks and prove the properties of robust alternatives.
+Nussbaum and Segal present a timing attack that allows an adversary to discover the levels at which specific elements reside through a series of queries and, in turn, correlate the time it takes to answer a query on a given element with the height of that element. After the heights of the elements are discovered, the simple deletion attack can be mounted. 
+
+The specific attack they present includes several assumptions.
+
+\begin{itemize}
+    \item The size of the collection represented by the structure,~$n$, is known to the adversary,~$\advA$.
+    \item Each node in the structure holds a unique value.
+    \item The well-ordered universe~$\univ$ is known and is of size~$O(n)$.
+    \item The runtime of the search algorithm in the structure is consistent. That is, a search for the same value will yield the same runtime each time the search is executed.
+\end{itemize}
+
+Further, their adversarial model is the following. 
+
+\begin{itemize}
+    \item $\advA$ is given a skip list containing some collection of data,~$D$ that was selected by some (non-adversarial) process. 
+    \item The adversary, $\advA$ does not have access to the internal structure of the skip list at any point. $\advA$ can only interact with the structure through oracles that provide search, insertion, and deletion functionality to the structure that is under attack.
+    \item After the completion of the attack,~$\advA$ is required to have altered the skip list it interacts with such that it contains the original~$D$ represented by the structure (before any adversarial interaction occurs) and the level that all (or nearly all) the elements reside at is the first.  
+\end{itemize}
+
+The attack in this setting works by first running the timing attack to discover the level at which the elements in the structure exist (and, on the first iteration, which elements from~$\univ$ are present in the structure). Then all elements with a level greater than zero (exist at high level than the initial later) are removed. This set of removed elements are reinserted. These steps are repeated until (nearly) all the elements in the structure reside at level zero and the original collection represented by the structure is conserved -- thereby, degrading the representation of this collection to (nearly) a flat singly-linked list. 
+
+As a countermeasure, the splay skip list structure is presented~\cite{nussbaum2019skiplist}.  The approach is to swap the levels of certain elements during a search query, thereby preventing the adversary from discovering information about the level where any particular element resides (as they are not fixed). The structure is believed to prevent the timing attack from being effective, but no formal analysis of the security of the structure is given. 
+
+We again note that the adversarial setting that is given in~\cite{nussbaum2019skiplist} is rather limited. It assumes the adversary does not have access to the internal structure of the skip list, nor the ability to control the initial collection of data the skip represents. Further, it requires the adversary to conserve the initial data collection~$D$ that the skip list represents before any adversarial interaction occurs. We present a much stronger adversarial model in our work and a construction that satisfies this definition.
+
+The authors propose a new structure that is believed to prevent the timing attack they present; however, as previously stated, no formal security analysis is given. 
+Indeed, the splay skip list is still vulnerable to attacks, as demonstrated by the following scenario. Consider a collection~$D$ of elements represented by a splay skip list, where a total order is defined on the universe in which~$D$ resides. Suppose there exists an element~\( d \) such that~\( x_1 \leq d \leq x_2 \) for every pair of elements~\( x_1, x_2 \in D \), where~$x_1 \neq x_2$. For a specific order, $x_1 \leq d_1 \leq x_2 \leq d_2 \leq \ldots$ for~$x_i \in D$ and~$d_i \notin D$, an adversary can exploit this by conducting search queries for the intermediary elements $d_i$. 
+
+Unlike searches for elements~$x_i \in D$, which would trigger the splay mechanism, searches for these intermediary elements~$d_i \not\in D$ bypass the splay security mechanism. The runtimes required to (not) find these intermediate nodes, however, still uniquely determine the height of elements contained in~$D$.\footnote{Compared to searching for elements~$x_1,x_2,\ldots$ as described in the original attack, the runtimes for searching~$d_1,d_2,\ldots$ only change by a constant factor (one extra step to find that the~$d_i \not\in S$) .} After the discovery of the heights of the elements contained in~$D$, the trivial deletion attack could be carried out as before.

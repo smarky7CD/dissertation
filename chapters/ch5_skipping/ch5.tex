@@ -1,13 +1,8 @@
-\chapter{Provably Robust Skipping-based Probabilistic Data Structures}
+\chapter{Provably Robust Probabilistic Skipping-based Data Structures}\label{chap:psds}
 
 In this chapter we consider a distinct subset of probabilistic data structures, which ensures correctness (and hence are not compressing) while offering fast probabilistic runtime guarantees, have received considerably less attention in the literature. Existing security analyses, such as those addressing the robustness of hash tables \cite{CrosbyW03, aumasson2012hash, bar2007remote, eckhoff2009hash,klink2011efficient,bottinelli2025hash} and skip lists \cite{nussbaum2019skiplist}, provide valuable insights but lack formal adversarial models and rigorous security analyses. Due to their runtime properties, we refer to these as \emph {probabilistic skipping-based data structures} (PSDS), as they inherently ``skip'' over parts of their internal structure to accelerate lookup operations.
 The lack of research in this area is particularly concerning given that the studies on hash tables have already uncovered practical attacks, including methods to mount denial-of-service attacks attacks against intrusion detection systems~\cite{bar2007remote}, web application servers \cite{klink2011efficient}, and the QUIC protocol~\cite{bottinelli2025hash}.
 
-
-%-------------------------------------------------------------------------------
-\section{Relation to Previous Work}
-\input{chapters/ch5_skipping/ch5_sections/prev_work.tex}
-%-------------------------------------------------------------------------------
 
 %-------------------------------------------------------------------------------
 \section{Structures we Analyze}

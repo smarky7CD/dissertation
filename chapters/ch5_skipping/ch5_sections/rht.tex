@@ -88,7 +88,7 @@ We will now state and prove a formal security theorem and prove the robust hash 
     Now, with~$\game_1$, we immediately have a standard insertion-only truly random balls-and-bins problem with~$\leq q_U = b$ balls being randomly thrown into~$q_U = b$ bins. We can apply the standard bound and conclude~$\phi(\cdot) \leq \beta (\cdot)$ (that is~$\frac{\phi(\cdot)}{\beta (\cdot)} \leq \epsilon = 1$) with probability~$1-\delta$ where~$\delta = (\frac{1}{b} + \Adv{\text{prf}}_{F}(O(t),Q))$. The first term comes from the standard bound and the second results from the hybrid we showed above.
 \end{proof} 
 
-To give a concrete illustration of this bound, suppose we had~$n = b = 2^{32}$ and~$\epsilon = 1$. Leveraging our results from~\cref{thm:rhtsr2}, the probability our maximum search cost path is greater than~$M = 3 \frac{\log 2^{32}}{\log\log 2^{32}} \approx 21.47$ is less than or equal to $\delta = \frac{1}{2^{32}} + \Adv{\text{prf}}_{F}(O(t),b+q_Q) \approx 2.33 \cdot 10^{-10} + \Adv{\text{prf}}_{F}(O(t),b+q_Q)$.
+To give a concrete illustration of this bound, suppose we had~$n = b = 2^{32}$ and~$\epsilon = 1$. Leveraging our results from~\Cref{thm:rhtsr}, the probability our maximum search cost path is greater than~$M = 3 \frac{\log 2^{32}}{\log\log 2^{32}} \approx 21.47$ is less than or equal to $\delta = \frac{1}{2^{32}} + \Adv{\text{prf}}_{F}(O(t),b+q_Q) \approx 2.33 \cdot 10^{-10} + \Adv{\text{prf}}_{F}(O(t),b+q_Q)$.
 
 \subsection{Robust Hash Tables in Real World Deployments}
 
