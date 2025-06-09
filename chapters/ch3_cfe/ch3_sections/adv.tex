@@ -1,6 +1,6 @@
 % Attack Interface
 %-------------------------------------------------------------------------------
-\begin{figure}[tp]
+\begin{figure}[h]
     \centering
    
        \begin{pchstack}[boxed,center,space=0.5em]
@@ -54,13 +54,10 @@
   
    The adversary is provided a target~$x\in\set{U}$, and given access to oracles that allow it to update the current representation ($\UPO$) ---~in effect, to control the data stream~--- and to make any of the queries permitted by the structure ($\QRYO$). We abuse notation for brevity and write~$\UPO(e)$ to mean an insertion of~$e$ into the structure and~$\QRYO(e)$ to get a point query on~$e$ for some element~$e \in \set{U}$. Note that when~$v=0$, the $\UPO$-oracle leaks nothing about updated representation, so that it remains ``private" throughout the experiment.  The adversary (and, implicitly, $\Rep, \Up, \Qry$) is provided oracle access to a random oracle~$\HASHO \colon \set{X} \to \set{Y}$, for some structure-dependent sets $\set{X},\set{Y}$.  The output of the experiment is the absolute error between the true frequency~$n_x$ of~$x$ in the adversarial data stream, and the structure's estimate~$\hat{n}_x$ of~$n_x$. 
    
-   
-   
-   \paragraph{Remark}
    Conventionally, one would define an ``advantage" function over the security experiment, and there are various interesting ways this could be done. As examples, 
    one could parameterize by a threshold function~$T \colon \mathbb{Z}\to\mathbb{Z}$, and have the advantage measure the probability that the value $|\hat{n}_x - n_x| > T(q_U)$; 
    or, one could compare this value to known non-adaptive error guarantees.  As we will not be proving the security of any structures, 
-   we use $\ExpErrFe{\struct}{\cdot}{u,v}$ as a precise description of the attack setting.  We will explore \emph{lower} bounds on the values returned by the experiment,
+   we use $\ExpErrFe{\struct}{\cdot}{u,v}$ as a precise description of the attack setting.  We will explore lower bounds on the values returned by the experiment,
    for explicit attacks that we give. 
    
    We capture various settings related to the view of the adversary in our attack interface. We have a setting in which the data structure representation is kept private from the adversary, and we also have a setting in which the specific choice of hash functions selected by a particular representation are kept private from the adversary.  These settings can be examined together, separately, or both can be disregarded and the adversary can be given a ``full view''. That is we consider when the both the representation and hash functions are private, when the representation is public and the hash functions are private, when the representation is private and the hash functions are public, and when both the representation and hash functions are public.

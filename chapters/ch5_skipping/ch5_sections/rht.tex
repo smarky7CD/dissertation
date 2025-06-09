@@ -1,10 +1,10 @@
 \subsection{Insecurity Of Standard Hash Tables}
 
-\paragraph{Unkeyed Hash Tables}
+\subsubsection{Unkeyed hash tables}
 
 Consider a standard hash table instantiated with a fixed and publicly known hash function. A simple pre-computation attack will trivially win our security experiment (with the experiment parameters the same as in Theorem~\ref{thm:rhtsr}) with probability one (assuming the ability to make sufficiently many local hash computations). An adversary can sample index keys from the universe and compute the bucket they will map to by using the public hash function (assuming the parameters of the structure are known). The adversary can select a target bucket and insert index keys (with some arbitrary value) iff they map to this target bucket. In this way, an adversary can ensure that all elements go to a single bucket, causing a linear overhead when searching for an element in this bucket.
 
-\paragraph{Keyed Hash Tables with Deletions}
+\subsubsection{Keyed hash tables with deletions}
 
 Consider a hash table where we replace a public hash function with a secretly keyed primitive, like a PRF. Our security game also yields a simple strategy for an adversary to win our game with a high probability if the hash tables support deletions in the usual way. The adversary selects a target bucket. Then it samples keys from the universe (along with arbitrary values for these keys) and inserts them into the table. Observing the state of the table after each insertion, the adversary deletes the element unless it has been inserted in the target bucket. At the end of the adversary's execution, the hash table will only have elements that reside in a single bucket. For this reason, we do not allow adversaries to make deletions that actually remove elements from the hash table and compare our adversarial results to a standard ball-in-bins result that assumes no deletions. 
 
@@ -12,7 +12,7 @@ While an attack of this nature may seem vacuous and an artifact of our security 
 
 \subsection{A Robust Construction}
 
-\begin{figure*}[!htbp]
+\begin{figure*}[h]
     %	\Wider[4em]{
             \centering
             \begin{pchstack}[boxed,center,space=0.5em]

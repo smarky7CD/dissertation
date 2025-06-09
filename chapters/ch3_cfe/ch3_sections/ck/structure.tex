@@ -9,7 +9,7 @@ To insert a stream element~$x$ arrives, we run the CMS and HK update procedures 
 \input{chapters/ch3_cfe/ch3_sections/ck/ck-code-fig.tex}
 
 When queried for the frequency estimate of an element $x\in \set{U}$, CK first computes the CMS and HK estimates, which we will write as CMS($x$) and HK($x$) for brevity. If CMS($x$)=HK($x$), then we return their shared response.  We will see precisely why this is the correct thing to do, but loosely, it is because (under the NFC assumption) $\HK(x) \leq n_x \leq \CMS(x)$.  If $\CMS(x) \neq \HK(x)$ then CK proceeds row-by-row, using the information held at $A[i][p_i]$ to refine the summary information held at $M[i][p_i]$.  
-If any of the $A[i][p_i].\fp$ are uninitialized, then we are certain that~$n_x=0$; had \emph{any} stream element been mapped to this position, the fingerprint would no longer be uninitialized.
+If any of the $A[i][p_i].\fp$ are uninitialized, then we are certain that~$n_x=0$; had any stream element been mapped to this position, the fingerprint would no longer be uninitialized.
 %\footnote{Equivalently, we could conclusively return zero if any of the $M[i][p_i]=0$.}
 In this case, CK($x$) returns 0.
 
@@ -37,8 +37,8 @@ so for each row $i\in[k]$, we have two cases to consider.  For each case, CK mai
 In what follows, we will assume the NFC condition. For sufficiently large fingerprints (e.g., $\tau$-bit fingerprints where $2^\tau$ is much larger than the number of distinct elements in the stream) this is reasonable.  Under this assumption, CK may only overestimate the value of~$n_x$.
 
 %\mia{Tom: Make sure that we point out we cover all the cases with the thetas. Most of it is already in the below; possibly add one 'killer' sentence.}
-\paragraph{Correcting ${M[i][p_i]}$ when ${x}$ does not ``own" ${A[i][p_i]}$}
-By its design as a count-all structure, the value of $M[i][p_i]=n_x + \sum_{y \in V^i_x}n_y$.  When $i \in \hat{I}_x$, we claim that $n_x \leq \sum_{y \in V^i_x}n_y$.  To see this, observe that if $n_x > \sum_{y \in V^i_x}n_y$ then~$x$ \emph{would} own $A[i][p_i]$: we can pair up appearances of~$x$ with appearances of elements in $y \in V^i_x$, and because no element of $V^i_x$ has the same fingerprint as~$x$, each pair $(x,y)$ effectively contributes 0 to the value of $A[i][p_i].\cnt$. So if $n_x > \sum_{y \in V^i_x}n_y$, the fingerprint held at $A[i][p_i]$ would be $\fp_x$.  Note that if $n_x\,{=}\,\sum_{y \in V^i_x}n_y$ and $i \in \hat{I}_x$, then $A[i][p_i].\cnt=1$ and some $y \neq x$ was the last insertion.  Thus, $A[i][p_i]-1$ is a lowerbound on the difference $\sum_{y \in V^i_x}n_y - n_x$, i.e., the number of occurrences of $y \in V^i_x$ that are not canceled out by an occurrence of~$x$.  Thus, $n_x + A[i][p_i]-1 \leq \sum_{y \in V^i_x}n_y$, which implies that $M[i][p_i]=n_x + \sum_{y \in V^i_x}n_y \leq 2n_x + A[i][p_i]-1$.
+\subsubsection{Correcting ${M[i][p_i]}$ when ${x}$ does not ``own" ${A[i][p_i]}$}
+By its design as a count-all structure, the value of $M[i][p_i]=n_x + \sum_{y \in V^i_x}n_y$.  When $i \in \hat{I}_x$, we claim that $n_x \leq \sum_{y \in V^i_x}n_y$.  To see this, observe that if $n_x > \sum_{y \in V^i_x}n_y$ then~$x$ would own $A[i][p_i]$: we can pair up appearances of~$x$ with appearances of elements in $y \in V^i_x$, and because no element of $V^i_x$ has the same fingerprint as~$x$, each pair $(x,y)$ effectively contributes 0 to the value of $A[i][p_i].\cnt$. So if $n_x > \sum_{y \in V^i_x}n_y$, the fingerprint held at $A[i][p_i]$ would be $\fp_x$.  Note that if $n_x\,{=}\,\sum_{y \in V^i_x}n_y$ and $i \in \hat{I}_x$, then $A[i][p_i].\cnt=1$ and some $y \neq x$ was the last insertion.  Thus, $A[i][p_i]-1$ is a lowerbound on the difference $\sum_{y \in V^i_x}n_y - n_x$, i.e., the number of occurrences of $y \in V^i_x$ that are not canceled out by an occurrence of~$x$.  Thus, $n_x + A[i][p_i]-1 \leq \sum_{y \in V^i_x}n_y$, which implies that $M[i][p_i]=n_x + \sum_{y \in V^i_x}n_y \leq 2n_x + A[i][p_i]-1$.
 %
 
 \begin{restatable}{lemma}{lmaThetaOne}\label{lma:fx:MA:Theta1}
@@ -84,10 +84,10 @@ By its design as a count-all structure, the value of $M[i][p_i]=n_x + \sum_{y \i
 As this lemma holds for every $i \in \hat{I}_x$, we conclude that $n_x \leq \Theta_1=\min_{i \in \hat{I}_x}\{\Theta^i_1\} \leq \min_{i \in \hat{I}_x}\{M[i][p_i]\}$.  
 %Hence, $\min \left\{  \min_{i \in I_x}\left\{M[i][p_i]  \right\}, \min_{i \in \hat{I}_x}\{\Theta^i_1\} \right\} \leq \mathrm{CMS}(x)$.
 
-\paragraph{Correcting $M[i][p_i]$ when $x$ does ``own" $A[i][p_i]$}
+\subsubsection{Correcting $M[i][p_i]$ when $x$ does ``own" $A[i][p_i]$}
 Now, say that row~$i \,{\in}\, I_x$. Under the NFC condition
 %we have $n_x \geq A[i][p_i].\cnt$, and 
-$A[i][p_i].\cnt$ stores the number of occurrences of $x$ that are \textit{not} canceled out by occurrences of~$y \,{\in}\, V^i_x$. So,  
+$A[i][p_i].\cnt$ stores the number of occurrences of $x$ that are not canceled out by occurrences of~$y \,{\in}\, V^i_x$. So,  
 we must have had at least $\sum_{y \in V^i_x}n_y \,{\geq}\, n_x - A[i][p_i].\cnt$ occurrences of~$y \in V^i_x$. This implies $M[i][p_i] 
 %= n_x + \sum_{y \in V^i_x} n_y 
 \,{\geq}\, 2n_x  - A[i][p_i].\cnt$, and, by rearranging, $n_x \,{\leq}\,  \frac{M[i][p_i] + A[i][p_i].\cnt}{2}$.
@@ -120,7 +120,7 @@ Let~$\streamvar{S}$ satisfy the NFC condition, and let $x \in \set{U}$.  Then fo
 
 As this lemma holds for every $i \,{\in}\, I_x$, we conclude that $n_x \,{\leq}\, \Theta_2=\min_{i \,{\in}\, I_x}\{\Theta^i_2\} \,{\leq}\, \min_{i \,{\in}\, I_x}\{M[i][p_i]\}$.  Combined with the conclusion of Lemma~\ref{lma:fx:MA:Theta1}, we have $n_x \,{\leq}\, \mathrm{CK}(x) \,{=}\, \lfloor \min\{\Theta_1,\Theta_2\} \rfloor \,{\leq}\, \CMS(x)$. 
 
-\paragraph{Precise estimation when some $|V^i_x| \,{\in}\, \{0,1\}$}
+\subsubsection{Precise estimation when some $|V^i_x| \,{\in}\, \{0,1\}$}
 If there exists an~$i$ such that $\left|{V_x^i}\right|\,{=}\,0$, then $M[i][p_i]\,{=}\,A[i][p_i]=n_x$.  Hence, in this special case, both $\CMS(x)=n_x$ and $\mathrm{HK}(x)=n_x$.  When this is not the case, $n_x < M[i][p_i]$ for all~$i\in[k]$, so $n_x < \CMS(x)$.  For CK, on the other hand, if there exists a row~$i$ such that $|V^i_x|=1$, we still have $\mathrm{CK}(x)=n_x$.  Our next result, which is a corollary of Lemmas~\ref{lma:fx:MA:Theta1} and~\ref{lma:fx:MA:Theta2}, shows that either one of $\Theta_1^i$ or $\Theta_2^i$ is precisely~$n_x$, or the smaller of the two is $n_x \pm 1/2$.  Thus $\mathrm{CK}(x)=\lfloor \min\{\Theta_1,\Theta_2\} \rfloor\,{=}\,n_x$. 
 \begin{restatable}{corollary}{corVxOne}\label{cor:fx:MA:Theta13:nx} Let $i \in [k]$ be such that $|V_x^i|=1$. If the stream satisfies the NFC condition, then
 	\begin{align*}

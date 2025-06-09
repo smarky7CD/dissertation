@@ -1,6 +1,6 @@
 %\label{sec:cms-attacks}
 \noindent
-In our attack model, if the mapping~$R(K,\cdot)$ is public, we may use the $\HASHO$ oracle (only) to find a cover set for the target~$x$ ``locally'', i.e., the step is entirely offline.  When this is not the case, we use a combination of queries to the $\UPO$ and $\QRYO$ oracles to signal when a cover set \emph{exists} among the current stream of insertions; then we make additional queries to learn a subset of stream elements that yield a cover. 
+In our attack model, if the mapping~$R(K,\cdot)$ is public, we may use the $\HASHO$ oracle (only) to find a cover set for the target~$x$ ``locally'', i.e., the step is entirely offline.  When this is not the case, we use a combination of queries to the $\UPO$ and $\QRYO$ oracles to signal when a cover set exists among the current stream of insertions; then we make additional queries to learn a subset of stream elements that yield a cover. 
 
 Before exploring each setting, we build up some general results. 
 Let $\rvcoverx{r}{x}$ be the event that in the execution of $\ExpErrFe{\struct}{\advA}{u,v}$, the adversary queries the $\UPO$-oracle with $\up_{e_i},{\dots},\up_{e_t}$ and $e_1,{\dots},e_t$ is an $r$-cover for the target.  For concision, define random variable $\rverr=\ExpErrFe{\struct}{\advA}{u,v}$.  We will mainly focus on $\mathbb{E}[\rverr]$ when analyzing the behavior of structures, so here we observe that the non-negative nature of~$\rverr$ allows us to write $\mathbb{E}[\rverr]=\sum_{\xi > 1} \Prob{\rverr \geq \xi}$.  In determining the needed probabilities, it will be beneficial to condition on $\rvcoverx{r}{x}$, 
@@ -23,7 +23,7 @@ Letting $0 \leq T \leq q_U$ be the maximum number of $\UPO$-queries allowed in t
 
 
 % Public Hash Setting
-\paragraph{Public hash and representation setting}
+\subsubsection{Public hash and representation setting}
 The public hash setting allows to find a cover using the $\HASHO$ oracle only  (i.e., $Q{=}0$).
 This step introduces no error;
 $\mathbb{E}\left[\rverr\right]{=}\allowbreak \left\lfloor\frac{q_U}{k}\right\rfloor \Prob{\rvcoverx{1}{x} \,|\, Q{=}0}$.
@@ -36,9 +36,9 @@ Assuming $q_U > k$ (so that a found cover is inserted at least once) and using \
 	= \left(1{-}\left(1{-}{1}/{m}\right)^{\frac{q_H}{k}{-}1}\right)^{k}
 \end{align}
 implying $\mathbb{E}[\rverr] \geq \left\lfloor\frac{q_U}{k}\right\rfloor \left(1 - \left(1 - 1/m\right)^{\frac{q_H}{k}-1}\right)^{k}
-$. For $q_H/k \gg 1$, which is likely as $q_H$ is \emph{offline} work and practical~$k$ are small, $\mathbb{E}[\rverr]\approx q_U/k$. 
+$. For $q_H/k \gg 1$, which is likely as $q_H$ is offline work and practical~$k$ are small, $\mathbb{E}[\rverr]\approx q_U/k$. 
 The full attack can be found in Figure~\ref{fig:attack-cms-hfcs}.
-\begin{figure*}[ht!]
+\begin{figure*}[h]
 	\Wider[2em]{
 	\centering
 	\begin{pchstack}[boxed,center,space=0.4em]
@@ -81,9 +81,9 @@ The attack is parametrized with  the update and $\HASHO$ query budget $q_U$ and 
 
 \end{figure*}
 
-\paragraph{Private hash and private representation setting}
+\subsubsection{Private hash and private representation setting}
 This is the most challenging setting to find a cover: the privacy of hash functions effectively makes local hashing useless, and the private representation prevents the adversary from learning anything about the result of online hash computations.
-\begin{figure*}[ht!]
+\begin{figure*}[h]
 	%\Wider[2em]{
 	%	\centering
 		\begin{pchstack}[boxed,center,space=0.5em]
@@ -150,13 +150,12 @@ In Figure~\ref{fig:attack-cms-iqcsa} we give an attack for the private hash and 
 
 The attack then inserts distinct random elements that are not equal to~$x$, checking the estimated frequency after each insertion until the estimated frequency for~$x$ increases to $a+1$, as this signals that a cover set for~$x$ has been inserted. Let $\streamvar{I}$ be the stream of inserted elements at the moment that this happens.  At this point, we begin the first ``round" of extracting from~$\streamvar{I}$ a 1-cover.  Say the last inserted element was $z_1$. As this caused the CMS estimate to increase, $z_1$ must share at least one counter with~$x$.  Moreover, any counter covered by~$z_1$ must have been minimal, i.e., still holding its initial value~$c_i$, at the time that~$z_1$ was inserted.  Thus, we set our round-one candidate cover set~$\set{C}_1\gets\{z_1\}$.  Notice that by definition, the insertion of~$z_1$ increases the estimation error by one.
 
-Let $\set{M}(\set{C}_1)=\{i \in [k] \,|\, \exists z \in \set{C}: R(K,z)[i]=p_i\}$, i.e., the set of rows whose $x$-counters are covered by $\set{C}_1$, and let $\delta_1 = \min_{j \not\in \set{M}(\set{C}_1)}\{M[j][p_j]\} - \min_{i \in \set{M}(\set{C}_1)}\{M[i][p_i]\}$.  Notice that $\delta_1$ is the gap between the smallest counter(s) \emph{not} covered by~$\set{C}_1$, and the smallest counter(s) that are covered by~$\set{C}_1$.  (Observe that~$z_1$ may also cover non-minimal $x$-counters.)  Thus, if we now reinsert~$\set{C}_1$ a total of $\delta_1$ times, this gap shrinks to zero; reinserting it once more will cause some $x$-counter that is \emph{not} covered by~$\set{C}_1$ to become minimal, and we can observe this by making an estimation query (i.e. a $\QRYO$ call) after each reinsertion.  
+Let $\set{M}(\set{C}_1)=\{i \in [k] \,|\, \exists z \in \set{C}: R(K,z)[i]=p_i\}$, i.e., the set of rows whose $x$-counters are covered by $\set{C}_1$, and let $\delta_1 = \min_{j \not\in \set{M}(\set{C}_1)}\{M[j][p_j]\} - \min_{i \in \set{M}(\set{C}_1)}\{M[i][p_i]\}$.  Notice that $\delta_1$ is the gap between the smallest counter(s) not covered by~$\set{C}_1$, and the smallest counter(s) that are covered by~$\set{C}_1$.  (Observe that~$z_1$ may also cover non-minimal $x$-counters.)  Thus, if we now reinsert~$\set{C}_1$ a total of $\delta_1$ times, this gap shrinks to zero; reinserting it once more will cause some $x$-counter that is not covered by~$\set{C}_1$ to become minimal, and we can observe this by making an estimation query (i.e. a $\QRYO$ call) after each reinsertion.  
 
-\noindent\textit{Example: }
-Say we have~$k=4$, and prior to the first insertion of~$z_1$ (as part of~$\streamvar{I}$) we have $M[1][p_1]=2$, $M[2][p_2]=3$, $M[3][p_3]=5$ and $M[4][p_4]=0$. Now, say that~$z_1$ covers the $x$-counters in rows 1,4: then upon first inserting $z_1$, we have $M[1][p_1]=3$, $M[2][p_2]=3$, $M[3][p_3]=5$ and $M[4][p_4]=1$.  We create~$\set{C}_1=\{z_1\}$, and compute $\delta_1 = 3-1=2$.  If we were to insert~$\set{C}_1$ twice more, we would have $M[1][p_1]=5$, $M[2][p_2]=3$, $M[3][p_3]=5$ and $M[4][p_4]=3$; if we had checked the CMS estimate for~$n_x$ after each insertion, we would have observed responses $2$ and $3$.  After $\delta_1+1=3$ re-insertions of~$\set{C}_1$, we would have $M[1][p_1]=6$, $M[2][p_2]=3$, $M[3][p_3]=5$, $M[4][p_4]=4$, and the CMS estimate of~$n_x$ would remain $3$ because now $M[2][p_2]$ is minimal.\hfill$\circ$
+noindent Example: Say we have~$k=4$, and prior to the first insertion of~$z_1$ (as part of~$\streamvar{I}$) we have $M[1][p_1]=2$, $M[2][p_2]=3$, $M[3][p_3]=5$ and $M[4][p_4]=0$. Now, say that~$z_1$ covers the $x$-counters in rows 1,4: then upon first inserting $z_1$, we have $M[1][p_1]=3$, $M[2][p_2]=3$, $M[3][p_3]=5$ and $M[4][p_4]=1$.  We create~$\set{C}_1=\{z_1\}$, and compute $\delta_1 = 3-1=2$.  If we were to insert~$\set{C}_1$ twice more, we would have $M[1][p_1]=5$, $M[2][p_2]=3$, $M[3][p_3]=5$ and $M[4][p_4]=3$; if we had checked the CMS estimate for~$n_x$ after each insertion, we would have observed responses $2$ and $3$.  After $\delta_1+1=3$ re-insertions of~$\set{C}_1$, we would have $M[1][p_1]=6$, $M[2][p_2]=3$, $M[3][p_3]=5$, $M[4][p_4]=4$, and the CMS estimate of~$n_x$ would remain $3$ because now $M[2][p_2]$ is minimal.\hfill$\circ$
 
 
-Notice that the $\delta_1+1$ re-insertions of~$\set{C}_1$ will increase the CMS estimate of~$n_x$ by exactly $\delta_1$. At this point we begin round 2, searching for $z_2 \in \streamvar{I}\setminus\set{C}_1$ that covers the newly minimal $x$-counters.  Recall that the elements of~$\streamvar{I}$ are distinct (by design), so if we reinsert $\streamvar{I}\setminus\set{C}_1$ \emph{in order} we are guaranteed to hit some satisfying~$z_2 \neq z_1$, and this can be observed by checking the CMS estimate of $n_x$ after each element is reinserted.  As was the case for~$z_1$, we know that~$z_2$ covers the currently minimal $x$-counters, and that prior to reinserting~$z_2$ these counters had not changed in value since the end of round 1.  Thus, reinserting~$z_2$ increases the estimation error by one.  We set $\set{C}_2 \gets \set{C}_1 \union \{z_2\}$, and then switch to reinserting $\set{C}_2$ a total of $\delta_2+1$ times (where $\delta_2$ is defined analogously to $\delta_1$) to end round 2.  Again, this increases the estimation error by $\delta_2$.
+Notice that the $\delta_1+1$ re-insertions of~$\set{C}_1$ will increase the CMS estimate of~$n_x$ by exactly $\delta_1$. At this point we begin round 2, searching for $z_2 \in \streamvar{I}\setminus\set{C}_1$ that covers the newly minimal $x$-counters.  Recall that the elements of~$\streamvar{I}$ are distinct (by design), so if we reinsert $\streamvar{I}\setminus\set{C}_1$ in order we are guaranteed to hit some satisfying~$z_2 \neq z_1$, and this can be observed by checking the CMS estimate of $n_x$ after each element is reinserted.  As was the case for~$z_1$, we know that~$z_2$ covers the currently minimal $x$-counters, and that prior to reinserting~$z_2$ these counters had not changed in value since the end of round 1.  Thus, reinserting~$z_2$ increases the estimation error by one.  We set $\set{C}_2 \gets \set{C}_1 \union \{z_2\}$, and then switch to reinserting $\set{C}_2$ a total of $\delta_2+1$ times (where $\delta_2$ is defined analogously to $\delta_1$) to end round 2.  Again, this increases the estimation error by $\delta_2$.
 
 Continuing this way, after some $\ell \leq k$ rounds we will have found a complete 1-cover for~$x$.  There can be at most~$k$ rounds, because each round~$i$ adds exactly one new element~$z_i$ to the incomplete cover $\set{C}_{i-1}$, and there are only~$k$ counters to cover.  Notice that in round~$\ell$, when we reinsert~$\set{C}_\ell$ we will never observe that some new $x$-counter has become minimal: all $x$-counters are covered by~$\set{C}_\ell$, so all will be increased by each reinsertion.  Nonetheless, each reinsertion of~$\set{C}_\ell$ adds one to the estimation error, and these re-insertions may continue until the resource budget is exhausted, i.e., until a total of~$q_U$ elements have been inserted (via $\UPO$) as part of the attack.
 
@@ -164,7 +163,7 @@ The number of $\UPO$-queries (i.e. insertions) required to reach the complete co
 \[
 q'_U \leq \ell|\streamvar{I}| + \sum_{i=1}^{\ell-1}(\delta_i + 1)(i) = \ell|\streamvar{I}| + \frac{\ell(\ell-1)}{2} + \sum_{i=1}^{\ell-1} i \delta_i
 \]
-and so~$\set{C}_\ell$ can potentially be reinserted at least $\lfloor (q_U - q'_U)/\ell \rfloor$ times, each time adding one to the estimation error.  We say \emph{potentially} because the~$\QRYO$-query budget may be the limiting factor; we'll return to this in a moment.  For now, assuming~$q_Q$ is not the limiting factor, the error introduced by the attack is
+and so~$\set{C}_\ell$ can potentially be reinserted at least $\lfloor (q_U - q'_U)/\ell \rfloor$ times, each time adding one to the estimation error.  We say potentially because the~$\QRYO$-query budget may be the limiting factor; we'll return to this in a moment.  For now, assuming~$q_Q$ is not the limiting factor, the error introduced by the attack is
 \begin{align*}
 	\rverr &\geq \left\lfloor \left( \ell + \sum_{i=1}^{\ell-1}\delta_i \right) + \left( \frac{q_U - \ell|\streamvar{I}| - \frac{\ell(\ell-1)}{2} - \sum_{i=1}^{\ell-1} i \delta_i}{\ell} \right) \right\rfloor\\
 	%&= \left\lfloor \frac{1}{\ell} \left( \ell^2 + \ell\sum_{i=1}^{\ell-1}\delta_i +  q_U - \ell|\streamvar{I}| - \frac{\ell(\ell-1)}{2} - \sum_{i=1}^{\ell-1} i \delta_i \right) \right\rfloor\\
@@ -172,11 +171,6 @@ and so~$\set{C}_\ell$ can potentially be reinserted at least $\lfloor (q_U - q'_
 	&= \left\lfloor \left( \frac{\ell+1}{2} + \frac{1}{\ell}\left(q_U + \sum_{i=1}^{\ell-1}(\ell-i)\delta_i \right) - L^1 \right) \right\rfloor
 \end{align*}
 where the final line holds because $|\streamvar{I}|$ is, by construction, precisely~$L_1$.  We note that $\rverr$ is a function of several random variables: $L^1, \ell, \{\delta_i\}_{i \in [\ell-1]}$.  
-
-%\footnote{\mia{Idea (feel free to ignore). If we are making all of these approximations later on, we could consider switching from $k L^1$ to $\sum_{i=1}^{k} L_i^1$ (at some point or just in final approximations). Why is $\sum_{i=1}^{k} L_i^1$ an upper bound on the number of insertions of elements in $\streamvar{I}$ in all rounds? 
-%		Round $i$ finds \textit{the first} element in $\streamvar{I}$ that covers the current minimal counter. The length of the search over $\streamvar{I}$ is equal to $L^1_j$ for some $j$ - by definition. Minimal counters at the beginning of round $i$ are not covered by $\set{C}_i$. So, $L^1_j$ was not `used' to model the length of any of the previous searches.\\
-%		Potentially - this could help us to compare CK and CMS errors.
-%}}
 
 We would like to develop an expression for $\mathbb{E}[\rverr]$, so we observe that for practical values of~$k,m$ (e.g., $k=4$, with $m \gg k$) it is likely that $\ell=k$.  We have $\ell < k$ only if one or more of the covering elements cover multiple $x$-counters, and for small~$k \ll m$ this is unlikely.  We approximate $\rverr$ with $\widehat{\rverr}$ by replacing $\ell$ with~$k$, dropping the flooring operation, arriving at
 \[
@@ -189,7 +183,7 @@ Rearranging and using the very tight approximation $\mathbb{E}[L^1]\approx mH_k$
 	%&=\left(\frac{q_U}{k} - mH_k \right) + O(k)
 \end{align*}
 %where the second line follows because bounding $\mathbb{E}[\delta_i]$ by any constant results in $\frac{1}{k}\sum_{i=1}^{k-1}(k-i) \mathbb{E}[\delta_i] = O(k)$.  
-We do not have a crisp way to describe the distribution of the $\delta_i$ random variables, but we can make some educated statements about them.  The expected value of \emph{any} counter~$M[i][j]$ after~$\streamvar{I}$ has been inserted is $|\streamvar{I}|/m \approx mH_k/m=H_k$, and $H_k < 4$ for $k \leq 30$ (and practical values of $k$ are typically much less than 30); moverover, standard balls-and-bins arguments tell us that as the number of balls approaches $m \ln m$, the \emph{maximum} counter value in any row approaches the expected value.  Since $\delta_1 \leq \max_{j \not\in \set{M}(\{z_1\})}\{M[j][p_j]\} - \min_{i \in \set{M}(\{z_1\})}\{M[i][p_i]\}$, we can safely assume that $\mathbb{E}\left[\delta_1\right]$ is upper-bounded by a constant that is small relative to $m, q_U/k$.  
+We do not have a crisp way to describe the distribution of the $\delta_i$ random variables, but we can make some educated statements about them.  The expected value of any counter~$M[i][j]$ after~$\streamvar{I}$ has been inserted is $|\streamvar{I}|/m \approx mH_k/m=H_k$, and $H_k < 4$ for $k \leq 30$ (and practical values of $k$ are typically much less than 30); moverover, standard balls-and-bins arguments tell us that as the number of balls approaches $m \ln m$, the maximum counter value in any row approaches the expected value.  Since $\delta_1 \leq \max_{j \not\in \set{M}(\{z_1\})}\{M[j][p_j]\} - \min_{i \in \set{M}(\{z_1\})}\{M[i][p_i]\}$, we can safely assume that $\mathbb{E}\left[\delta_1\right]$ is upper-bounded by a constant that is small relative to $m, q_U/k$.  
 %moreover, a standard balls and bins result tells us that the maximum counter value in any row is at most $\frac{(H_k)\cdot 3\ln m}{\ln \ln m}$ with probability at least $1-1/m$.  For $k \leq 30, m=2048$, this maximum-value upperbound is 45.
 
 After inserting~$\set{C}_1{=}\,\{z_1\}$ a total of~$\delta_1\,{+}\,1$ times, we switch to reinserting $\streamvar{I}\setminus \set{C}_1$ until we find a $z_2$ that covers the currently minimal $x$-counters.  When we begin to reinsert~$\set{C}_2$, we know by construction that $\delta_2 \leq \min_{j \not\in \set{M}(\{z_1,z_2\})}\{M[j][p_j]\} - \left(\min_{j \not\in \set{M}(\{z_1\})}\{M[j][p_j]\}+1\right)$.  For the first term in the difference, we ``roll back" one round; say that $\alpha=\max_{j \not\in \set{M}(\{z_1\})}\{M[j][p_j]\}$. Then, being very pessimistic, we know that $\min_{j \not\in \set{M}(\{z_1,z_2\})}\{M[j][p_j]\} \leq 2\alpha + (\delta_1\,{+}\,1)$: in finding~$z_2$, we reinsert at most all of $\streamvar{I}\setminus\{z_1\}$, which would add another (at most) $\alpha$ to that maximum counter value, and the repeated insertions of~$\set{C}_1$ could have added at most~$\delta_1\,{+}\,1$ to said maximum counter.  However, the second term in the difference is at least $\delta_1\,{+}\,1$, so $\delta_2 \leq 2\alpha$ and we have already argued that $\alpha$ is in the neighborhood of~$H_k \,{<}\, 4$.  Continuing this this way, we reach the conclusion that 
@@ -199,7 +193,7 @@ the dominant term in $\mathbb{E}[\widehat{\rverr}] \approx \mathbb{E}[\rverr]$ w
 %\mia{
 	%It depends how off you want to be with your estimate. If being off by $m$ is OK, then yes. I would say this depends on the relation between $q_U/k$ and $m$.
 	%}
-%But almost certainly there is at least one of the $\delta_i \gg 0$.  To see this, recall that $\delta_1$ is the gap between the minimum counter covered $\set{C}_1$ and the rest of the $x$-counters, and that the minimum counter covered by $\set{C}_1=\{z_1\}$ is just one greater than its initial value.  In particular, during the insertion of~$\streamvar{I}\setminus z_1$, the $x$-counters that are \emph{not} covered by~$z_1$ would have increased.  This is because $z_1$ must cover the last $x$-counters holding their initial values, and the most likely case is that $z_1$ covers just one counter, as the probability of covering more counters decreases exponentially in $1/m$.  This suggests that $\delta_1 \geq 1$, at least.  And this is amplified as the rounds go on, because the counters in $\set{C}_i$ are not increased by reinsertions of $\streamvar{I}\setminus\set{C}_i$, whereas the $x$-counters not covered by~$\set{C}_i$ would have been increased with \emph{every} prior reinsertion of $\streamvar{I}\set{C}_j$ for $j < i$.  
+%But almost certainly there is at least one of the $\delta_i \gg 0$.  To see this, recall that $\delta_1$ is the gap between the minimum counter covered $\set{C}_1$ and the rest of the $x$-counters, and that the minimum counter covered by $\set{C}_1=\{z_1\}$ is just one greater than its initial value.  In particular, during the insertion of~$\streamvar{I}\setminus z_1$, the $x$-counters that are not covered by~$z_1$ would have increased.  This is because $z_1$ must cover the last $x$-counters holding their initial values, and the most likely case is that $z_1$ covers just one counter, as the probability of covering more counters decreases exponentially in $1/m$.  This suggests that $\delta_1 \geq 1$, at least.  And this is amplified as the rounds go on, because the counters in $\set{C}_i$ are not increased by reinsertions of $\streamvar{I}\setminus\set{C}_i$, whereas the $x$-counters not covered by~$\set{C}_i$ would have been increased with {every} prior reinsertion of $\streamvar{I}\set{C}_j$ for $j < i$.  
 
 Returning to the matter of exhausting the $\QRYO$-budget, the total number of $\QRYO$-queries for the attack depends somewhat heavily on whether or not $\ell=k$.  If $\ell = k$ then $|\set{C}_k|=k$, and we know that a complete cover has been found.  Thus, we do not need to make any $\QRYO$-queries during reinsertions of~$\set{C}_k$.  If $\ell < k$, however, then we must make $\QRYO$-queries during reinsertions of~$\set{C}_\ell$, because we do not know that $\set{C}_\ell$ contains a complete cover.  
 
@@ -221,26 +215,26 @@ $q'_Q \leq 1 + \ell|\streamvar{I}| + \sum_{i=1}^{\ell-1}(\delta_i +1)$, and the 
 By the arguments just given about the~$\delta_i$, we can safely bound $\mathbb{E}\left[\max_{i\in[\ell-1]}\{\delta_i\}\right]$ by $kH_k$.  So $\mathbb{E}[q'_U - q'_Q] = O(k^2)$ with a small hidden constant.
 Thus, the expected numbers of $\UPO$-queries and $\QRYO$-queries expended to find the complete cover~$\set{C}_\ell$ are similar, especially for realistic values of~$k$.  
 
-Now, in the most likely case that $\ell=k$, no further $\QRYO$-queries are needed. Hence, when $\ell=k$, the overall error induced by the attack will be determined by the insertion/$\UPO$-budget ($q_U$) when the \emph{total} $\QRYO$-budget~$q_Q$ is approximately the insertion-budget required for finding the cover.   When $\ell < k$, in order for the overall error to be determined by the insertion budget, the total $\QRYO$-budget needs to accommodate $q'_Q + (q_U - q'_U)/\ell$ queries. The second summation comes from the fact that while accumulating error via re-insertions of~$\set{C}_\ell$, we must make one $\QRYO$-query per reinsertion.  
+Now, in the most likely case that $\ell=k$, no further $\QRYO$-queries are needed. Hence, when $\ell=k$, the overall error induced by the attack will be determined by the insertion/$\UPO$-budget ($q_U$) when the total $\QRYO$-budget~$q_Q$ is approximately the insertion-budget required for finding the cover.   When $\ell < k$, in order for the overall error to be determined by the insertion budget, the total $\QRYO$-budget needs to accommodate $q'_Q + (q_U - q'_U)/\ell$ queries. The second summation comes from the fact that while accumulating error via re-insertions of~$\set{C}_\ell$, we must make one $\QRYO$-query per reinsertion.  
 %
 This is a potentially large jump in the number of estimation queries required, from $\ell=k$ to \ $\ell<k$.  But in reality the jump might be less important than it appears: if $\ell < k$ then given our intuition about the $\delta_i$, it seems likely that if some~$\set{C}_i$ is taking a large number of insertions, one can likely assume that~$\set{C}_i$ is a complete cover, cease making estimation queries and switch to an insertion only strategy.
 
 
 %%% Pub hash, priv rep %%%
- \paragraph{Public hash and private representation setting}
+ \subsubsection{Public hash and private representation setting}
 Observe that the public representation is never used in our attack in the public hash and public representation setting. Therefore, in this public hash and private representation setting, the same attack can be used. The same analysis applies.
 
 %%% priv has, pub rep %%%
-\paragraph{Private hash and public representation setting}
+\subsubsection{Private hash and public representation setting}
 The public representation allows for an attack similar to our attack in the public hash settings (Figure~\ref{fig:attack-cms-iocsa}). Here, we use the $\UPO$-oracle instead of the $\HASHO$-oracle to find a cover. By comparing the state before and after adding an element 
 it is easy to deduce the element's counters (as they are the only ones to change).
-Our attack first adds the target to get its counters. Then, we keep inserting \textit{distinct} elements, comparing the state before and after until a cover ~$\set{C}$ is found.
+Our attack first adds the target to get its counters. Then, we keep inserting distinct elements, comparing the state before and after until a cover ~$\set{C}$ is found.
 By the definition of $L^1$, the cover is found with $(q'_U  = 1+ L^1)$ $\UPO$-queries, and is after reinserted $\lfloor (q_U - q_U')/|\set{C}| \rfloor$ times, each time adding one to the estimation error. Hence, 
 $\rverr \geq \lfloor (q_U - 1 - L^1)/|\set{C}|\rfloor \geq \lfloor (q_U -1 - L^1)/k \rfloor$  and
 %\begin{align*}
 $\mathbb{E}[\rverr] \geq \frac{q_U-1-\mathbb{E}\left[L^1\right]}{k} \approx \frac{q_U - mH_k}{k}.$
 %\end{align*}
-\begin{figure*}[ht!]
+\begin{figure*}[h]
 	\centering
 	\begin{pchstack}[boxed,space=0.5em]
 		\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{CoverAttack}^{\UPO}(x, \bot, \repr)$}{%

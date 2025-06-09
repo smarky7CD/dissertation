@@ -6,8 +6,8 @@ We attack CK in a two-step process, as with CMS and HK. We first find a 2-cover 
 
 Then applying the estimation from~$\Theta_1$ we see that we will generate error on~$x$ equal to~$\frac{\omega}{2k}$. If we hold~$k$ constant and assume that we are attacking a CMS under the same conditions (we have found a 1-cover for a target~$x$ through some process and have~$\omega$ insertions to accrue error) we will have an error of~$\frac{\omega}{k}$, which is twice that of the CK under the same conditions. Under the same assumptions for HK, in addition to the assumption that we have already locked-down the counters of the target with initial insertions of the cover in the structure, we will achieve an error on the target of~$\omega$ -- which is~$\omega - \frac{\omega}{2k}$ greater than that of the CK. We will see this pattern holds when giving concrete experimental attack error results at the conclusion of this section.
 
-\paragraph{Public hash and representation setting}
-\begin{figure*}[ht!]
+\subsubsection{Public hash and representation setting}
+\begin{figure*}[h]
 	\Wider[2em]{
 		\centering
 		\begin{pchstack}[boxed,center,space=0.4em]
@@ -56,8 +56,8 @@ $\mathbb{E}[\rverr] \geq \left\lfloor\frac{q_U}{2k}\right\rfloor \Pr\left[L^2 \l
 %\end{align}
 Using results from Section \ref{sec:cov-set} we can further obtain a concrete expression for $\Pr\left[L^2 \leq \frac{q_H-k}{k}\right]$. 
 
-\paragraph{Private hash and representation setting}
-\begin{figure*}[ht!]
+\subsubsection{Private hash and representation setting}
+\begin{figure*}[h]
 	%\Wider[2em]{
 		\centering
 		\begin{pchstack}[boxed,center,space=0.5em]
@@ -133,17 +133,17 @@ For reasonable sizes of the CK we mainly expect $\ell = 2k$ (for the CMS case we
 	&\mathbb{E}\left[\left\lfloor \left( \frac{2k+1}{2} + \frac{1}{2k}\left(q_U + \sum_{i=1}^{2k-1}(2k-i)\delta_i \right) - L^2 \right) \right\rfloor\right]\approx \frac{q_u}{2k} -  \mathbb{E}[L^2].
 \end{align*}
 
-\paragraph{Public hash and private representation setting}
+\subsubsection{Public hash and private representation setting}
 As with the CMS, the attack and analysis from the public hash and representation setting applies.
 
-\paragraph{Private hash and public representation setting}
+\subsubsection{Private hash and public representation setting}
 This attack (Figure~\ref{fig:attack-ck-io2csa}) is one-to-one with the CMS attack in the same setting, but again we find 2-cover as opposed to a 1-cover. Hence,
 $\mathbb{E}[\rverr] \geq \frac{q_U-1-\mathbb{E}\left[L^2\right]}{2k} \gtrapprox \frac{q_U-1-2mH_k}{2k}.
 $
 %$
 %\mathbb{E}[\rverr] \geq \Pr[L^2 \leq \ell_U - 1] \left(\floor(\frac{q_U-\ell_U}{2k}) + 1\right)
 %$
-\begin{figure*}[ht!]
+\begin{figure*}[h]
 	\centering
 	\begin{pchstack}[boxed,center, space=0.5em]
 		\procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{$\text{CoverAttack}^{\UPO,\QRYO}(x, \bot, \repr)$}{%
@@ -193,9 +193,10 @@ $
 	\label{fig:attack-ck-io2csa}
 \end{figure*}
 
-\paragraph{Attack Comparisons}
-\begin{table*}[htb!]
-	\centering
+\subsubsection{Attack comparisons}
+\begin{table}[h]
+	\caption[CFE Attack Comparison.]{A comparison of~$\rverr$ accumulated by the different structures during attacks in the public hash setting and the private hash, private representation setting. We give the average size of the cover set and average error accumulated in each structure, setting pair over the~$100$ experiment trials. We also give the~$\mathbb{E}[\rverr]$ according to our analysis. }
+	\label{tab:attack-comp}
 	\begin{tabular}{|c|ccc|ccc|}
 	\hline
 						 & \multicolumn{3}{c|}{\textbf{Public Hash Setting}}                                                                & \multicolumn{3}{c|}{\textbf{\begin{tabular}[c]{@{}c@{}}Private Hash,\\ Private Rep Setting\end{tabular}}}       \\ \hline
@@ -207,9 +208,7 @@ $
 	$\CMS, (m=4096,k=8)$ & \multicolumn{1}{c|}{$8.00$}             & \multicolumn{1}{c|}{$131072.00$}                & $131072.00$          & \multicolumn{1}{c|}{$7.99$}             & \multicolumn{1}{c|}{$127029.66$}                & $119939.65$         \\ \hline
 	$\HK, (m=2048,k=8)$  & \multicolumn{1}{c|}{$7.96$}             & \multicolumn{1}{c|}{$1046434.76$}               & $1046424.00$         & \multicolumn{1}{c|}{$7.98$}             & \multicolumn{1}{c|}{$1007439.04$}               & $996946.87$         \\ \hline
 	\end{tabular}
-	\caption[CFE Attack Comparison.]{A comparison of~$\rverr$ accumulated by the different structures during attacks in the public hash setting and the private hash, private representation setting. We give the average size of the cover set and average error accumulated in each structure, setting pair over the~$100$ experiment trials. We also give the~$\mathbb{E}[\rverr]$ according to our analysis. }
-	\label{tab:attack-comp}
-\end{table*}
+\end{table}
 We implemented our attacks against all structures in all settings to experimentally verify their correctness and our analysis. In Table~\ref{tab:attack-comp} we present a summary of results for the public hash setting (our least restrictive setting) and the private hash, private representation setting (our most restrictive setting.). We experiment on two sets of parameters, one fixing~$k=4$ and the other~$k=8$. We then select a reasonable value of~$m$ for CMS and then half it for HK and third it for CK so that the same space is used in each structure. We fix adversarial resources such that~$q_H,q_U,q_Q = 2^{20}$. In practice this ensures that the number of~$\HASHO$ queries or~$\QRYO$ queries will not be the bottleneck in our attacks and that we are able to generate sufficient error in each attack to showcase overall trends. We run each attack setting and structure pairing over~$100$ trials, selecting a random target in each trial, and average the results. 
 
 Observe the pattern that when holding~$k$ constant and setting reasonable~$m$ values, adjusting such that CMS, CK, and HK use the same space, attacks against CK generate the least amount of error. The attacks against CK produce about half of the amount of error as opposed to the CMS attacks, and about~$q_U - \frac{q_U}{2k}$ less the amount of error as opposed to the HK attacks. Moreover, observe that our analytical results closely match those of our experimental results. 

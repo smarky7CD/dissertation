@@ -21,7 +21,7 @@ This resistance to performance degradation attacks under lazy deletion represent
 
 \subsection{A Robust Construction}
 
-\begin{figure*}[thp]
+\begin{figure*}[h]
     %	\Wider[4em]{
             \centering
             \begin{pchstack}[boxed,center,space=0.5em]
@@ -165,7 +165,7 @@ $$r^{x_1}, r^{x_2}, \ldots, r^{x_{j-1}}$$
 are fixed and rearranged in increasing order:
 $$r_{(1)} \le r_{(2)} \le \cdots \le r_{(j-1)}.$$
 
-An adaptive adversary may insert the new key~$x_j$ in any gap between any two keys in the current sequence (or before the smallest or after the largest). Still, such a decision affects only the position of the key in the \emph{key order} and does not alter the statistical properties of the newly drawn priority.
+An adaptive adversary may insert the new key~$x_j$ in any gap between any two keys in the current sequence (or before the smallest or after the largest). Still, such a decision affects only the position of the key in the key order and does not alter the statistical properties of the newly drawn priority.
 
 The new priority $r^{x_j}$ is drawn independently from $\mathsf{U}[0,1]$. Thus, when the new key is inserted, the complete set of $j$ priorities is
 $$\{r^{x_j}, r_{(1)}, r_{(2)}, \ldots, r_{(j-1)}\}.$$

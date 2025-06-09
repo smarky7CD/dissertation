@@ -1,15 +1,13 @@
-\paragraph{Informal Security for Probabilistic Skipping-based  Structures}
-
-Our goal is to capture the average-case run time of operations PSDS being \emph{conserved} in the face of an adaptive adversary that can control the data represented by the structure. Loosely, the average-case run time of PSDS relates to how data is ``distributed'' in the representation.  For instance, an ideal hash table would distribute the elements it represents equally among the buckets. Analogously, ideal ordered structures (e.g., a skip list or a treap) would be isomorphic to a balanced tree. If a data collection was fixed, and we ignored a desire for efficiency, one could always craft an ideal representation with respect to the runtime of queries. For a hash table, one could find a hash function that equally distributes the fixed collection to its buckets. For a fixed-ordered structure, one could simply assign the heights (depths) of elements such that the shortest possible search paths are guaranteed, as with a perfectly balanced tree structure. 
+Our goal is to capture the average-case run time of operations PSDS being conserved in the face of an adaptive adversary that can control the data represented by the structure. Loosely, the average-case run time of PSDS relates to how data is ``distributed'' in the representation.  For instance, an ideal hash table would distribute the elements it represents equally among the buckets. Analogously, ideal ordered structures (e.g., a skip list or a treap) would be isomorphic to a balanced tree. If a data collection was fixed, and we ignored a desire for efficiency, one could always craft an ideal representation with respect to the runtime of queries. For a hash table, one could find a hash function that equally distributes the fixed collection to its buckets. For a fixed-ordered structure, one could simply assign the heights (depths) of elements such that the shortest possible search paths are guaranteed, as with a perfectly balanced tree structure. 
 
 However, PSDS are used in mutable settings. For this reason (and for efficiency), PSDS use some form of randomness to process updates dynamically and update their representation. Hash tables select a random hash function to map elements to buckets, and ordered PSDS employ per-operation randomization during insertion to determine an element's position in the structure --- typically through coin flips for skip lists or random priority assignments for treaps. These processes have been shown (with high probability) to yield representations of a dynamic data collection that are ``close'' to the ideal representations. Hash tables are analyzed using standard ball-and-bin arguments. Assuming a collision-resistant hash function and a load factor such that~$n \approx b$ (i.e., the size $n$ of the data collection stored is about equal to the number $b$ of buckets), it is known \cite{chawla09} that with probability~$p = 1 - \frac{1}{b}$ that at any point in time no bucket has more than~$3\frac{\log b}{\log \log b}$ entries. This maximum bucket population bounds directly corresponds with a subsequent operation's maximum insertion, deletion, or query time. Likewise, the maximum search cost path of any element queried to a skip list or treap has been shown to not exceed~$O (\log n)$ with high probability (where the exact constants are functions of the parameters of the structure).  
 
-The above analyses are done under a strictly \emph{non-adaptive} adversarial assumption. That is, these probabilistic bounds on the ``distribution'' of elements are done under the assumption that the updates and queries made to the structure do not depend on the internal randomness of the structure, the results of past operations, or the state of the representation. In the adaptive adversarial setting, this cannot be assumed. This is seen in both the hash flooding attack and the skip list degeneration attack~\cite{CrosbyW03,bar2007remote,klink2011efficient,nussbaum2019skiplist}. 
+The above analyses are done under a strictly non-adaptive adversarial assumption. That is, these probabilistic bounds on the ``distribution'' of elements are done under the assumption that the updates and queries made to the structure do not depend on the internal randomness of the structure, the results of past operations, or the state of the representation. In the adaptive adversarial setting, this cannot be assumed. This is seen in both the hash flooding attack and the skip list degeneration attack~\cite{CrosbyW03,bar2007remote,klink2011efficient,nussbaum2019skiplist}. 
 Therefore, intuitively, a robust PSDS would conserve the desired element distribution property of the structure with high probability, even in the face of an adaptive adversary. This is what we aim to capture with our formal security model.
 
-\paragraph{Formal Security Model}
+\subsection{Formal Security Model}
 
-\begin{figure}[thp]
+\begin{figure}[h]
  \centering
     
 
@@ -67,7 +65,7 @@ Therefore, intuitively, a robust PSDS would conserve the desired element distrib
 Let~$\Pi = (\Rep,\Up,\Qry)$ be a probabilistic skipping-based  data structure. We define a notion of adversarial property conservation involving~$\Pi$, a property function~$\prop : \dataobjects \times \{0,1\}^{*} \rightarrow \mathbb{R}$, a target bound~$\beta : \mathcal{P} \times \mathbb{Z}^{+} \rightarrow \mathbb{R}$, and a threshold $\epsilon \in \mathbb{R},\epsilon > 0$.   
 
 
-\begin{figure}
+\begin{figure}[h]
     %	\Wider[4em]{
             \centering
             \begin{pchstack}[boxed,center,space=0.5em]
@@ -86,7 +84,7 @@ Let~$\Pi = (\Rep,\Up,\Qry)$ be a probabilistic skipping-based  data structure. W
       \label{fig:ht-pop}
 \end{figure}
 
-    \begin{figure}
+    \begin{figure}[h]
     %	\Wider[4em]{
             \centering
             \begin{pcvstack}[boxed,center,space=0.5em]
@@ -107,7 +105,7 @@ Let~$\Pi = (\Rep,\Up,\Qry)$ be a probabilistic skipping-based  data structure. W
       \label{fig:t-cost}
 \end{figure}
     
-\begin{figure}
+\begin{figure}[h]
     %	\Wider[4em]{
             \centering
             \begin{pchstack}[boxed,center,space=0.5em]
@@ -139,7 +137,7 @@ A property function~$\prop$ takes as input the data object~$D \subseteq \dataobj
 
 A target bound~$\beta$ takes as input the structure parameters~$\mathcal{P}$ (e.g., the number of buckets for a given hash table) and a size of the represented data object~$|\mathcal{D}|$ (denoted~$n$ below), and outputs the resulting bound value. We choose a target bound such that it corresponds to the known non-adaptive bound for the property we want to conserve. For the hash table maximum search path cost, this is~$\beta(\langle b \rangle, n) = 3\frac{\log b}{\log \log b}$. For the skip list and treap maximum search path, we chose~$\beta (\langle p,m \rangle, n) = c \log_{1/p}(n)$ (for a small constant~$c$), and $\beta (\langle  \rangle, n) = 2\lg(n)+1$, respectively, as these are the (blunt) non-adversarial expected search path lengths~\cite{pugh,reingold1994randomized}.
 
-We give this notion of adversarial property conservation in~\Cref{fig:aapc}. The \emph{Adaptive Adversary Property Conservation} (AAPC) experiment aims to capture an adversary's ability to adaptively craft a representation~$\repr$ of some dynamic and adversarially decided data object~$D$, such that when the property function~$\phi$ is computed, the ratio of its output to the target bound's output is large (to win the experiment this ratio needs to exceed~$\epsilon$). As the properties (and their accompanying target bounds) measure how data elements are distributed in a particular representation (and bound how they are distributed in the non-adaptive setting), this notion directly translates to an adversary's ability to disrupt the expected runtime of a data structure's operations. 
+We give this notion of adversarial property conservation in~\Cref{fig:aapc}. The Adaptive Adversary Property Conservation (AAPC) experiment aims to capture an adversary's ability to adaptively craft a representation~$\repr$ of some dynamic and adversarially decided data object~$D$, such that when the property function~$\phi$ is computed, the ratio of its output to the target bound's output is large (to win the experiment this ratio needs to exceed~$\epsilon$). As the properties (and their accompanying target bounds) measure how data elements are distributed in a particular representation (and bound how they are distributed in the non-adaptive setting), this notion directly translates to an adversary's ability to disrupt the expected runtime of a data structure's operations. 
 
 The AAPC experiment begins by setting a parameter~$r=0$ and selecting a key~$K$ from the key space~$\mathcal{K}$. For unkeyed hash tables (insecure) and non-deterministic versions of the ordered PSDS, the key space is the empty set. The adversary is then allowed to instantiate the data structure with any initial data object~$C$ (including the empty data object) via the~$\REPO$ oracle and receives back the resulting representation. We enforce that the adversary is only allowed to call~$\REPO$ once via the parameter~$r$. This is to disallow the adversary from leveraging past information from a data structure that is keyed with the same key~$K$ to trivially win the game. That is, keyed hash tables and deterministic PSDS must sample a fresh random key to guarantee security. 
 

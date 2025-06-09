@@ -2,7 +2,7 @@
 
 \section{Notation}
 
-\paragraph{Bitstring and Set Operations}
+\subsection{Bitstring and Set Operations}
 
 Let $\bits^*$ denote the set of bitstrings and let~$\emptystr$ denote the empty
 string. Let $X \cat Y$ denote the concatenation of bitstrings~$X$ and~$Y$.  When~$\col$ is an abstract data-object (e.g., a (multi)set, a list) and~$e$ is an object that can be appended (in some understood fashion) to~$\col$, we overload the $\cat$ operator and write $\col \cat e$.
@@ -13,11 +13,11 @@ Let $[i..j]$ denote the set of integers $\{i, \ldots, j\}$; if $i > j$, then def
 
 Let $\mathcal{A}$ and $\mathcal{B}$ be sets. We take $\mathcal{A} \cup \mathcal{B}$ to be the union of the sets, $\mathcal{A} \cap \mathcal{B}$ to be the intersection of the sets, and $\mathcal{A} \setminus \mathcal{B}$ to be set-theoretic difference of $\mathcal{A}$ and $\mathcal{B}$.
 
-\paragraph{Functions}
+\subsection{Functions}
 
 Let $\Func(\setX,\setY)$ denote the set of functions $f:\setX\to\setY$. For every function~$f: \setX \to \setY$, define $\id^f: \{\emptystr\} \times \setX \to \setY$ so that $\id^f(\emptystr, x) = f(x)$ for all $x$ in the domain of~$f$. This allows us to use unkeyed hash functions $H$ in situations where, syntactically, a function is required to take a key along with its input. 
 
-\paragraph{Arrays and Tuples}
+\subsection{Arrays and Tuples}
 
 We use the distinguished symbol~$\star$ to mean that a variable is uninitialized. By $[\text{item}] \times \ell$ for~$\ell \,{\in}\, N$ we mean a vector of $\ell$ replicas of $\text{item}$. We use $\zeros(m)$ denote a function that returns an $m$-length array of 0s and, likewise, $\zeros(k,m)$ to denote a function that returns an $k \times m$ array of 0s.  We index into arrays (and tuples) using $[\cdot]$ notation; in particular, if $R$ is a function returning a $k$-tuple, we write $R(x)[i]$ to mean the $i$-th element/coordinate of $R(x)$.  If~$X{=}\,(x_1,x_2,\ldots,x_t)$ is a tuple and $\set{S}$ is a set, we overload standard set operators (e.g., $X \,{\subseteq}\, \set{S}$) treating the tuple as a set; if we write $X \setminus \set{S}$, we mean to remove all instances of the elements of~$\set{S}$ from the tuple~$X$, returning a tuple~$X'$ that is ``collapsed'' by removing any now-empty positions.
 
@@ -25,23 +25,23 @@ We use the distinguished symbol~$\star$ to mean that a variable is uninitialized
 
 We present a syntax for data structures first provided by~\cite{clayton2019}. While originally used to describe a variety of probabilistic data structures, the syntax is appropriately general. A syntactic formalization of data structures in this way not only allows us to elegantly describe numerous data structures, but also craft security definitions that are directly related to the operations the data structure allows. We will do exactly this throughout the rest of this work.
 
-We start by fixing three non-empty sets~$\set{D},\set{R},\set{K}$ of \emph{data objects}, \emph{responses} and \emph{keys}, respectively.  Let $\mathcal{Q}\subseteq \Func(\mathcal{D},\mathcal{R})$ be a set of allowed \emph{queries}, and let $\mathcal{U} \subseteq \Func(\mathcal{D},\mathcal{D})$ be a set of allowed data-object \emph{updates}.  A {\em data structure} is a tuple $\Pi =
+We start by fixing three non-empty sets~$\set{D},\set{R},\set{K}$ of data objects, responses and keys, respectively.  Let $\mathcal{Q}\subseteq \Func(\mathcal{D},\mathcal{R})$ be a set of allowed queries, and let $\mathcal{U} \subseteq \Func(\mathcal{D},\mathcal{D})$ be a set of allowed data-object updates.  A data structure is a tuple $\Pi =
 (\Rep,\Qry,\Up)$, where:
 
 \begin{itemize}[leftmargin=.2in]
   \item $\Rep\colon \keys \times \mathcal{D} \to \{0,1\}^* \cup \{\bot\}$ is a
-  (possibly) randomized {\em representation algorithm}, taking as input a key $\key \in
+  (possibly) randomized representation algorithm, taking as input a key $\key \in
   \keys$ and data object $\col \in \mathcal{D}$, and outputting the
   representation $\pub \in \{0,1\}^*$ of $D$, or $\bot$ in the case of a
   failure. We write this as $\pub \gets \Rep_\key(\col)$.
 %
   \item $\Qry\colon \keys \times \{0,1\}^* \times \mathcal{Q} \to \mathcal{R} \cup \{\bot\}$
-  is a deterministic {\em query-evaluation algorithm}, taking as input $\key \in
+  is a deterministic query-evaluation algorithm, taking as input $\key \in
   \keys$, $\pub \in \{0,1\}^*$, and $\qry \in \mathcal{Q}$, and outputting an
   answer $a \in \mathcal{R}$, or $\bot$ in the case of a failure. We write this as $a \gets \Qry_\key(\pub,\qry)$.
 %
   \item $\Up\colon \keys \times \{0,1\}^* \times \mathcal{U} \to \{0,1\}^* \cup
-  \{\bot\}$ is a (possibly) randomized {\em update algorithm}, taking as input $\key \in
+  \{\bot\}$ is a (possibly) randomized update algorithm, taking as input $\key \in
   \keys$, $\pub \in \{0,1\}^*$, and $\up \in \mathcal{U}$, and outputting an
   updated representation $\pub'$, or $\bot$ in the case of a failure. We write
   this as $\pub' \gets \Up_\key(\pub,\up)$.
@@ -50,7 +50,7 @@ We start by fixing three non-empty sets~$\set{D},\set{R},\set{K}$ of \emph{data 
 Allowing each of the algorithms to take a key~$K$ permits one to separate (for some
 security notion) any secret randomness used across data structure operations,
 from per-operation randomness (e.g., generation of a salt). Note that this syntax admits the
-common case of \emph{unkeyed} data structures, by setting
+common case of unkeyed data structures, by setting
 $\keys=\{\emptystring\}$. Moreover, we can set $\keys=\mathsf{priv}$ to be a private key and allow the corresponding public key $\mathsf{pub}$ to be a public parameter in the case the data structure relies on asymmetric cryptographic primitives.  
 
 Both~$\Rep$ and the~$\Up$ algorithm can be viewed (informally) as mapping data
@@ -59,7 +59,7 @@ implicitly in the case of~$\Up$~--- so we allow~$\Up$ to make per-call random
 choices, too. 
 
 Note that $\Up$ takes a function operating on data objects as an argument, even
-though $\Up$ itself operates on \emph{representations} of data objects. This is
+though $\Up$ itself operates on representations of data objects. This is
 intentional, to match the way these data structures generally operate.
 In a data structure representing a set or multiset, we often think of performing
 operations such as `insert $x$' or `delete $y$'. When the set or multiset is not
@@ -71,7 +71,7 @@ We also note that the query algorithm $\Qry$ is deterministic, which reflects th
 
 \section{Streaming Data}
 
-A \emph{stream} data-object~$\streamvar{S} = e_1,e_2,\ldots$ is a finite sequence of elements $e_i \in \set{U}$ for some universe~$\set{U}$.  
+A stream data-object~$\streamvar{S} = e_1,e_2,\ldots$ is a finite sequence of elements $e_i \in \set{U}$ for some universe~$\set{U}$.  
 The elements of a stream are not necessarily distinct, and the (stream) frequency of some $x \in \set{U}$ is $|\{i: e_i=x \}|$.  
 From the perspective of the PDS, the stream is presented one element at a time, with no buffering or ``look ahead".  
 That is, processing of a stream is performed in order, and the processing of $e_i$ is completed before the processing of $e_{i+1}$ may begin; once~$e_i$ has been processed, it cannot be revisited.
@@ -82,7 +82,7 @@ We now provide a summary of related work for the classes of data structures that
 
 \subsection{Compact Probabilistic Data Structures and Compact Frequency Estimators}
 
-\subsubsection{Approximate Set Membership Data Structures}
+\subsubsection{Approximate set membership data structures}
 
 The first works to explore CPDS in a provable security style focused on the Bloom filter~\cite{bloom1970space}. The Bloom filter admits approximate set-membership queries. The structure is widely used in many computing contexts, such as databases~\cite{chang2008bigtable}, networking~\cite{broder2004network}, distributed systems~\cite{tarkoma2011theory}, and search~\cite{goodwin2017bitfunnel}. 
 
@@ -93,7 +93,7 @@ Naor and Yogev were the first to consider settings in which inputs and queries m
 The HyperLogLog (HLL)~\cite{flajolet2007hyperloglog} is a CPDS that provides a compact representation of a set and can accurately approximate the number of distinct elements in the set (i.e., the set's cardinality). Patterson and Raynal~\cite{PatersonR22} provide a provable security treatment of the HLL. They first present attacks which exploit the use of fixed and publicly computable hash function in the HLL to cause large cardinality estimate errors. They then show that by switching these hash functions for a secretly keyed primitive that (even in the setting where an adversary has complete access to the internal state of the structure) the structure remains secure in terms of conserving the non-adversarial correctness guarantees of the structure. Prior to this, Revirigeo and Ting provide attacks against the HLL in a model where the adversary has access to a ``shadow'' device that mirrors the structure that is being attacked~\cite{reviriego2020security}. Patterson and Raynal point out this setting in unrealistic, but nonetheless improve the attack in this model. 
 
 
-\subsubsection{Compact Frequency Estimators}
+\subsubsection{Compact frequency estimators}
 
 Recall that compact frequency estimators are a class of CPDS that compactly represent a collection of streaming data (usually modeled as a multiset), and provide approximately correct frequency estimates (that is, the number of times any particular element has appeared in the stream). Alternately, compact frequency estimators can be viewed as providing a compact representation of the frequency distribution of a particular data stream. 
 
@@ -101,29 +101,28 @@ As previously stated, Clayton et al. were the first to examine compact frequency
 
 \subsection{Probabilistic Skipping-Based Data Structures}
 
-\subsubsection{Self-Balancing and Self-Organizing Data Structures}
+\subsubsection{Self-balancing and self-organizing data structures}
 
 Although PSDS share conceptual similarities with self-balancing and self-organizing data structures, they differ fundamentally in their guarantees and methodological approach. 
 Notably, self-organizing data structures have been extensively analyzed under adversarial models where input sequences are deliberately constructed to degrade performance, whereas the corresponding analysis for PSDS against adaptive adversaries remains a significant open problem. Similarly, self-balancing data structures have been studied extensively under worst-case analyses that inherently account for adversarial strategies.
 
-\emph{Self-organizing data structures}~\cite{albers2005self}, whether randomized or deterministic, dynamically adjust their internal ordering of elements to optimize performance based on a given (potentially adversarial) sequence of input requests. For instance, self-organizing lists may employ the move-to-front heuristic, where accessed elements are relocated to the front of the list, or the transpose method, where elements swap positions with their predecessors when accessed. Similarly, splay trees~\cite{sleator1985self} rotate frequently accessed nodes closer to the root to reduce future access times. This approach has been shown to be challenging in adaptive adversarial settings, with (randomized) self-organizing lists incurring a cost at least three times that of the optimal reordering strategy \cite{reingold1994randomized}. 
+Self-organizing data structures~\cite{albers2005self}, whether randomized or deterministic, dynamically adjust their internal ordering of elements to optimize performance based on a given (potentially adversarial) sequence of input requests. For instance, self-organizing lists may employ the move-to-front heuristic, where accessed elements are relocated to the front of the list, or the transpose method, where elements swap positions with their predecessors when accessed. Similarly, splay trees~\cite{sleator1985self} rotate frequently accessed nodes closer to the root to reduce future access times. This approach has been shown to be challenging in adaptive adversarial settings, with (randomized) self-organizing lists incurring a cost at least three times that of the optimal reordering strategy \cite{reingold1994randomized}. 
 
-\emph{Self-balancing} data structures, such as Red-Black trees~\cite{bayer1972symmetric} and AVL trees~\cite{adel1962algorithm}, \emph{deterministically} ensure an upper-bound on node depth, thereby providing worst-case performance guarantees for search operations. This deterministic approach is also exemplified by the deterministic skip list~\cite{munro1992deterministic}, which enforces an optimal structure by carefully promoting inserted nodes and their neighborhoods to appropriate levels. While these structures guarantee bounded search path lengths (even in adversarial settings), they require complex re-balancing mechanisms. In steep contrast, PSDS, such as the treap~\cite{seidel1996randomized} and the original skip list~\cite{pugh}, offer comparable expected performance, achieved through simple, probabilistic updating mechanisms. This presents a clear trade-off: deterministic structures provide absolute performance guarantees at the cost of implementation complexity, while probabilistic alternatives offer simplicity, albeit, with only probabilistic guarantees. In this work, we investigate whether we can maintain the implementation simplicity of probabilistic data structures while preserving their performance guarantees even in adversarial settings.
+Self-balancing data structures, such as Red-Black trees~\cite{bayer1972symmetric} and AVL trees~\cite{adel1962algorithm}, deterministically ensure an upper-bound on node depth, thereby providing worst-case performance guarantees for search operations. This deterministic approach is also exemplified by the deterministic skip list~\cite{munro1992deterministic}, which enforces an optimal structure by carefully promoting inserted nodes and their neighborhoods to appropriate levels. While these structures guarantee bounded search path lengths (even in adversarial settings), they require complex re-balancing mechanisms. In steep contrast, PSDS, such as the treap~\cite{seidel1996randomized} and the original skip list~\cite{pugh}, offer comparable expected performance, achieved through simple, probabilistic updating mechanisms. This presents a clear trade-off: deterministic structures provide absolute performance guarantees at the cost of implementation complexity, while probabilistic alternatives offer simplicity, albeit, with only probabilistic guarantees. In this work, we investigate whether we can maintain the implementation simplicity of probabilistic data structures while preserving their performance guarantees even in adversarial settings.
 
-\subsubsection{Complexity Attacks Against Probabilistic Skipping-Based Data Structures}
+\subsubsection{Complexity attacks against probabilistic skipping-based data structures}
 
-This section provides a concise overview of so-called \emph{complexity attacks} targeting PSDS. Previous research has identified clear vulnerabilities in hash tables and skip lists, but these works lack formal security analysis and rigorous proofs of security when potential mitigations are put forth. Hash tables have received the most attention, while skip lists have been addressed (to our knowledge) in only a single paper in this context. Further, to our knowledge, no prior work has examined complexity attacks against treaps. This absence is consistent with our finding that treaps possess inherent resistance to such attacks.
+This section provides a concise overview of so-called complexity attacks targeting PSDS. Previous research has identified clear vulnerabilities in hash tables and skip lists, but these works lack formal security analysis and rigorous proofs of security when potential mitigations are put forth. Hash tables have received the most attention, while skip lists have been addressed (to our knowledge) in only a single paper in this context. Further, to our knowledge, no prior work has examined complexity attacks against treaps. This absence is consistent with our finding that treaps possess inherent resistance to such attacks.
 
-\paragraph{Hash Tables} Assuming a hash table's internal hash function has ``good'' collision-resistance properties, the amortized average-case complexity of insertions, deletions, and look-ups is~$O(1)$. For these efficiency reasons, hash tables are widely used in many applications such as implementing associative arrays~\cite{mehlhorn2008hash} and sets~\cite{blandy2021programming} in many programming languages, in cache systems~\cite{istvan2015hash}, as well as for database indexing~\cite{zobel2001memory}.
+\textbf{Hash tables.} Assuming a hash table's internal hash function has ``good'' collision-resistance properties, the amortized average-case complexity of insertions, deletions, and look-ups is~$O(1)$. For these efficiency reasons, hash tables are widely used in many applications such as implementing associative arrays~\cite{mehlhorn2008hash} and sets~\cite{blandy2021programming} in many programming languages, in cache systems~\cite{istvan2015hash}, as well as for database indexing~\cite{zobel2001memory}.
 
 However, this average-case performance relies on a critical assumption: that the data inserted into a hash table is independent of the (potentially randomly selected) hash function used to map key-value pairs to buckets. This assumption fundamentally breaks down in adversarial scenarios where an attacker can deliberately craft insertions that exploit knowledge of the hash function or its outputs. Given the ubiquity of hash tables in modern computing systems, numerous researchers \cite{paxson1999bro, CrosbyW03, bar2007remote, eckhoff2009hash, klink2011efficient, aumasson2012hash,bottinelli2025hash} have investigated techniques to compromise the data structure, forcing operations to degrade from expected $O(1)$ to worst-case $O(n)$ time complexity, where $n$ represents the total number of elements in the structure. These adversarial approaches typically constitute complexity attacks that strategically engineer inputs causing multi-collisions -- deliberately exploiting hash function properties to force numerous distinct keys into identical buckets.
 
 Crosby and Wallach~\cite{CrosbyW03} demonstrated denial-of-service attacks via complexity attacks in applications using hash tables, such as the Bro intrusion detection system~\cite{paxson1999bro}, by forcing collisions with weak, fixed hash functions. They suggested universal hashing~\cite{carter1977universal} as a mitigation, though without any formal guarantees. Klink and Walde~\cite{klink2011efficient} showed similar CPU exhaustion attacks on web servers (e.g., PHP, ASP.NET, Java), only using a single carefully crafted HTTP request. Aumasson et al.\cite{aumasson2012hash} further revealed vulnerabilities in hash tables using non-cryptographic hash functions (like MurmurHash and CityHash\cite{appleby2016smhasher}), proposing SipHash~\cite{aumasson2012hash} as a secure alternative -- which is widely adopted but lacks a holistic formal analysis as it comes to security of hash tables in adversarial settings. Complexity attacks have also been shown effective in causing denial-of-service against flow-monitoring systems~\cite{eckhoff2009hash}. Further, the use of salting was undermined by remote timing attacks~\cite{bar2007remote}. Recently, Bottinelli et al.~\cite{bottinelli2025hash} found nearly a third of QUIC implementations vulnerable to similar attacks. Despite these works and many proposed defenses, no formal framework exists for the provable security of (keyed) hash tables against adaptive adversaries. We address this gap by introducing the first rigorous security model for this setting, along with formal proofs establishing bounds on adversarial runtime degradation.
 
-\paragraph{Skip Lists}
-In the original skip list paper~\cite{pugh}, it is noted that it is imperative to keep the internal structure of the skip list hidden. Otherwise, adversarial users could observe the levels of individual elements and delete any element at a level greater than zero (the bottom layer). This would degenerate the structure to a simple linked list and force worst-case run time ($O(n)$) on subsequent operations after these deletions occur. 
+\textbf{Skip lists.} In the original skip list paper~\cite{pugh}, it is noted that it is imperative to keep the internal structure of the skip list hidden. Otherwise, adversarial users could observe the levels of individual elements and delete any element at a level greater than zero (the bottom layer). This would degenerate the structure to a simple linked list and force worst-case run time ($O(n)$) on subsequent operations after these deletions occur. 
 
-Nussbaum and Segal~\cite{nussbaum2019skiplist} demonstrate that private internal structure alone fails to protect skip lists against this style of attack. They present a (remote) timing attack that correlates query response times with element heights, ultimately allowing adversaries to force all elements in the structure to the lowest level. Their adversarial model is notably limited: the adversary cannot access the internal skip list structure, the initial data collection is non-adversarially selected, and the original data collection must be preserved during the attack. While they propose a structure called the \emph{splay skip list} as a countermeasure, their solution lacks formal security analysis. Our work presents a significantly stronger adversarial model and provides a construction with formal security guarantees. We give an extensive commentary on~\cite{nussbaum2019skiplist} and vulnerabilities below. 
+Nussbaum and Segal~\cite{nussbaum2019skiplist} demonstrate that private internal structure alone fails to protect skip lists against this style of attack. They present a (remote) timing attack that correlates query response times with element heights, ultimately allowing adversaries to force all elements in the structure to the lowest level. Their adversarial model is notably limited: the adversary cannot access the internal skip list structure, the initial data collection is non-adversarially selected, and the original data collection must be preserved during the attack. While they propose a structure called the splay skip list as a countermeasure, their solution lacks formal security analysis. Our work presents a significantly stronger adversarial model and provides a construction with formal security guarantees. We give an extensive commentary on~\cite{nussbaum2019skiplist} and vulnerabilities below. 
 
 Nussbaum and Segal~\cite{nussbaum2019skiplist} show that keeping the internal structure of the skip list private is insufficient to protect against complexity attacks. We discuss their attack in more detail because it is instructive in light of how to model attacks and prove the properties of robust alternatives.
 Nussbaum and Segal present a timing attack that allows an adversary to discover the levels at which specific elements reside through a series of queries and, in turn, correlate the time it takes to answer a query on a given element with the height of that element. After the heights of the elements are discovered, the simple deletion attack can be mounted. 

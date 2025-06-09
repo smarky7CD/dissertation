@@ -2,13 +2,13 @@ By examining the HK pseudocode, it is not hard to see that when a stream~$\strea
 %
 We also note that if $\streamvar{S}$ satisfies the NFC condition, then any cover that it contains for $x \in \set{U}$ must be a $(\set{FP}_x,x,r)$-cover. In attacking HK, we will build $(\set{FP}_x,x,1)$-covers; as such, in this section we will often just say ``cover'' as shorthand.  
 
-The intuition for our HK-attacks is, loosely, as follows.  If one repeatedly inserts a cover for~$x$, \emph{before~$x$ is inserted}, then the counters associated to~$x$ will be owned by members of the cover, and the counter values can be made large enough to prevent any subsequent appearances of~$x$ from decrementing these counters with overwhelming probability.  We will sometimes say that such hard-to-decrement counters are ``locked-down''. As such, the HK estimate~$\hat{n}_x$ will be zero, even if $n_x \gg 0$. 
+The intuition for our HK-attacks is, loosely, as follows.  If one repeatedly inserts a cover for~$x$, before~$x$ is inserted, then the counters associated to~$x$ will be owned by members of the cover, and the counter values can be made large enough to prevent any subsequent appearances of~$x$ from decrementing these counters with overwhelming probability.  We will sometimes say that such hard-to-decrement counters are ``locked-down''. As such, the HK estimate~$\hat{n}_x$ will be zero, even if $n_x \gg 0$. 
 
 We note that attacks of this nature would be particularly damaging in instances where the underlying application uses HK to identify the most frequent elements in a stream~$\streamvar{S}$. With relatively few insertions of the cover set, one would be able to hide many occurrences of~$x$.  DDoS detection systems, for example, rely on compact frequency estimators to identify communication end-points that are subject to an abnormally large number of incoming connections~\cite{Liu_Sun_Kim_2011}. In this case, the target~$x$ is an end-point identifier (e.g., an IP address and/or TCP port). Being able to hide the fact that the end-point~$x$ is a ``heavy hitter'' in the stream of incoming flow destinations could result in~$x$ being DDoSed. 
 
-Interestingly, while a cover is necessary to cause a frequency estimation error for~$x$, it is \emph{not} sufficient.  Unlike the CMS, whose counters are agnostic of the order of elements in the stream, the HK counters have a strong dependence on order.  Thus, if~$x$ is a frequent element and many of its appearances are at the beginning of the stream, then \emph{it} can lock-down its counters; a cover set attack is still possible, but now the number of times the cover must be inserted may be much larger than the frequency (so far) of~$x$.  
+Interestingly, while a cover is necessary to cause a frequency estimation error for~$x$, it is not sufficient.  Unlike the CMS, whose counters are agnostic of the order of elements in the stream, the HK counters have a strong dependence on order.  Thus, if~$x$ is a frequent element and many of its appearances are at the beginning of the stream, then it can lock-down its counters; a cover set attack is still possible, but now the number of times the cover must be inserted may be much larger than the frequency (so far) of~$x$.  
 
-\paragraph{Setting the attack parameter~$\mathbf{t}$} Say our attack's resource budget is $(q_H,q_U,q_Q)$. The HK attacks find a cover $\set{C} = \{z_1, z_2\dots\}$ and then inserts it $t$~times. We set the value~$t$ such the probability~$p$ of decrementing the any of the target's counters with subsequent insertions of~$x$ is sufficiently small. For our experiments we set~$p = 2^{-128}$.
+\subsubsection{Setting the attack parameter~$\mathbf{t}$} Say our attack's resource budget is $(q_H,q_U,q_Q)$. The HK attacks find a cover $\set{C} = \{z_1, z_2\dots\}$ and then inserts it $t$~times. We set the value~$t$ such the probability~$p$ of decrementing the any of the target's counters with subsequent insertions of~$x$ is sufficiently small. For our experiments we set~$p = 2^{-128}$.
  
 Let $D_i^t$ be the event that at the end of the attack $A[i][p_i].\fp = \fp_x$ given that at some point during the attack we had $A[i][p_i].\cnt = t$ with $A[i][p_i].\fp = \fp_{z_i}, z_i \neq x$. Let $\left(D^t\right)= \bigor_{i=1} D^t_i$. Then,\\ 
 $
@@ -20,7 +20,7 @@ Say $f(t) = k  \left(q_U\right)^t  d^{\frac{t(t+1)}{2}}$.
 If the attack set $A[i][p_i].\cnt = t$ with $A[i][p_i].\fp = \fp_{z_i}, z_i \neq x$ for each $i$, then the probability of~$x$ overtaking any of its counters by the end of the attack is bounded by 
 $\Pr[\bigor_{i=1}^k D_i^t] \leq f(t)$.
 
-\paragraph{Public hash and public representation setting}
+\subsubsection{Public hash and public representation setting}
 This attack (Figure~\ref{fig:attack-hk-hfis}) is similar to the CMS attack for the public hash setting, but with a few tweaks. The cover is inserted only $t$ times and then the $\UPO$ budget is exhausted by inserting  target~$x$ (at least $(q_U - t k)$ times) to accumulate error. If $\lnot D^t$ then this process introduces the error of at least $(q_U - t k)$.  
 Thus, as the cover finding step uses $\HASHO$ only and induces no error,
 \begin{align*}
@@ -31,7 +31,7 @@ For the term $\Pr\left[\rvcoverx{1}{x} \given Q = 0\right]$ we can simply apply 
 	\mathbb{E}&\left[\rverr\right]\geq (q_U - t k)  (1-p)  \left(1 - \left(1 - 1/m\right)^{\frac{q_H}{k}-1}\right)^{k}.
 \end{align*}
 
-\begin{figure*}[ht!]
+\begin{figure*}[h]
 	\centering
 	\begin{pchstack}[boxed,center,space=0.5em]
 		\begin{pcvstack}[space=0.45em]
@@ -92,14 +92,14 @@ For the term $\Pr\left[\rvcoverx{1}{x} \given Q = 0\right]$ we can simply apply 
 	\label{fig:attack-hk-hfis}
 \end{figure*}
 
-\paragraph{Private hash and private representation setting}
+\subsubsection{Private hash and private representation setting}
 We present the attack for this setting in Figure~\ref{fig:attack-hk-aa}.
 The attack starts by inserting $x$ once. Starting with an empty HK implies that then $x$ owns all of its buckets, i.e., $A[i][p_i].\fp = \fp_x$ for all rows $i$, with their associated counters $c_1, \dots, c_k$ set to one, setting $x$'s current frequency estimate 
 %\max_{\underset{A[i][p_i].\fp = \fp_x}{i \in [k]}} \left\{c_i\right\} = 1
-$a = \max_{{i \in [k]}} \left\{c_i\right\} = 1$. The attack then keeps inserting \textit{distinct} elements until the frequency estimate for $x$ drops to $0$, i.e, $A[i][p_i].\fp \not= \fp_x$ for all rows $i$.
+$a = \max_{{i \in [k]}} \left\{c_i\right\} = 1$. The attack then keeps inserting distinct elements until the frequency estimate for $x$ drops to $0$, i.e, $A[i][p_i].\fp \not= \fp_x$ for all rows $i$.
 
 Let $\set{I}_1$ be the set of inserted elements $\not= x$ at the moment that this happens, and the last inserted element was $z_1$. Then, $z_1$ must share at least one counter with $x$ (the one that changed $A[i][p_i].\fp$ from $\fp_x$ most recently). So, we set our round-one candidate cover set $\set{C}_1\gets \{z_1\}$ and insert $t$ times to the HK. Now we are at the point when all $c_1, \dots, c_k$ are owned by elements $\neq x$, and, under the NFC condition, all but one are of value one. Note that inserting $\set{I}_1$ increased the estimate error by one.
-\begin{figure*}[ht!]
+\begin{figure*}[h]
 	\centering
 	\begin{pchstack}[boxed,center,space=0.5em]
 		\begin{pcvstack}
@@ -171,7 +171,7 @@ Let $\set{I}_1$ be the set of inserted elements $\not= x$ at the moment that thi
 The adaptive portion of our attack proceeds as follows. In each round $i = 2, \dots$ we
 first keep reinserting $x$ until $\HK(x)$ reaches $1$. 
 Let $d_i$ be the number of these reinsertions.  Hence, these reinsertions increased the estimate error by $d_i - 1$. At this point, at least one counter $c_1, \dots, c_k$ is owned by $x$ and all counters owned by $x$ are  set to $1$. Then, 
-we search for a new element to create our round-$i$ cover set candidate $\set{C}_i$, by inserting \textit{new distinct} elements, until we find a $z_i$ that drops $\HK(x)$ to $0$.
+we search for a new element to create our round-$i$ cover set candidate $\set{C}_i$, by inserting new distinct elements, until we find a $z_i$ that drops $\HK(x)$ to $0$.
 We set $\set{C}_i \gets \set{C}_{i-1} \cup \{z_i\}$ and insert $z_i$ $t$ times. At this point, all counters $c_1, \dots, c_k$ are owned by elements $\neq x$ again, and all are of value one, but the ones covered by $\set{C}_i$ which (very 
 likely)  hold a value strictly greater than $1$ and (very) close to $t$. 
 
@@ -222,11 +222,11 @@ We expect $\Pr\left[\lnot \left(D^t\right) \land |\set{C}| = k\right] \approx 1$
 $\mathbb{E}\left[\rverr\right] \allowbreak \approx q_U{-}tk{-}\frac{km}{d}H_k$. We confirmed this experimentally as seen in Table~\ref{tab:attack-comp}.
 % [...] \todo{any}{point to the figure if appropriate.} 
 
-\paragraph{Public hash and private representation setting}
+\subsubsection{Public hash and private representation setting}
 As with the CMS, the same attack and analysis applies from the public hash and public representation setting.
 
-\paragraph{Private hash and public representation setting}
-\begin{figure*}[ht!]
+\subsubsection{Private hash and public representation setting}
+\begin{figure*}[h]
 	\centering
 	\begin{pchstack}[boxed,center,space=0.5em]
 	\begin{pcvstack}[space=0.45em]
@@ -292,7 +292,7 @@ As with the CMS, the same attack and analysis applies from the public hash and p
 	\label{fig:attack-hk-privH-pubR}
 \end{figure*}
 The public representation allows us to design an attack similar to the attack for the public hash settings, but, as with the CMS attack in the setting, we need to find the cover using the $\UPO$ oracle.
-Starting with an empty filter, the attack first inserts~$x$, such that~$x$ is guaranteed to own all of its counters. Then, we keep adding \textit{distinct} elements, until all the $A[i][p_i].\fp$  that once belonged to~$x$ has changed, in turn signaling the cover for~$x$ has been found. We give a pseudocode description of this attack in Figure~\ref{fig:attack-hk-privH-pubR}.
+Starting with an empty filter, the attack first inserts~$x$, such that~$x$ is guaranteed to own all of its counters. Then, we keep adding distinct elements, until all the $A[i][p_i].\fp$  that once belonged to~$x$ has changed, in turn signaling the cover for~$x$ has been found. We give a pseudocode description of this attack in Figure~\ref{fig:attack-hk-privH-pubR}.
 
 Adding any $y \neq x$ has $\frac{d}{m}$ probability to change $A[i][p_i].\fp$ after the single initial insertion of~$x$. Let~$Y_i$ be the minimal number of distinct element $\neq x$ insertions before $A[i][p_i].\fp$ changes from $\fp_x$. We observe that $Y_i$ is a geometric random variable with success probability $p=\frac{d}{m}$. Set $Y=\max_{i \in [k]}\{Y_i\}$. So, our cover-finding step requires
 $(q'_U  = 1+Y)$ $\UPO$-queries to complete - $1$ query to insert $x$, and then $Y$ to find a cover.

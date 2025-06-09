@@ -6,7 +6,7 @@ The Redis PDS suite relies heavily on two different $\mathit{MurmurHash}$ hash f
 
 The $\mathit{MurmurHash}$ family of hash functions are designed to be fast but are not cryptographically secure. 
 Indeed, starting with a target hash value $h$ and a given seed, it is easy to find one or many elements that hash to $h$ under either $\murmur$ or $\murmurtwo$, so these functions are not even one-way. 
-We refer to these resulting elements as pre-images of $h$, and the algorithms that compute them as \emph{inversion} algorithms. % If explanation of MurmurHash2Inverse, put it here
+We refer to these resulting elements as pre-images of $h$, and the algorithms that compute them as inversion algorithms. % If explanation of MurmurHash2Inverse, put it here
 Our inversion algorithms for $\murmur$ and $\murmurtwo$ are about as fast as computing the hash functions in the forward direction. They are based on the deterministic approach in \cite{murmurhash64Ainv}. However, we adapt this method to make our algorithms randomized and to be able to produce many pre-images for the same target hash value $h$. 
 For $\murmur$, our inversion algorithm outputs strings consisting of two $64$-bit blocks $B_1, B_2$ in which $B_2$ is chosen arbitrarily and $B_1$ is then determined by $B_2$ and the seed. 
 Similarly, for $\murmurtwo$, but with 32-bit blocks. 
@@ -39,7 +39,7 @@ We begin by recalling that, for a frequency estimation query on an element $x \i
 In~\Cref{sec:cms-attacks} we present attacks against the general CMS structure. 
 We could directly apply their ``public hash'' attack to the Redis implementation of the Count-Min sketch, as the seeds used for each row hash function are hard-coded. However, Redis' choice to use~$\murmurtwo$ for row position hash functions allows us to exploit the invertibility of the function to speed up the attack. As $\murmurtwo$ is invertible, we can generate an arbitrary number of multicollisions for a fixed hash output and seed. This allows us to carry out the attack more efficiently.%for reasonable sized parameters. 
 
-\begin{figure}[htp] 
+\begin{figure}[h] 
     \centering
     \begin{pcvstack}[boxed,center]
         \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{overestimation\_attack$^{\insO}(x,pp,I)$}{%
@@ -69,8 +69,10 @@ To create an overestimation error on~$x$, one must find a cover for~$x$, which (
 We remark that the attack also works against structures that already have elements stored in them., as the Count-Min sketch is a linear structure.
 
 
-\begin{table}[htp]
-	\centering
+\begin{table}[h]
+    \caption[Comparison of Redis CMS Attack Versus Generic Attack.]{Experimental number (average over 100 trials) of equivalent~$\murmurtwo$ calls needed to find a cover for a random target~$x$. We compare the average to the expected number of~$\murmurtwo$ calls needed in the attack of~\cite{markelon23} given in~\Cref{sec:cms-attacks}, namely $kmH_{k}$. 
+	}
+	\label{tab:cms-oe-atk}
 	\setlength\tabcolsep{4pt}%
 	\begin{tabular}{|c|c|c|}
 		\hline
@@ -80,9 +82,6 @@ We remark that the attack also works against structures that already have elemen
 		\begin{tabular}[c]{@{}c@{}}$2.7 \times 10^{-3},3.4 \times 10^{-4}$\\ $(1024,8)$\end{tabular} & 124.22                                                                         & 22264.72   \\ \hline
 		\begin{tabular}[c]{@{}c@{}}$6.6 \times 10^{-4},3.4 \times 10^{-4}$\\ $(4096,8)$\end{tabular} & 128.8                                                                          & 89058.72 \\ \hline
 	\end{tabular}
-	\caption[Comparison of Redis CMS Attack Versus Generic Attack.]{Experimental number (average over 100 trials) of equivalent~$\murmurtwo$ calls needed to find a cover for a random target~$x$. We compare the average to the expected number of~$\murmurtwo$ calls needed in the attack of~\cite{markelon23} given in~\Cref{sec:cms-attacks}, namely $kmH_{k}$. 
-	}
-	\label{tab:cms-oe-atk}
 \end{table}
 
 We implemented the attack and measured the computation needed for a variety of~$\varepsilon, \delta$. We compare the error to the forward hash computation based attack of~\cite{markelon23} given in~\Cref{sec:cms-attacks} with the one we present here. The results are summarized in Table~\ref{tab:cms-oe-atk}. As we can see our experimental results tightly match our analysis, and our attack is at least an order of magnitude less expensive than previous best attack in~\cite{markelon23}. Further, to verify the correctness of our attack we mounted it against the Redis Count-Min sketch and selected a random target element. We found a cover for said element and verified that for a fixed number of insertions~$I$ we obtained the expected error on the target, i.e. achieved error~$\lfloor \frac{I}{k}  \rfloor$ in all trials. 
@@ -104,10 +103,10 @@ $t$ is computed such that there exists negligible probability that, after the co
 
 In practice, $t$ will be quite small compared to the frequencies of the elements in~$F$ for a real-world data collection~$C$. The frequency of all~$f \in F$ is often of the order of~$10^5$ or greater, yielding~$t$ of the order of~$10^3$ for~$p=2^{-128}$.  Thus, the true top-K of $\mathcal{C}$ equals the top-K of the new stream consisting of our attack elements concatenated with $\mathcal{C}$. For more details on this attack (including the calculation of $t$), see ~\Cref{fig:tk-known-attack}.
 
-We expect an equivalent of $16k|F|$ calls to~$\murmurtwo$ to find a cover for known true top-K list~$F$. To test our attack, we initialized a TK[$4096, 20, 0.9, 20$], selected our data collection~$\mathcal{C}$ as the individual words in the English language version of \emph{War and Peace}, and computed~$F$ for~$K{=}20$ for $\mathcal{C}$. Our choice of $\mathcal{C}$ was inspired by Redis' blog post introducing the structure~\cite{redisblogtopK}. 
+We expect an equivalent of $16k|F|$ calls to~$\murmurtwo$ to find a cover for known true top-K list~$F$. To test our attack, we initialized a TK[$4096, 20, 0.9, 20$], selected our data collection~$\mathcal{C}$ as the individual words in the English language version of ``War and Peace'', and computed~$F$ for~$K{=}20$ for $\mathcal{C}$. Our choice of $\mathcal{C}$ was inspired by Redis' blog post introducing the structure~\cite{redisblogtopK}. 
 We then computed a cover on~$F$ using our technique described above. Averaged over 100 trials, we made an equivalent of~$2580$ calls to~$\murmurtwo$, matching our analysis. We then inserted each element in the cover~$t$ times for~$t{=}206$ based on input parameters~$p{=}2^{-128}, n{=}34577$ (the frequency of the most frequent element). After this, the entirety of~$\mathcal{C}$ was inserted. In every trial, the reported top-$K$ and $F$ were disjoint as desired. 
 
-\begin{figure}[htp]
+\begin{figure}[h]
     \centering
     \begin{pcvstack}[boxed,center]
         \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{known\_F\_attack$^{\insO}(F,n,p,pp)$}{%
@@ -152,7 +151,7 @@ After computing this cover for the entire structure, $\advA$ then inserts each e
 
 We verified the correctness of the attack as in~\cref{sec:known-top-k-hiding}, except again now setting~$t{=}500$. 
 
-\begin{figure}[htp]
+\begin{figure}[h]
     \centering
     \begin{pcvstack}[boxed,center]
         \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{hidden\_F\_attack$^{\insO}(n,p,pp)$}{%
@@ -192,8 +191,10 @@ Consider a Top-K structure with parameters $m, k, \mathrm{decay}, K$. After init
 Recall that under the no-fingerprint collision assumption, the Top-K structure only underestimates frequencies of elements. 
 We will show that, with the Redis implementation of Top-K, it is trivial to violate this assumption, and thus create large frequency overestimation errors. 
 
-\begin{table}[htp]
-	\centering
+\begin{table}[h]
+	\caption[Cost of Redis TK NFC Violation Attack.]{Experimental number (averaged over 100 trials) of~$\murmurtwo$ inversion trials  and~$\murmurtwo$ calls needed to find a cover element for a randomly selected target~$x$. Recall that the cost of each is about the same.
+	}
+	\label{tab:tk-nfcv-atk}
 	\begin{tabular}{|c|c|c|}
 	\hline
 	$(m,k)$    & \begin{tabular}[c]{@{}c@{}}$\murmurtwo$ inversions\end{tabular} & \begin{tabular}[c]{@{}c@{}}$\murmurtwo$ calls\end{tabular} \\ \hline
@@ -202,16 +203,13 @@ We will show that, with the Redis implementation of Top-K, it is trivial to viol
 	$(1024,8)$ & 1849.71                                                                        & 905.44                                                     \\ \hline
 	$(4096,8)$ & 10058.16                                                                       & 5031.52                                                    \\ \hline
 	\end{tabular}
-	\caption[Cost of Redis TK NFC Violation Attack.]{Experimental number (averaged over 100 trials) of~$\murmurtwo$ inversion trials  and~$\murmurtwo$ calls needed to find a cover element for a randomly selected target~$x$. Recall that the cost of each is about the same.
-	}
-	\label{tab:tk-nfcv-atk}
 \end{table}
 
 To create large error on a given target~$x$, we compute multicollisions on the fingerprint of~$x$, stopping when we find a collision such that it shares one row position with~$x$. Unlike the attack against the Count-Min sketch, we only need to find such a collision in one row, as the Top-K takes the maximum count over all owned counters. Therefore, we are now finding a single cover element $y$. Then, by inserting the cover element $I$ times using $\insO(y)$, $\advA$ can expect to create error $I$ on the frequency estimation of $x$, i.e. $\rTK.\qryS(x, \sigma) - n_x \geq I$. Experimental results measuring the cost for this attack are given in Table~\ref{tab:tk-nfcv-atk}. We need~$\murmurtwo$ computations ($k$ per successful inversion) to check if the collision element we found matches any of the row positions to which our target maps. 
 
 We verified the correctness of the attack in the same way as in~\cref{sec:cms-overestimation}, obtaining the expected error~$I$  on the randomly select target~$x$ over all trials. For more details of our attack, see ~\Cref{fig:tk-nfc-attack}.
 
-\begin{figure}[htp]
+\begin{figure}[h]
     \centering
     \begin{pcvstack}[boxed,center]
         \procedure[linenumbering, headlinecmd={\vspace{.1em}\hrule\vspace{.2em}}]{nfc\_violation\_attack$^{\insO}(x,pp,I)$}{%

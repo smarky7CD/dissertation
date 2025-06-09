@@ -3,7 +3,7 @@ We start by (re)introducing theC PDS that we consider in this chapter -- the cou
 \subsection{Count-min Sketches}
 \label{sec:cms-intro}
 
-\begin{figure*}[htp]
+\begin{figure*}[h]
     \centering
 \begin{pcvstack}[boxed,space=1em]
 \begin{pchstack}
@@ -56,7 +56,7 @@ To instantiate the $k$ pairwise independent hash functions, Redis uses $\murmurt
 
 \subsection{Top-K}
 
-\begin{figure*}[htp]
+\begin{figure*}[h]
     \centering
 	\begin{pcvstack}[boxed,space=1em]
 		\begin{pchstack}
@@ -128,12 +128,12 @@ To instantiate the $k$ pairwise independent hash functions, Redis uses $\murmurt
 	\label{fig:redis-topk}	
 \end{figure*}
 
-A Top-K structure, originally introduced as the HeavyKeeper in~\cite{yang2019heavykeeper}, solves the \emph{approximate} top-$K$ problem. 
+A Top-K structure, originally introduced as the HeavyKeeper in~\cite{yang2019heavykeeper}, solves the approximate top-$K$ problem. 
 
 The exact version of the problem is defined as follows: given elements of a data collection~$\mathcal{C} \subseteq  \{ e_1,e_2,...,e_m \}$ with associated frequencies~$(n_{e_1},n_{e_2},...,n_{e_m})$, we can order the elements~$\{ e^{*}_{1},e^{*}_{2},...,e^{*}_{M} \}$ such that~$(n^{*}_{e_1} \geq n^{*}_{e_2} \geq ... \geq n^{*}_{e_M})$. Then, for some~$K \in \mathbb{Z}^{+}$, we output the set of elements~$\{ e^{*}_{1},e^{*}_{2},...,e^{*}_{K} \}$ with the~$K$ largest frequencies~$(n^{*}_{e_1} \geq n^{*}_{e_2} \geq ... \geq n^{*}_{e_K})$. Given space linear in the stream this is trivial to solve exactly. However, by the pigeonhole principle, it is not possible to find an exact solution with space less than linear (see~\cite{Roughgarden_Valiant} for a formal impossibility argument).
-A common technique is to place a small data structure of size~$O(K)$, like a heap or list, on top of a compact frequency estimator. By updating this small structure at most once upon an insertion of each element, we can approximate this top-$K$ set~\cite{mandal2018topkapi,metwally2006}. Using this technique we will obtain the~$K$ elements with the largest \emph{estimated} frequencies. 
+A common technique is to place a small data structure of size~$O(K)$, like a heap or list, on top of a compact frequency estimator. By updating this small structure at most once upon an insertion of each element, we can approximate this top-$K$ set~\cite{mandal2018topkapi,metwally2006}. Using this technique we will obtain the~$K$ elements with the largest estimated frequencies. 
 
-The Top-K structure is represented by a $k{ \times} m$ matrix~$\sigma$. Each entry in~$\sigma$ is an $(\fp,\cnt)$ pair, where~$\fp$ is a fingerprint of the element that ``owns'' the counter, and~$\cnt$ is said element's recorded count. These entry pairs are initialised to the distinguished symbol~$\star$ and zero, respectively. Associated with each row is a hash function that maps elements in~$\mathcal{U}$ to $[m]$, i.e. $k$ hash functions $h_1,...,h_k$. The fingerprint hash function $h_\mathit{fp}$ maps elements in~$\mathcal{U}$ to $\{ 0,1 \}^{\lambda_{\mathit{fp}}}$, for some desired fingerprint length~$\lambda_{\mathit{fp}}$. Further, we initialise a min-heap~$H$ of maximal size~$K$ to store the elements with the~$K$ largest estimated frequencies. Lastly, a~$\mathrm{decay}$ value is set, which is used to decrement a counter when a specific condition is hit. 
+The Top-K structure is represented by a $k{ \times} m$ matrix~$\sigma$. Each entry in~$\sigma$ is an $(\fp,\cnt)$ pair, where~$\fp$ is a fingerprint of the element that ``owns'' the counter, and~$\cnt$ is said element's recorded count. These entry pairs are initialized to the distinguished symbol~$\star$ and zero, respectively. Associated with each row is a hash function that maps elements in~$\mathcal{U}$ to $[m]$, i.e. $k$ hash functions $h_1,...,h_k$. The fingerprint hash function $h_\mathit{fp}$ maps elements in~$\mathcal{U}$ to $\{ 0,1 \}^{\lambda_{\mathit{fp}}}$, for some desired fingerprint length~$\lambda_{\mathit{fp}}$. Further, we initialize a min-heap~$H$ of maximal size~$K$ to store the elements with the~$K$ largest estimated frequencies. Lastly, a~$\mathrm{decay}$ value is set, which is used to decrement a counter when a specific condition is hit. 
 
 To insert an element~$x$, we start by computing $(p_1,...,p_k) \gets (h_1(x),\ldots,h_k(x))$. We then compute the fingerprint $\fp_x$ associated with the element~$x$ as $h_\mathit{fp}(x)$. We also set a variable~$\cnt_x \gets 0$. We then go row by row (indexed by~$i \in [k]$), with the following cases:
 \begin{enumerate}
@@ -142,7 +142,7 @@ To insert an element~$x$, we start by computing $(p_1,...,p_k) \gets (h_1(x),\ld
     \item \textbf{else if} $\fp_x = \fp^{*}$,
     we add~$1$ to the counter value, and if~$\cnt_x < c : \cnt_x \gets c$, where $c$ is the current counter value at matrix position~$(i,p_i)$. 
     \item \textbf{else}
-    we select a random value~$r \getsr [0,1)$. If~$r < \mathrm{decay}^{c}$, where~$c$ is the current counter value at matrix position~$(i,p_i)$, we decrement the counter value stored at this position. If, after decrementing, this value is~$0$, we then set the counter value to~$1$, the fingerprint to~$\fp_x$, and if~$\cnt_x < 1 : \cnt_x \gets 1$. This is the so-called \emph{probabilistic decay} process. 
+    we select a random value~$r \getsr [0,1)$. If~$r < \mathrm{decay}^{c}$, where~$c$ is the current counter value at matrix position~$(i,p_i)$, we decrement the counter value stored at this position. If, after decrementing, this value is~$0$, we then set the counter value to~$1$, the fingerprint to~$\fp_x$, and if~$\cnt_x < 1 : \cnt_x \gets 1$. This is the so-called probabilistic decay process. 
 \end{enumerate}
 
 If, after this procedure, it is such that $x \in H$, we update the entry in the heap based on the current value of~$\cnt_x$. Else, we check that~$\cnt_x > H.\mathsf{min}$, and if so we remove the min entry in~$H$ and replace it with~$(x,\cnt_x)$. This ensures that we are keeping an accurate account of the~$K$ highest estimated frequencies in~$H$. 
@@ -161,4 +161,4 @@ The hash functions for each row are again computed as $h_1(x) \gets h(x, 1), ...
 Insertions and frequency queries on an element $x$ then proceed as described above, through the $\rTK.\insS(x, \sigma)$ and $\rTK.\qryS(x, \sigma)$ functionalities. Similar to the count-min sketch, multiple instances of an element can be added to the Top-K, however this is implemented through repeated invocations of the insert algorithm described above. 
 To return the top-$K$ elements, one invokes $\rTK.\listS(\sigma)$. (The analogous functions in Redis are called \textsf{TOPK.ADD}, \textsf{TOPK.COUNT} and \textsf{TOPK.LIST}, respectively.) For full details of the Redis Top-K structure, see~\Cref{fig:redis-topk}. 
 
-We will show that the specific implementation choices that Redis makes leads to security issues. Specifically, we give attacks that block the true~$K$ most frequent elements from being reported in the top-$K$ estimation (with overwhelming probability) whether or not these elements are known to the attacker before the attack. Further, we show that one is able to trivially violate the NFC assumption and cause the Redis Top-K structure to allow for frequency \emph{over}estimates.
+We will show that the specific implementation choices that Redis makes leads to security issues. Specifically, we give attacks that block the true~$K$ most frequent elements from being reported in the top-$K$ estimation (with overwhelming probability) whether or not these elements are known to the attacker before the attack. Further, we show that one is able to trivially violate the NFC assumption and cause the Redis Top-K structure to allow for frequency overestimates.
