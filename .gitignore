@@ -1,3 +1,8 @@
+## videos and .DS_Store
+.DS_Store
+*.zip
+*.mp4
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
